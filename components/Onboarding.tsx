@@ -70,7 +70,13 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, is
             placeholder="Ex: Operador, Mecânico..."
             value={config.role}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig({ ...config, role: e.target.value })}
+            list="roles-list-onboarding"
           />
+          <datalist id="roles-list-onboarding">
+            {existingRoles.map(role => (
+              <option key={role} value={role} />
+            ))}
+          </datalist>
 
           <AnimatePresence>
             {existingRoles.length > 0 && (

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, addMonths, subMonths, isSameDay, isWithinInterval, parseISO, getDay, addDays, differenceInDays, startOfDay, parse, isBefore, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { UserConfig, Holiday, Absence, ThemeStyle, ShiftType, WorkTurn } from '../types';
-import { isWorkDay } from '../utils/shiftCalculator';
+import { isWorkDay, getEffectiveConfig } from '../utils/shiftCalculator';
 import { NATIONAL_HOLIDAYS, STATE_HOLIDAYS, THEME_CONFIGS } from '../constants';
 import { ChevronLeft, ChevronRight, Palette, Settings, Eye, EyeOff, ShieldCheck, Clock, Umbrella, Calendar as CalendarIcon, ArrowRight, X, Zap, AlertCircle, Info, CheckCircle2, AlertTriangle, Users2, Briefcase, FileWarning, Sun, Moon, CloudSun, Sparkles, LayoutGrid, Check, Users, Undo2, Ban, HelpCircle, Flame, Siren, Footprints, Coffee, RotateCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -49,6 +49,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [isVacationModalOpen, setIsVacationModalOpen] = useState(false);
   const [vacationStart, setVacationStart] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [selectedDuration, setSelectedDuration] = useState<number>(10);
+
+  // Calcula a configuração efetiva para a data selecionada (para exibir cargo/turno correto)
+  const effectiveConfig = useMemo(() => {
+    const eff = getEffectiveConfig(selectedDate, config);
+    return {
+      ...config,
+      role: eff.role || config.role,
+      shiftType: eff.shiftType || config.shiftType,
+      turn: eff.turn || config.turn,
+    };
+  }, [selectedDate, config]);
 
   const theme = (THEME_CONFIGS as Record<ThemeStyle, any>)[globalTheme] || THEME_CONFIGS[ThemeStyle.MODERN];
   const monthStart = startOfMonth(currentMonth);
@@ -112,12 +123,23 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return userConfig.overtimeDates?.includes(dateStr) || false;
   };
 
-  const getWhoWorksOn = (date: Date) => {
-    return allProfiles.filter((p: UserConfig) => (isWorkDay(date, p) || isDayOvertime(date, p)) && !isDayAbsence(date, p.id) && !isDayVacation(date, p));
+  const getWhoWorksOn = (date: Date, effectiveProfiles: UserConfig[]) => {
+    return effectiveProfiles.filter((p: UserConfig) => (isWorkDay(date, p) || isDayOvertime(date, p)) && !isDayAbsence(date, p.id) && !isDayVacation(date, p));
   };
 
   const teamStats = useMemo(() => {
-    const working = getWhoWorksOn(selectedDate);
+    // 1. Calcular configs efetivas para TODOS os perfis na data selecionada
+    const effectiveProfiles = allProfiles.map(p => {
+      const eff = getEffectiveConfig(selectedDate, p);
+      return {
+        ...p,
+        role: eff.role || p.role,
+        shiftType: eff.shiftType || p.shiftType,
+        turn: eff.turn || p.turn
+      };
+    });
+
+    const working = getWhoWorksOn(selectedDate, effectiveProfiles);
 
     const byTurn: Record<WorkTurn, { active: number, total: number }> = {
       [WorkTurn.MORNING]: { active: 0, total: 0 },
@@ -127,7 +149,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     const byRole: Record<string, { active: number, total: number, workers: UserConfig[] }> = {};
 
-    allProfiles.forEach((p: UserConfig) => {
+    effectiveProfiles.forEach((p: UserConfig) => {
       byTurn[p.turn].total++;
       if (!byRole[p.role]) byRole[p.role] = { active: 0, total: 0, workers: [] };
       byRole[p.role].total++;
@@ -141,7 +163,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     });
 
     const totalActive = working.length;
-    const totalTeam = allProfiles.length;
+    const totalTeam = effectiveProfiles.length;
     const globalPercent = totalTeam > 0 ? Math.round((totalActive / totalTeam) * 100) : 0;
 
     return { byTurn, byRole, globalPercent, totalActive, totalTeam };
@@ -390,9 +412,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div>
               <h2 className="text-lg font-black text-gray-800 leading-tight">{config.name.split(' ')[0]}</h2>
               <div className="flex items-center gap-1.5">
-                <span className="text-[8px] font-black uppercase text-pink-500 leading-tight tracking-widest">{config.shiftType}</span>
+                <span className="text-[8px] font-black uppercase text-pink-500 leading-tight tracking-widest">{effectiveConfig.shiftType}</span>
                 <span className="w-1 h-1 rounded-full bg-gray-200" />
-                <span className="text-[8px] font-black uppercase text-gray-400 leading-tight tracking-widest">{config.turn}</span>
+                <span className="text-[8px] font-black uppercase text-gray-400 leading-tight tracking-widest">{effectiveConfig.turn}</span>
               </div>
             </div>
           </button>
@@ -614,6 +636,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         ) : (
           <div className="flex flex-col gap-2">
+            {config.careerHistory?.find(h => h.date === format(selectedDate, 'yyyy-MM-dd')) && (
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                  <Briefcase size={14} />
+                </div>
+                <div>
+                  <h4 className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Mudança de Carreira</h4>
+                  <p className="text-xs text-emerald-600 font-medium leading-tight">Nova configuração efetiva a partir de hoje.</p>
+                </div>
+              </div>
+            )}
             <div className="flex gap-2">
               {getAbsenceForDate(selectedDate) ? (
                 <button onClick={() => onRemoveAbsence(getAbsenceForDate(selectedDate)!.id)} className="flex-1 py-3.5 bg-red-50 text-red-500 rounded-2xl text-[9px] font-black uppercase tracking-widest border border-red-100 active:scale-95 transition-all">Remover Ausência</button>

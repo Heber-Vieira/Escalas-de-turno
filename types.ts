@@ -42,6 +42,18 @@ export interface UserConfig {
   phone?: string;
   isActive?: boolean;
   notes?: string;
+  careerHistory?: CareerChange[];
+}
+
+export interface CareerChange {
+  id: string; // generated uuid
+  date: string; // ISO yyyy-MM-dd - effective date of change
+  role?: string;
+  shiftType?: ShiftType;
+  turn?: WorkTurn;
+  rotatingWorkDays?: number;
+  rotatingOffDays?: number;
+  offDays?: number[];
 }
 
 export interface Absence {

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UserCircle, Briefcase, Calendar, Clock, AlertCircle, ArrowLeft, HelpCircle } from 'lucide-react';
 import { UserConfig, ShiftType, WorkTurn } from '../types';
 import { ThemeConfig } from '../constants';
+import { ProfileHistory } from './ProfileHistory';
 
 interface ProfileViewProps {
     activeProfile: UserConfig;
@@ -12,6 +13,8 @@ interface ProfileViewProps {
     setIsHelpOpen: (isOpen: boolean) => void;
     handleUpdateActiveProfile: (newConfig: UserConfig) => void;
     toggleOffDay: (day: number) => void;
+    existingRoles?: string[];
+    onRequestConfirmation: (title: string, message: string, onConfirm: () => void) => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -20,7 +23,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     setView,
     setIsHelpOpen,
     handleUpdateActiveProfile,
-    toggleOffDay
+    toggleOffDay,
+    existingRoles = [],
+    onRequestConfirmation
 }) => {
     return (
         <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 sm:space-y-6 pb-32">
@@ -101,6 +106,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                <ProfileHistory profile={activeProfile} onUpdate={handleUpdateActiveProfile} theme={theme} existingRoles={existingRoles} onRequestConfirmation={onRequestConfirmation} />
 
                 <button onClick={() => setView('users')} className="w-full py-3.5 sm:py-4 mt-2 sm:mt-4 bg-gray-900 text-white rounded-full font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-transform">Salvar Alterações</button>
             </div>

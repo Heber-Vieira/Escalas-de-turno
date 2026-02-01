@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, parseISO, differenceInCalendarDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { UserConfig, Absence, WorkTurn, ThemeStyle } from '../types';
-import { isWorkDay } from '../utils/shiftCalculator';
+import { isWorkDay, getEffectiveConfig } from '../utils/shiftCalculator';
 import { THEME_CONFIGS } from '../constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, CloudSun, Moon, ChevronLeft, ChevronRight, Printer, X, Check, Settings2, Filter, CalendarDays, Clock, RotateCcw, ChevronDown, Umbrella, Zap, HelpCircle, LogOut } from 'lucide-react';
@@ -51,7 +51,16 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
     [currentMonth]
   );
 
-  const allRoles = useMemo(() => Array.from(new Set(allProfiles.map(p => p.role))).sort(), [allProfiles]);
+  const allRoles = useMemo(() => {
+    const roles = new Set<string>();
+    allProfiles.forEach(p => {
+      if (p.role) roles.add(p.role);
+      p.careerHistory?.forEach(h => {
+        if (h.role) roles.add(h.role);
+      });
+    });
+    return Array.from(roles).sort();
+  }, [allProfiles]);
   const [selectedRoles, setSelectedRoles] = useState<string[]>(allRoles);
   const [selectedTurns, setSelectedTurns] = useState<WorkTurn[]>(Object.values(WorkTurn));
   const [visibleDays, setVisibleDays] = useState<number[]>(allDaysInMonth.map(d => d.getDate()));
@@ -117,24 +126,33 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
   const getWorkersByDayAndTurn = (day: Date) => {
     const dateStr = format(day, 'yyyy-MM-dd');
 
-    const workers = allProfiles.filter(p =>
-      (isWorkDay(day, p) || (p.overtimeDates?.includes(dateStr))) &&
-      !absences.some(a => a.date === dateStr && a.profileId === p.id) &&
-      !(p.vacationDates?.includes(dateStr)) &&
-      selectedRoles.includes(p.role) &&
-      selectedTurns.includes(p.turn)
-    );
+    const workersWithConfig = allProfiles.map(p => {
+      const effective = getEffectiveConfig(day, p);
+      return {
+        ...p,
+        effectiveRole: effective.role || p.role,
+        effectiveTurn: effective.turn || p.turn
+      };
+    });
 
-    const onVacation = allProfiles.filter(p =>
+    const workers = workersWithConfig.filter(p => {
+      return (isWorkDay(day, p) || (p.overtimeDates?.includes(dateStr))) &&
+        !absences.some(a => a.date === dateStr && a.profileId === p.id) &&
+        !(p.vacationDates?.includes(dateStr)) &&
+        selectedRoles.includes(p.effectiveRole) &&
+        selectedTurns.includes(p.effectiveTurn);
+    });
+
+    const onVacation = workersWithConfig.filter(p =>
       p.vacationDates?.includes(dateStr) &&
-      selectedRoles.includes(p.role) &&
-      selectedTurns.includes(p.turn)
+      selectedRoles.includes(p.effectiveRole) &&
+      selectedTurns.includes(p.effectiveTurn)
     );
 
     return {
-      [WorkTurn.MORNING]: workers.filter(w => w.turn === WorkTurn.MORNING),
-      [WorkTurn.AFTERNOON]: workers.filter(w => w.turn === WorkTurn.AFTERNOON),
-      [WorkTurn.NIGHT]: workers.filter(w => w.turn === WorkTurn.NIGHT),
+      [WorkTurn.MORNING]: workers.filter(w => w.effectiveTurn === WorkTurn.MORNING),
+      [WorkTurn.AFTERNOON]: workers.filter(w => w.effectiveTurn === WorkTurn.AFTERNOON),
+      [WorkTurn.NIGHT]: workers.filter(w => w.effectiveTurn === WorkTurn.NIGHT),
       vacation: onVacation
     };
   };
@@ -383,7 +401,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                                       <span className="text-[10px] font-bold text-gray-700 leading-none">{w.name.split(' ')[0]}</span>
                                       {isExtra && <Zap size={8} className="text-purple-500 fill-purple-500" />}
                                     </div>
-                                    <span className="text-[7px] font-black text-pink-400 uppercase tracking-tighter mt-0.5">{w.role.slice(0, 12)}</span>
+                                    <span className="text-[7px] font-black text-pink-400 uppercase tracking-tighter mt-0.5">{(w as any).effectiveRole.slice(0, 12)}</span>
                                   </div>
                                 </div>
                               );

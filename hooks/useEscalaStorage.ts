@@ -62,7 +62,8 @@ export const useEscalaStorage = (session: any) => {
                     email: p.email,
                     phone: p.phone,
                     isActive: p.is_active,
-                    notes: p.notes
+                    notes: p.notes,
+                    careerHistory: p.career_history || []
                 }));
 
                 setProfiles(mappedProfiles);
@@ -164,7 +165,8 @@ export const useEscalaStorage = (session: any) => {
             email: data.email,
             phone: data.phone,
             is_active: data.isActive,
-            notes: data.notes
+            notes: data.notes,
+            career_history: data.careerHistory || []
         };
 
         const { data: inserted, error } = await supabase
@@ -207,6 +209,7 @@ export const useEscalaStorage = (session: any) => {
             phone: data.phone,
             is_active: data.isActive,
             notes: data.notes,
+            career_history: data.careerHistory || [],
             updated_at: new Date().toISOString()
         };
 

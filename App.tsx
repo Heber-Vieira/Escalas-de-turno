@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { UserConfig, Absence, ThemeStyle, ShiftType, WorkTurn } from './types';
+import { UserConfig, Absence, ThemeStyle, ShiftType, WorkTurn, CareerChange } from './types';
 import { Onboarding } from './components/Onboarding';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
@@ -17,7 +17,7 @@ import { ConfirmModal } from './components/ConfirmModal';
 import { supabase } from './services/supabase';
 import { useEscalaStorage } from './hooks/useEscalaStorage';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, Zap, Umbrella, FileText, LogOut } from 'lucide-react';
+import { HelpCircle, Zap, Umbrella, FileText, LogOut, Briefcase } from 'lucide-react';
 import { THEME_CONFIGS } from './constants';
 import { format, parseISO, isSameMonth, differenceInCalendarDays } from 'date-fns';
 
@@ -81,8 +81,14 @@ const App: React.FC = () => {
   }, [duplicateErrorName]);
 
   const existingRoles = useMemo(() => {
-    const roles = profiles.map((p: UserConfig) => p.role).filter((r: string) => r && r.trim() !== "");
-    return Array.from(new Set(roles)).sort();
+    const roles = new Set<string>();
+    profiles.forEach((p: UserConfig) => {
+      if (p.role && p.role.trim()) roles.add(p.role.trim());
+      (p.careerHistory || []).forEach((h: CareerChange) => {
+        if (h.role && h.role.trim()) roles.add(h.role.trim());
+      });
+    });
+    return Array.from(roles).sort();
   }, [profiles]);
 
   const activeAbsences = useMemo(() =>
@@ -144,6 +150,19 @@ const App: React.FC = () => {
         }
       }
     }
+
+    (activeProfile.careerHistory || []).forEach((change: CareerChange) => {
+      events.push({
+        id: change.id,
+        date: change.date,
+        title: 'Mudança de Carreira',
+        description: `${change.role || 'Cargo inalterado'} • ${change.shiftType || 'Escala inalterada'}`,
+        type: 'career_change' as const,
+        color: 'bg-emerald-500',
+        icon: <Briefcase size={18} />
+      });
+    });
+
     return events.sort((a, b) => b.date.localeCompare(a.date));
   }, [activeAbsences, activeProfile]);
 
@@ -269,8 +288,8 @@ const App: React.FC = () => {
   };
 
   const handleRemoveEvent = async (event: any) => {
-    const title = event.type === 'absence' ? "Remover Ausência" : event.type === 'vacation_period' ? "Remover Período" : "Remover Extra";
-    const message = event.type === 'absence' ? "Deseja remover esta ausência?" : event.type === 'vacation_period' ? "Deseja remover todo este período de férias?" : "Deseja remover esta hora extra?";
+    const title = event.type === 'absence' ? "Remover Ausência" : event.type === 'vacation_period' ? "Remover Período" : event.type === 'career_change' ? "Remover Alteração" : "Remover Extra";
+    const message = event.type === 'absence' ? "Deseja remover esta ausência?" : event.type === 'vacation_period' ? "Deseja remover todo este período de férias?" : event.type === 'career_change' ? "Deseja remover este registro histórico?" : "Deseja remover esta hora extra?";
 
     requestConfirmation(title, message, async () => {
       if (event.type === 'absence') {
@@ -281,6 +300,9 @@ const App: React.FC = () => {
       } else if (event.type === 'overtime') {
         const newOvertime = (activeProfile?.overtimeDates || []).filter((d: string) => d !== event.date);
         await handleUpdateActiveProfile({ ...activeProfile!, overtimeDates: newOvertime });
+      } else if (event.type === 'career_change') {
+        const newHistory = (activeProfile?.careerHistory || []).filter(h => h.id !== event.id);
+        await handleUpdateActiveProfile({ ...activeProfile!, careerHistory: newHistory });
       }
     });
   };
@@ -388,6 +410,8 @@ const App: React.FC = () => {
             setIsHelpOpen={setIsHelpOpen}
             handleUpdateActiveProfile={handleUpdateActiveProfile}
             toggleOffDay={toggleOffDay}
+            existingRoles={existingRoles}
+            onRequestConfirmation={requestConfirmation}
           />
         )}
 
