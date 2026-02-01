@@ -16,37 +16,37 @@ export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme }) => {
     };
 
     return (
-        <nav className={`fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[380px] backdrop-blur-xl border border-white/20 px-6 py-4 flex justify-between items-center z-50 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] ${theme.bg.includes('white') ? 'bg-white/85' : 'bg-black/85'}`}>
+        <nav className={`fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[360px] backdrop-blur-xl border border-white/20 px-4 py-3 flex justify-around items-center z-50 rounded-[30px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] ${theme.bg.includes('white') ? 'bg-white/90' : 'bg-black/90'}`}>
             <button
                 onClick={() => setView('calendar')}
-                className={`flex flex-col items-center gap-1 transition-all ${getActiveTabColor(view === 'calendar')}`}
+                className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'calendar')}`}
             >
-                <Calendar size={22} />
-                <span className="text-[9px] uppercase font-bold tracking-tighter">Minha Escala</span>
+                <Calendar size={19} />
+                <span className="text-[8px] uppercase font-black tracking-widest">Escala</span>
             </button>
 
             <button
                 onClick={() => setView('team_schedule')}
-                className={`flex flex-col items-center gap-1 transition-all ${getActiveTabColor(view === 'team_schedule')}`}
+                className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'team_schedule')}`}
             >
-                <ListTodo size={22} />
-                <span className="text-[9px] uppercase font-bold tracking-tighter">Toda Equipe</span>
+                <ListTodo size={19} />
+                <span className="text-[8px] uppercase font-black tracking-widest">Geral</span>
             </button>
 
             <button
                 onClick={() => setView('history')}
-                className={`flex flex-col items-center gap-1 transition-all ${getActiveTabColor(view === 'history')}`}
+                className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'history')}`}
             >
-                <History size={22} />
-                <span className="text-[9px] uppercase font-bold tracking-tighter">Histórico</span>
+                <History size={19} />
+                <span className="text-[8px] uppercase font-black tracking-widest">Logs</span>
             </button>
 
             <button
                 onClick={() => setView('users')}
-                className={`flex flex-col items-center gap-1 transition-all ${getActiveTabColor(view === 'users')}`}
+                className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'users')}`}
             >
-                <Users size={22} />
-                <span className="text-[9px] uppercase font-bold tracking-tighter">Equipe</span>
+                <Users size={19} />
+                <span className="text-[8px] uppercase font-black tracking-widest">Time</span>
             </button>
         </nav>
     );
