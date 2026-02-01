@@ -406,18 +406,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-[60] bg-white border border-pink-100 p-2.5 rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex gap-2.5 overflow-x-auto no-scrollbar w-max max-w-[calc(100vw-32px)]"
+              className="absolute left-0 right-0 top-full mt-3 z-[60] flex justify-center px-4 pointer-events-none"
             >
-              {(Object.entries(THEME_CONFIGS) as [ThemeStyle, any][]).map(([styleName, styleConfig]) => (
-                <button
-                  key={styleName}
-                  onClick={() => handleThemeChange(styleName)}
-                  className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all border-2 ${globalTheme === styleName ? 'border-pink-500 bg-pink-50 scale-110' : 'border-gray-50 bg-gray-50/50 grayscale hover:grayscale-0'}`}
-                  title={styleName}
-                >
-                  {styleConfig.icon}
-                </button>
-              ))}
+              <div className="bg-white border border-pink-100 p-3 rounded-[30px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] flex gap-3 overflow-x-auto no-scrollbar max-w-full pointer-events-auto backdrop-blur-md">
+                {(Object.entries(THEME_CONFIGS) as [ThemeStyle, any][]).map(([styleName, styleConfig]) => (
+                  <button
+                    key={styleName}
+                    onClick={() => handleThemeChange(styleName)}
+                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all border-2 ${globalTheme === styleName ? 'border-pink-500 bg-pink-50 scale-110' : 'border-gray-50 bg-gray-50/50 grayscale hover:grayscale-0'}`}
+                    title={styleName}
+                  >
+                    {styleConfig.icon}
+                  </button>
+                ))}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
