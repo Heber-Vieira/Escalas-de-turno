@@ -411,10 +411,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
             <div>
               <h2 className="text-lg font-black text-gray-800 leading-tight">{config.name.split(' ')[0]}</h2>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[8px] font-black uppercase text-pink-500 leading-tight tracking-widest">{effectiveConfig.shiftType}</span>
-                <span className="w-1 h-1 rounded-full bg-gray-200" />
-                <span className="text-[8px] font-black uppercase text-gray-400 leading-tight tracking-widest">{effectiveConfig.turn}</span>
+              <div className="flex flex-col">
+                {effectiveConfig.role && (
+                  <span className="text-[9px] font-black uppercase text-gray-500 leading-tight tracking-wider mb-0.5 opacity-80">{effectiveConfig.role}</span>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[8px] font-black uppercase text-pink-500 leading-tight tracking-widest">{effectiveConfig.shiftType}</span>
+                  <span className="w-1 h-1 rounded-full bg-gray-200" />
+                  <span className="text-[8px] font-black uppercase text-gray-400 leading-tight tracking-widest">{effectiveConfig.turn}</span>
+                </div>
               </div>
             </div>
           </button>
