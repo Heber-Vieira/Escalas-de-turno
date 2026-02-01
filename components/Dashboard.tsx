@@ -406,21 +406,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="absolute left-0 right-0 top-full mt-3 z-[60] flex justify-center px-4 pointer-events-none"
+              className="absolute left-0 right-0 top-full mt-4 z-[60] flex justify-center px-4 pointer-events-none"
             >
-              <div className="bg-white/95 border border-white p-1 rounded-[22px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex gap-1 pointer-events-auto backdrop-blur-2xl">
+              <div className="bg-white/95 border border-pink-100 p-2 rounded-[32px] shadow-[0_25px_60px_rgba(255,105,180,0.2)] flex gap-2 pointer-events-auto backdrop-blur-2xl">
                 {(Object.entries(THEME_CONFIGS) as [ThemeStyle, any][]).map(([styleName, styleConfig]) => (
                   <button
                     key={styleName}
                     onClick={() => handleThemeChange(styleName)}
-                    className={`flex-shrink-0 w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-[16px] flex items-center justify-center text-[15px] sm:text-base transition-all duration-300 relative ${globalTheme === styleName ? 'bg-pink-500 shadow-lg shadow-pink-200 text-white scale-105' : 'hover:bg-gray-50'}`}
+                    className={`flex-shrink-0 w-11 h-11 rounded-[24px] flex items-center justify-center text-xl transition-all duration-300 relative ${globalTheme === styleName ? 'bg-pink-500 shadow-[0_8px_20px_rgba(236,72,153,0.4)] text-white scale-110' : 'bg-gray-50/50 hover:bg-pink-50 hover:text-pink-500'}`}
                     title={styleName}
                   >
-                    <span className={`transition-all duration-300 ${globalTheme === styleName ? 'scale-110 drop-shadow-sm' : 'grayscale opacity-40 contrast-125'}`}>
+                    <span className={`transition-all duration-300 ${globalTheme === styleName ? 'scale-110 drop-shadow-md' : 'grayscale opacity-50'}`}>
                       {styleConfig.icon}
                     </span>
                     {globalTheme === styleName && (
-                      <motion.div layoutId="activeDot" className="absolute -bottom-1 w-1 h-1 bg-white rounded-full" />
+                      <motion.div layoutId="activeDot" className="absolute -bottom-1.5 w-1.5 h-1.5 bg-pink-500 rounded-full shadow-[0_0_10px_rgba(236,72,153,0.8)]" />
                     )}
                   </button>
                 ))}
