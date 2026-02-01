@@ -358,7 +358,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
-  const triggerPicker = (ref: React.RefObject<HTMLInputElement>) => {
+  const triggerPicker = (ref: React.RefObject<HTMLInputElement | null>) => {
     if (ref.current) {
       if ('showPicker' in HTMLInputElement.prototype) {
         try { (ref.current as any).showPicker(); } catch (e: any) { ref.current.focus(); }
@@ -406,7 +406,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="absolute right-0 top-full mt-2 z-[60] bg-white border border-pink-100 p-2 rounded-[24px] shadow-[0_15px_40px_rgba(0,0,0,0.15)] flex gap-2 overflow-x-auto no-scrollbar max-w-[280px]"
+              className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-[60] bg-white border border-pink-100 p-2.5 rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex gap-2.5 overflow-x-auto no-scrollbar w-max max-w-[calc(100vw-32px)]"
             >
               {(Object.entries(THEME_CONFIGS) as [ThemeStyle, any][]).map(([styleName, styleConfig]) => (
                 <button
