@@ -8,24 +8,14 @@ export const useEscalaStorage = (session: any) => {
     const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
     const [absences, setAbsences] = useState<Absence[]>([]);
     const [globalTheme, setGlobalTheme] = useState<ThemeStyle>(ThemeStyle.MODERN);
-    const [loading, setLoading] = useState(true);
-    const [lastUserId, setLastUserId] = useState<string | null>(null);
-
-    // Derived state: if user ID changed, we are definitely loading
-    if (session?.user?.id !== lastUserId) {
-        setLastUserId(session?.user?.id || null);
-        setLoading(!!session?.user?.id);
-    }
+    const [loading, setLoading] = useState(false);
 
     // Initial Load from Supabase
     useEffect(() => {
-        if (!session?.user?.id) {
-            setLoading(false);
-            return;
-        }
+        if (!session?.user?.id) return;
 
-        setLoading(true);
         const fetchData = async () => {
+            setLoading(true);
             try {
                 // Fetch Settings (Theme)
                 const { data: settings, error: sError } = await supabase
