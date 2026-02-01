@@ -29,7 +29,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     <button onClick={() => setView('users')} className="p-2 hover:bg-black/5 rounded-full transition-colors"><ArrowLeft size={22} className="sm:size-24" /></button>
                     <h2 className="text-xl sm:text-2xl font-bold">Perfil</h2>
                 </div>
-                <button onClick={() => setIsHelpOpen(true)} className="p-2 bg-white/50 border border-gray-100 rounded-full text-pink-500 shadow-sm transition-all active:scale-90"><HelpCircle size={18} className="sm:size-20" /></button>
             </div>
 
             <div className={`p-4 sm:p-6 space-y-4 sm:space-y-6 ${theme.card}`}>

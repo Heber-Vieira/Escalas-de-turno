@@ -34,16 +34,8 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                         <p className="text-[10px] font-bold text-pink-500 uppercase tracking-widest leading-tight">Log de Registros</p>
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <button onClick={onLogout} className="p-2 bg-red-50 border border-red-100 rounded-full text-red-500 shadow-sm transition-all active:scale-90">
-                        <LogOut size={20} />
-                    </button>
-                    <button onClick={() => setIsHelpOpen(true)} className="p-2 bg-white/50 border border-gray-100 rounded-full text-pink-500 shadow-sm transition-all active:scale-90">
-                        <HelpCircle size={20} />
-                    </button>
-                    <div className="bg-gray-100/50 p-2 rounded-2xl">
-                        <History className="text-pink-400" size={20} />
-                    </div>
+                <div className="bg-gray-100/50 p-2 rounded-2xl">
+                    <History className="text-pink-400" size={20} />
                 </div>
             </div>
 

@@ -29,18 +29,19 @@ export const UsersView: React.FC<UsersViewProps> = ({
 }) => {
     return (
         <motion.div key="users" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 sm:space-y-6">
-            <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1 sm:gap-3">
-                    <button onClick={() => setView('calendar')} className="p-2 -ml-2 hover:bg-black/5 rounded-full transition-colors shrink-0"><ArrowLeft size={20} className="sm:size-24" /></button>
+
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
+                    <button onClick={() => setView('calendar')} className="p-2 sm:p-2.5 bg-white shadow-sm border border-gray-100 rounded-full text-gray-500 transition-all active:scale-90 flex-shrink-0">
+                        <ArrowLeft size={18} className="sm:size-20" />
+                    </button>
                     <h2 className="text-lg sm:text-2xl font-black text-gray-800 uppercase tracking-tight truncate">Equipe</h2>
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                    <button onClick={onLogout} className="p-2 sm:p-2.5 bg-red-50 text-red-500 rounded-full shadow-sm transition-all active:scale-95" title="Sair"><LogOut size={18} className="sm:size-20" /></button>
                     <button onClick={() => setIsBatchModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-900 text-pink-500 rounded-full shadow-lg transition-all active:scale-95" title="Importação em Lote">
                         <Layers size={14} className="sm:size-18" />
                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-white">Lote</span>
                     </button>
-                    <button onClick={() => setIsHelpOpen(true)} className="p-2 sm:p-2.5 bg-white border border-gray-100 rounded-full text-pink-500 shadow-sm transition-all active:scale-95"><HelpCircle size={18} className="sm:size-20" /></button>
                 </div>
             </div>
 

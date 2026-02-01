@@ -183,14 +183,6 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
           <p className="text-[10px] font-bold text-pink-500 uppercase tracking-[0.2em]">Escala Diária</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={onLogout} className="p-2.5 bg-red-50 text-red-500 rounded-xl border border-red-100 shadow-sm transition-all active:scale-90" title="Sair">
-            <LogOut size={18} />
-          </button>
-          {onOpenHelp && (
-            <button onClick={onOpenHelp} className="p-2.5 bg-white text-pink-500 rounded-xl border border-gray-100 shadow-sm transition-all active:scale-90">
-              <HelpCircle size={18} />
-            </button>
-          )}
           <button onClick={resetFilters} className="p-2.5 bg-white text-gray-400 rounded-xl border border-gray-100 shadow-sm transition-all active:scale-90">
             <RotateCcw size={18} />
           </button>
@@ -320,8 +312,8 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                       key={dateNum}
                       onClick={() => toggleFilter(visibleDays, dateNum, setVisibleDays)}
                       className={`aspect-square rounded-lg flex flex-col items-center justify-center transition-all border ${isActive
-                          ? 'bg-pink-500 border-pink-500 text-white'
-                          : 'bg-gray-50 border-gray-50 text-gray-300'
+                        ? 'bg-pink-500 border-pink-500 text-white'
+                        : 'bg-gray-50 border-gray-50 text-gray-300'
                         }`}
                     >
                       <span className="text-[10px] font-black">{dateNum}</span>

@@ -286,23 +286,24 @@ const App: React.FC = () => {
     <Layout themeStyle={globalTheme}>
       <DuplicateAlert duplicateErrorName={duplicateErrorName} setDuplicateErrorName={setDuplicateErrorName} />
 
+      <div className="flex justify-between items-center mb-2 px-1">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-full text-[9px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-90"
+        >
+          <LogOut size={14} /> Sair
+        </button>
+        <button
+          onClick={() => setIsHelpOpen(true)}
+          className="flex items-center gap-2 px-3 py-1.5 bg-white/50 backdrop-blur-sm border border-gray-100 rounded-full text-[9px] font-black text-pink-500 uppercase tracking-widest hover:bg-white transition-all active:scale-90"
+        >
+          <HelpCircle size={14} /> Ajuda
+        </button>
+      </div>
+
       <AnimatePresence mode="wait">
         {view === 'calendar' && (
           <motion.div key="calendar" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="flex justify-between items-center mb-2 pr-1 ml-1">
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-full text-[9px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-90"
-              >
-                <LogOut size={14} /> Sair
-              </button>
-              <button
-                onClick={() => setIsHelpOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-white/50 backdrop-blur-sm border border-gray-100 rounded-full text-[9px] font-black text-pink-500 uppercase tracking-widest hover:bg-white transition-all active:scale-90"
-              >
-                <HelpCircle size={14} /> Ajuda
-              </button>
-            </div>
             <Dashboard
               config={activeProfile}
               allProfiles={profiles}
