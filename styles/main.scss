@@ -2,8 +2,58 @@
 /* Tailwind is loaded via CDN, but you can add custom SASS here */
 
 body {
+  -webkit-text-size-adjust: 100%;
+  /* Prevent font scaling in landscape */
+  -webkit-tap-highlight-color: transparent;
+  /* Remove gray tap highlight */
+  touch-action: manipulation;
+  /* Improve touch response */
+  padding-bottom: env(safe-area-inset-bottom);
+  /* iOS Safe Area */
+  min-height: 100vh;
+  /* Support for PWA standalone mode */
+  /* @media all and (display-mode: standalone) {
+    padding-top: env(safe-area-inset-top);
+  } */
+
   // Example of nesting (SASS)
   &.custom-theme {
     background-color: #f0f0f0;
+  }
+}
+
+/* iOS Safe Area Utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+/* Fix for inputs zooming on iOS when font-size < 16px */
+input,
+select,
+textarea {
+  font-size: 16px;
+  /* Prevents auto-zoom */
+
+  @media (min-width: 640px) {
+    font-size: 0.875rem;
+    /* Revert for larger screens if needed */
+  }
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 }

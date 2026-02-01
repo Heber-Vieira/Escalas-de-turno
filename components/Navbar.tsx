@@ -16,7 +16,7 @@ export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme }) => {
     };
 
     return (
-        <nav className={`fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[360px] backdrop-blur-xl border border-white/20 px-4 py-3 flex justify-around items-center z-50 rounded-[30px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] ${theme.bg.includes('white') ? 'bg-white/90' : 'bg-black/90'}`}>
+        <nav className={`fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 w-[92%] max-w-[360px] backdrop-blur-xl border border-white/20 px-4 py-3 flex justify-around items-center z-50 rounded-[30px] shadow-[0_20px_50px_rgba(0,0,0,0.2)] ${theme.bg.includes('white') ? 'bg-white/90' : 'bg-black/90'}`}>
             <button
                 onClick={() => setView('calendar')}
                 className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'calendar')}`}
