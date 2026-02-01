@@ -13,6 +13,7 @@ import { ProfileView } from './components/ProfileView';
 import { UsersView } from './components/UsersView';
 import { DuplicateAlert } from './components/DuplicateAlert';
 import { Auth } from './components/Auth';
+import { ConfirmModal } from './components/ConfirmModal';
 import { supabase } from './services/supabase';
 import { useEscalaStorage } from './hooks/useEscalaStorage';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -45,6 +46,16 @@ const App: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [duplicateErrorName, setDuplicateErrorName] = useState<string | null>(null);
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
+
+  const requestConfirmation = (title: string, message: string, onConfirm: () => void) => {
+    setConfirmConfig({ isOpen: true, title, message, onConfirm });
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -199,16 +210,22 @@ const App: React.FC = () => {
       alert("O Escala Fácil precisa de pelo menos 1 perfil ativo.");
       return;
     }
-    try {
-      await deleteProfile(id);
-      const remainingProfiles = profiles.filter((p: UserConfig) => p.id !== id);
-      if (activeProfileId === id) {
-        setActiveProfileId(remainingProfiles[0].id);
+    requestConfirmation(
+      "Remover Integrante",
+      `Tem certeza que deseja remover ${profiles.find(p => p.id === id)?.name}? Todos os registros vinculados serão perdidos.`,
+      async () => {
+        try {
+          await deleteProfile(id);
+          const remainingProfiles = profiles.filter((p: UserConfig) => p.id !== id);
+          if (activeProfileId === id) {
+            setActiveProfileId(remainingProfiles[0].id);
+          }
+          if (view === 'profile') setView('users');
+        } catch (err) {
+          console.error('Erro ao remover perfil:', err);
+        }
       }
-      if (view === 'profile') setView('users');
-    } catch (err) {
-      console.error('Erro ao remover perfil:', err);
-    }
+    );
   };
 
   const addAbsenceHandler = async (abs: Partial<Absence>) => {
@@ -230,23 +247,34 @@ const App: React.FC = () => {
   };
 
   const removeAbsenceHandler = async (id: string) => {
-    try {
-      await deleteAbsence(id);
-    } catch (err) {
-      console.error('Erro ao remover ausência:', err);
-    }
+    requestConfirmation(
+      "Remover Ausência",
+      "Tem certeza que deseja remover este registro de ausência?",
+      async () => {
+        try {
+          await deleteAbsence(id);
+        } catch (err) {
+          console.error('Erro ao remover ausência:', err);
+        }
+      }
+    );
   };
 
   const handleRemoveEvent = async (event: any) => {
-    if (event.type === 'absence') {
-      await removeAbsenceHandler(event.id);
-    } else if (event.type === 'vacation_period') {
-      const newVacations = (activeProfile?.vacationDates || []).filter((d: string) => !event.dates.includes(d));
-      await handleUpdateActiveProfile({ ...activeProfile!, vacationDates: newVacations });
-    } else if (event.type === 'overtime') {
-      const newOvertime = (activeProfile?.overtimeDates || []).filter((d: string) => d !== event.date);
-      await handleUpdateActiveProfile({ ...activeProfile!, overtimeDates: newOvertime });
-    }
+    const title = event.type === 'absence' ? "Remover Ausência" : event.type === 'vacation_period' ? "Remover Período" : "Remover Extra";
+    const message = event.type === 'absence' ? "Deseja remover esta ausência?" : event.type === 'vacation_period' ? "Deseja remover todo este período de férias?" : "Deseja remover esta hora extra?";
+
+    requestConfirmation(title, message, async () => {
+      if (event.type === 'absence') {
+        await removeAbsenceHandler(event.id);
+      } else if (event.type === 'vacation_period') {
+        const newVacations = (activeProfile?.vacationDates || []).filter((d: string) => !event.dates.includes(d));
+        await handleUpdateActiveProfile({ ...activeProfile!, vacationDates: newVacations });
+      } else if (event.type === 'overtime') {
+        const newOvertime = (activeProfile?.overtimeDates || []).filter((d: string) => d !== event.date);
+        await handleUpdateActiveProfile({ ...activeProfile!, overtimeDates: newOvertime });
+      }
+    });
   };
 
   const toggleOffDay = (day: number) => {
@@ -314,6 +342,7 @@ const App: React.FC = () => {
               onUpdateTheme={updateTheme}
               globalTheme={globalTheme}
               openSettings={() => setView('users')}
+              onConfirm={requestConfirmation}
             />
           </motion.div>
         )}
@@ -378,6 +407,14 @@ const App: React.FC = () => {
         onConfirm={handleBatchConfirm}
         existingRoles={existingRoles}
         existingProfiles={profiles}
+      />
+
+      <ConfirmModal
+        isOpen={confirmConfig?.isOpen || false}
+        onClose={() => setConfirmConfig(prev => prev ? { ...prev, isOpen: false } : null)}
+        onConfirm={confirmConfig?.onConfirm || (() => { })}
+        title={confirmConfig?.title || ""}
+        message={confirmConfig?.message || ""}
       />
     </Layout>
   );

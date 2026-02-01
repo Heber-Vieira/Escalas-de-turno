@@ -19,6 +19,7 @@ interface DashboardProps {
   onUpdateTheme: (theme: ThemeStyle) => void;
   globalTheme: ThemeStyle;
   openSettings: () => void;
+  onConfirm: (title: string, message: string, onConfirmAction: () => void) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -30,7 +31,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onUpdateConfig,
   onUpdateTheme,
   globalTheme,
-  openSettings
+  openSettings,
+  onConfirm
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -165,7 +167,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     const newVacations = currentVacations.filter((d: string) => !periodToRemove.includes(d));
     const newOvertime = (config.overtimeDates || []).filter((d: string) => !periodToRemove.includes(d));
-    onUpdateConfig({ ...config, vacationDates: newVacations, overtimeDates: newOvertime });
+
+    onConfirm(
+      "Remover Período de Férias",
+      `Deseja remover o período de férias de ${format(parseISO(periodToRemove[periodToRemove.length - 1]), 'dd/MM')} até ${format(parseISO(periodToRemove[0]), 'dd/MM')}?`,
+      () => onUpdateConfig({ ...config, vacationDates: newVacations, overtimeDates: newOvertime })
+    );
   };
 
   const toggleOvertime = (date: Date) => {
@@ -173,11 +180,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const currentOvertime = config.overtimeDates || [];
     let newOvertime;
     if (currentOvertime.includes(dateStr)) {
-      newOvertime = currentOvertime.filter((d: string) => d !== dateStr);
+      onConfirm(
+        "Remover Hora Extra",
+        `Deseja remover a hora extra do dia ${format(date, 'dd/MM')}?`,
+        () => onUpdateConfig({ ...config, overtimeDates: currentOvertime.filter((d: string) => d !== dateStr) })
+      );
     } else {
       newOvertime = [...currentOvertime, dateStr];
+      onUpdateConfig({ ...config, overtimeDates: newOvertime });
     }
-    onUpdateConfig({ ...config, overtimeDates: newOvertime });
   };
 
   const isVacationStartValid = () => {
