@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, HelpCircle, Calendar, Users, History, Settings, 
+import {
+  X, HelpCircle, Calendar, Users, History, Settings,
   Zap, Umbrella, AlertCircle, ShieldCheck, Search,
   ChevronRight, Sparkles, BookOpen, Info, MessageCircle,
   Clock, Filter, Printer
@@ -102,7 +102,10 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
             </li>
             <li className="flex gap-3 items-center">
               <div className="p-2 bg-gray-100 rounded-lg text-gray-500"><Printer size={14} /></div>
-              <span><strong>Impressão:</strong> Gere PDFs formatados da escala para murais físicos.</span>
+              <div className="flex flex-col">
+                <span><strong>Impressão Avançada:</strong> Gere PDFs para murais.</span>
+                <span className="text-[10px] opacity-70">Novas opções: Zoom (1 ou 2 páginas), Modo Compacto, P&B e Ocultar Cargos.</span>
+              </div>
             </li>
           </ul>
         </div>
@@ -134,22 +137,23 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
       id: 'history',
       icon: <History className="text-gray-500" />,
       category: 'advanced',
-      title: 'Gestão de Histórico',
-      description: 'Acompanhamento de registros passados e remoção.',
+      title: 'Movimentações e Carreira',
+      description: 'Edite e gerencie seu histórico de mudanças.',
       content: (
         <div className="space-y-4 text-gray-600 text-sm">
-          <p>O <strong>Histórico</strong> é sua trilha de auditoria:</p>
+          <p>O módulo de <strong>Movimentações</strong> permite rastrear sua evolução na empresa:</p>
           <ul className="space-y-2">
-            <li>• Agrupa períodos de férias automaticamente.</li>
-            <li>• Permite remover qualquer evento tocando na lixeira.</li>
-            <li>• Mostra estatísticas mensais de engajamento.</li>
+            <li>• <strong>Edição Compelta:</strong> Agora é possível editar registros passados clicando no ícone de lápis.</li>
+            <li>• <strong>Sugestões Inteligentes:</strong> Ao digitar um cargo, o sistema sugere opções já existentes.</li>
+            <li>• <strong>Exclusão Segura:</strong> A remoção de itens exige confirmação para evitar erros.</li>
+            <li>• As alterações impactam automaticamente o cálculo da escala a partir da data definida.</li>
           </ul>
         </div>
       )
     }
   ];
 
-  const filteredTopics = topics.filter(t => 
+  const filteredTopics = topics.filter(t =>
     t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     t.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -158,12 +162,12 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[200] flex items-end justify-center sm:items-center px-4 pb-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
             className="absolute inset-0 bg-black/40 backdrop-blur-md"
           />
-          <motion.div 
+          <motion.div
             initial={{ y: "100%", opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
@@ -189,7 +193,7 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
             <div className="flex-1 overflow-y-auto no-scrollbar p-6">
               <AnimatePresence mode="wait">
                 {!selectedTopic ? (
-                  <motion.div 
+                  <motion.div
                     key="list"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -199,8 +203,8 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
                     {/* Search */}
                     <div className="relative">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Pesquisar ajuda..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -243,14 +247,14 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
                     </div>
                   </motion.div>
                 ) : (
-                  <motion.div 
+                  <motion.div
                     key="detail"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     className="space-y-6"
                   >
-                    <button 
+                    <button
                       onClick={() => setSelectedTopic(null)}
                       className="flex items-center gap-2 text-pink-500 font-black text-[10px] uppercase tracking-widest px-2"
                     >
@@ -261,14 +265,13 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
                     <div className="space-y-4">
                       <div className="flex items-center gap-4 px-2">
                         <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center shadow-inner">
-                          {React.cloneElement(selectedTopic.icon as React.ReactElement, { size: 32 })}
+                          {React.cloneElement(selectedTopic.icon as React.ReactElement<any>, { size: 32 })}
                         </div>
                         <div>
-                          <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${
-                            selectedTopic.category === 'ai' ? 'bg-amber-100 text-amber-600' :
+                          <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${selectedTopic.category === 'ai' ? 'bg-amber-100 text-amber-600' :
                             selectedTopic.category === 'team' ? 'bg-pink-100 text-pink-600' :
-                            'bg-blue-100 text-blue-600'
-                          }`}>
+                              'bg-blue-100 text-blue-600'
+                            }`}>
                             {selectedTopic.category}
                           </span>
                           <h3 className="text-xl font-black text-gray-900">{selectedTopic.title}</h3>
