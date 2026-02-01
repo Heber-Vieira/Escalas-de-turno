@@ -262,7 +262,7 @@ const App: React.FC = () => {
   };
 
   if (!session) {
-    return <Auth onAuthSuccess={() => { }} />;
+    return <Auth onAuthSuccess={() => setView('calendar')} />;
   }
 
   if (profiles.length === 0 || showOnboarding) {
