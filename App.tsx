@@ -326,6 +326,7 @@ const App: React.FC = () => {
               currentMonth={currentMonth}
               onMonthChange={setCurrentMonth}
               onOpenHelp={() => setIsHelpOpen(true)}
+              onLogout={handleLogout}
             />
           </motion.div>
         )}
@@ -337,6 +338,7 @@ const App: React.FC = () => {
             setView={setView}
             setIsHelpOpen={setIsHelpOpen}
             handleRemoveEvent={handleRemoveEvent}
+            onLogout={handleLogout}
           />
         )}
 
@@ -361,6 +363,7 @@ const App: React.FC = () => {
             setIsHelpOpen={setIsHelpOpen}
             setShowOnboarding={setShowOnboarding}
             removeProfile={removeProfile}
+            onLogout={handleLogout}
           />
         )}
       </AnimatePresence>

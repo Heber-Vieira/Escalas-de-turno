@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Layers, HelpCircle, Plus, Settings, Trash2 } from 'lucide-react';
+import { ArrowLeft, Layers, HelpCircle, Plus, Settings, Trash2, LogOut } from 'lucide-react';
 import { UserConfig } from '../types';
 
 interface UsersViewProps {
@@ -13,6 +13,7 @@ interface UsersViewProps {
     setIsHelpOpen: (isOpen: boolean) => void;
     setShowOnboarding: (show: boolean) => void;
     removeProfile: (id: string) => void;
+    onLogout: () => void;
 }
 
 export const UsersView: React.FC<UsersViewProps> = ({
@@ -23,7 +24,8 @@ export const UsersView: React.FC<UsersViewProps> = ({
     setIsBatchModalOpen,
     setIsHelpOpen,
     setShowOnboarding,
-    removeProfile
+    removeProfile,
+    onLogout
 }) => {
     return (
         <motion.div key="users" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 sm:space-y-6">
@@ -33,6 +35,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                     <h2 className="text-lg sm:text-2xl font-black text-gray-800 uppercase tracking-tight truncate">Equipe</h2>
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
+                    <button onClick={onLogout} className="p-2 sm:p-2.5 bg-red-50 text-red-500 rounded-full shadow-sm transition-all active:scale-95" title="Sair"><LogOut size={18} className="sm:size-20" /></button>
                     <button onClick={() => setIsBatchModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-900 text-pink-500 rounded-full shadow-lg transition-all active:scale-95" title="Importação em Lote">
                         <Layers size={14} className="sm:size-18" />
                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-white">Lote</span>

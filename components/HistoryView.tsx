@@ -1,16 +1,17 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { History, ArrowLeft, HelpCircle, Sparkles, Trash2 } from 'lucide-react';
+import { History, ArrowLeft, HelpCircle, Sparkles, Trash2, LogOut } from 'lucide-react';
 import { format, parseISO, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface HistoryViewProps {
     allEvents: any[];
     historyStats: { total: number; thisMonth: number };
-    setView: (view: any) => void;
+    setView: (view: 'calendar' | 'team_schedule' | 'history' | 'users' | 'profile') => void;
     setIsHelpOpen: (isOpen: boolean) => void;
     handleRemoveEvent: (event: any) => void;
+    onLogout: () => void;
 }
 
 export const HistoryView: React.FC<HistoryViewProps> = ({
@@ -18,7 +19,8 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
     historyStats,
     setView,
     setIsHelpOpen,
-    handleRemoveEvent
+    handleRemoveEvent,
+    onLogout
 }) => {
     return (
         <motion.div key="history" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6 pb-20">
@@ -33,6 +35,9 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                     </div>
                 </div>
                 <div className="flex gap-2">
+                    <button onClick={onLogout} className="p-2 bg-red-50 border border-red-100 rounded-full text-red-500 shadow-sm transition-all active:scale-90">
+                        <LogOut size={20} />
+                    </button>
                     <button onClick={() => setIsHelpOpen(true)} className="p-2 bg-white/50 border border-gray-100 rounded-full text-pink-500 shadow-sm transition-all active:scale-90">
                         <HelpCircle size={20} />
                     </button>

@@ -6,7 +6,7 @@ import { UserConfig, Absence, WorkTurn, ThemeStyle } from '../types';
 import { isWorkDay } from '../utils/shiftCalculator';
 import { THEME_CONFIGS } from '../constants';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, CloudSun, Moon, ChevronLeft, ChevronRight, Printer, X, Check, Settings2, Filter, CalendarDays, Clock, RotateCcw, ChevronDown, Umbrella, Zap, HelpCircle } from 'lucide-react';
+import { Sun, CloudSun, Moon, ChevronLeft, ChevronRight, Printer, X, Check, Settings2, Filter, CalendarDays, Clock, RotateCcw, ChevronDown, Umbrella, Zap, HelpCircle, LogOut } from 'lucide-react';
 
 interface TeamScheduleProps {
   activeConfig: UserConfig;
@@ -15,6 +15,7 @@ interface TeamScheduleProps {
   currentMonth: Date;
   onMonthChange: (date: Date) => void;
   onOpenHelp?: () => void;
+  onLogout: () => void;
 }
 
 interface PrintSettings {
@@ -24,13 +25,14 @@ interface PrintSettings {
   blackAndWhite: boolean;
 }
 
-export const TeamSchedule: React.FC<TeamScheduleProps> = ({ 
-  activeConfig, 
-  allProfiles, 
-  absences, 
+export const TeamSchedule: React.FC<TeamScheduleProps> = ({
+  activeConfig,
+  allProfiles,
+  absences,
   currentMonth,
   onMonthChange,
-  onOpenHelp
+  onOpenHelp,
+  onLogout
 }) => {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isDaysMenuOpen, setIsDaysMenuOpen] = useState(false);
@@ -43,9 +45,9 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
-  
-  const allDaysInMonth = useMemo(() => 
-    eachDayOfInterval({ start: monthStart, end: monthEnd }), 
+
+  const allDaysInMonth = useMemo(() =>
+    eachDayOfInterval({ start: monthStart, end: monthEnd }),
     [currentMonth]
   );
 
@@ -93,9 +95,9 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
           const endD = parseISO(endStr);
 
           // Verifica se o período tem intersecção com o mês visualizado
-          const inMonth = (startD >= monthStart && startD <= monthEnd) || 
-                          (endD >= monthStart && endD <= monthEnd) ||
-                          (startD < monthStart && endD > monthEnd);
+          const inMonth = (startD >= monthStart && startD <= monthEnd) ||
+            (endD >= monthStart && endD <= monthEnd) ||
+            (startD < monthStart && endD > monthEnd);
 
           if (inMonth) {
             periods.push({ start: startStr, end: endStr, count: currentGroup.length });
@@ -114,16 +116,16 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
 
   const getWorkersByDayAndTurn = (day: Date) => {
     const dateStr = format(day, 'yyyy-MM-dd');
-    
-    const workers = allProfiles.filter(p => 
-      (isWorkDay(day, p) || (p.overtimeDates?.includes(dateStr))) && 
+
+    const workers = allProfiles.filter(p =>
+      (isWorkDay(day, p) || (p.overtimeDates?.includes(dateStr))) &&
       !absences.some(a => a.date === dateStr && a.profileId === p.id) &&
       !(p.vacationDates?.includes(dateStr)) &&
       selectedRoles.includes(p.role) &&
       selectedTurns.includes(p.turn)
     );
 
-    const onVacation = allProfiles.filter(p => 
+    const onVacation = allProfiles.filter(p =>
       p.vacationDates?.includes(dateStr) &&
       selectedRoles.includes(p.role) &&
       selectedTurns.includes(p.turn)
@@ -181,17 +183,20 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
           <p className="text-[10px] font-bold text-pink-500 uppercase tracking-[0.2em]">Escala Diária</p>
         </div>
         <div className="flex gap-2">
-            {onOpenHelp && (
-              <button onClick={onOpenHelp} className="p-2.5 bg-white text-pink-500 rounded-xl border border-gray-100 shadow-sm transition-all active:scale-90">
-                  <HelpCircle size={18} />
-              </button>
-            )}
-            <button onClick={resetFilters} className="p-2.5 bg-white text-gray-400 rounded-xl border border-gray-100 shadow-sm transition-all active:scale-90">
-                <RotateCcw size={18} />
+          <button onClick={onLogout} className="p-2.5 bg-red-50 text-red-500 rounded-xl border border-red-100 shadow-sm transition-all active:scale-90" title="Sair">
+            <LogOut size={18} />
+          </button>
+          {onOpenHelp && (
+            <button onClick={onOpenHelp} className="p-2.5 bg-white text-pink-500 rounded-xl border border-gray-100 shadow-sm transition-all active:scale-90">
+              <HelpCircle size={18} />
             </button>
-            <button onClick={() => setIsPrintModalOpen(true)} className="p-2.5 bg-gray-900 text-white rounded-xl shadow-lg transition-all active:scale-90">
-                <Printer size={18} />
-            </button>
+          )}
+          <button onClick={resetFilters} className="p-2.5 bg-white text-gray-400 rounded-xl border border-gray-100 shadow-sm transition-all active:scale-90">
+            <RotateCcw size={18} />
+          </button>
+          <button onClick={() => setIsPrintModalOpen(true)} className="p-2.5 bg-gray-900 text-white rounded-xl shadow-lg transition-all active:scale-90">
+            <Printer size={18} />
+          </button>
         </div>
       </div>
 
@@ -240,91 +245,88 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
 
       <div className={`space-y-4 no-print bg-white/95 backdrop-blur-md border border-pink-50 rounded-[32px] p-5 shadow-sm relative ${isDaysMenuOpen ? 'z-[90]' : 'z-20'}`}>
         <div className="grid grid-cols-1 gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 px-1">
-                <span className="text-[9px] font-black opacity-30 uppercase tracking-widest">Cargos</span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {allRoles.map(role => (
-                  <button
-                    key={role}
-                    onClick={() => toggleFilter(selectedRoles, role, setSelectedRoles)}
-                    className={`px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-wider transition-all border ${
-                      selectedRoles.includes(role) ? 'bg-pink-500 border-pink-500 text-white' : 'bg-gray-50 border-gray-100 text-gray-400'
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 px-1">
+              <span className="text-[9px] font-black opacity-30 uppercase tracking-widest">Cargos</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {allRoles.map(role => (
+                <button
+                  key={role}
+                  onClick={() => toggleFilter(selectedRoles, role, setSelectedRoles)}
+                  className={`px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-wider transition-all border ${selectedRoles.includes(role) ? 'bg-pink-500 border-pink-500 text-white' : 'bg-gray-50 border-gray-100 text-gray-400'
                     }`}
-                  >
-                    {role}
-                  </button>
-                ))}
-              </div>
+                >
+                  {role}
+                </button>
+              ))}
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 px-1">
-                <span className="text-[9px] font-black opacity-30 uppercase tracking-widest">Turnos</span>
-              </div>
-              <div className="flex gap-1.5">
-                {Object.values(WorkTurn).map(turn => {
-                  const style = getTurnStyles(turn);
-                  const isActive = selectedTurns.includes(turn);
-                  return (
-                    <button
-                      key={turn}
-                      onClick={() => toggleFilter(selectedTurns, turn, setSelectedTurns)}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all ${
-                        isActive ? 'bg-white border-pink-500 text-gray-900 shadow-sm' : 'bg-gray-50 border-gray-100 text-gray-300'
-                      }`}
-                    >
-                      <span className={isActive ? style.color : 'text-gray-300'}>{style.icon}</span>
-                      <span className="text-[8px] font-black uppercase tracking-tighter">{turn}</span>
-                    </button>
-                  );
-                })}
-              </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 px-1">
+              <span className="text-[9px] font-black opacity-30 uppercase tracking-widest">Turnos</span>
             </div>
+            <div className="flex gap-1.5">
+              {Object.values(WorkTurn).map(turn => {
+                const style = getTurnStyles(turn);
+                const isActive = selectedTurns.includes(turn);
+                return (
+                  <button
+                    key={turn}
+                    onClick={() => toggleFilter(selectedTurns, turn, setSelectedTurns)}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all ${isActive ? 'bg-white border-pink-500 text-gray-900 shadow-sm' : 'bg-gray-50 border-gray-100 text-gray-300'
+                      }`}
+                  >
+                    <span className={isActive ? style.color : 'text-gray-300'}>{style.icon}</span>
+                    <span className="text-[8px] font-black uppercase tracking-tighter">{turn}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         <div className="space-y-2 relative">
           <div className="flex items-center justify-between px-1">
             <span className="text-[9px] font-black opacity-30 uppercase tracking-widest">Dias</span>
             <div className="flex gap-2">
-                <button onClick={() => handleQuickDaySelect('all')} className="text-[8px] font-black text-pink-500 uppercase">Todos</button>
-                <button onClick={() => handleQuickDaySelect('weekdays')} className="text-[8px] font-black text-pink-500 uppercase">Úteis</button>
+              <button onClick={() => handleQuickDaySelect('all')} className="text-[8px] font-black text-pink-500 uppercase">Todos</button>
+              <button onClick={() => handleQuickDaySelect('weekdays')} className="text-[8px] font-black text-pink-500 uppercase">Úteis</button>
             </div>
           </div>
-          
-          <button 
+
+          <button
             onClick={() => setIsDaysMenuOpen(!isDaysMenuOpen)}
             className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-left transition-all"
           >
             <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
-                {visibleDaysSummary()}
+              {visibleDaysSummary()}
             </span>
             <ChevronDown size={14} className={`text-gray-300 transition-transform ${isDaysMenuOpen ? 'rotate-180 text-pink-500' : ''}`} />
           </button>
 
           <AnimatePresence>
             {isDaysMenuOpen && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
                 className="absolute top-full left-0 right-0 z-[100] mt-2 p-3 bg-white border border-pink-50 rounded-2xl shadow-xl grid grid-cols-7 gap-1"
               >
                 {allDaysInMonth.map(day => {
-                    const dateNum = day.getDate();
-                    const isActive = visibleDays.includes(dateNum);
-                    return (
-                        <button
-                            key={dateNum}
-                            onClick={() => toggleFilter(visibleDays, dateNum, setVisibleDays)}
-                            className={`aspect-square rounded-lg flex flex-col items-center justify-center transition-all border ${
-                                isActive 
-                                ? 'bg-pink-500 border-pink-500 text-white' 
-                                : 'bg-gray-50 border-gray-50 text-gray-300'
-                            }`}
-                        >
-                            <span className="text-[10px] font-black">{dateNum}</span>
-                        </button>
-                    );
+                  const dateNum = day.getDate();
+                  const isActive = visibleDays.includes(dateNum);
+                  return (
+                    <button
+                      key={dateNum}
+                      onClick={() => toggleFilter(visibleDays, dateNum, setVisibleDays)}
+                      className={`aspect-square rounded-lg flex flex-col items-center justify-center transition-all border ${isActive
+                          ? 'bg-pink-500 border-pink-500 text-white'
+                          : 'bg-gray-50 border-gray-50 text-gray-300'
+                        }`}
+                    >
+                      <span className="text-[10px] font-black">{dateNum}</span>
+                    </button>
+                  );
                 })}
               </motion.div>
             )}
@@ -336,71 +338,71 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
         {allDaysInMonth
           .filter(day => visibleDays.includes(day.getDate()))
           .map((day, idx) => {
-          const dateStr = format(day, 'yyyy-MM-dd');
-          const workersByTurn = getWorkersByDayAndTurn(day);
-          const { morning, afternoon, night, vacation } = {
-            morning: workersByTurn[WorkTurn.MORNING],
-            afternoon: workersByTurn[WorkTurn.AFTERNOON],
-            night: workersByTurn[WorkTurn.NIGHT],
-            vacation: workersByTurn.vacation
-          };
-          
-          const hasAnyone = morning.length > 0 || afternoon.length > 0 || night.length > 0;
-          const isT = isToday(day);
+            const dateStr = format(day, 'yyyy-MM-dd');
+            const workersByTurn = getWorkersByDayAndTurn(day);
+            const { morning, afternoon, night, vacation } = {
+              morning: workersByTurn[WorkTurn.MORNING],
+              afternoon: workersByTurn[WorkTurn.AFTERNOON],
+              night: workersByTurn[WorkTurn.NIGHT],
+              vacation: workersByTurn.vacation
+            };
 
-          return (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.01 }}
-              key={day.toISOString()} 
-              className="relative pl-6 border-l border-pink-100 day-container"
-            >
-              <div className={`absolute -left-[4.5px] top-0 w-2 h-2 rounded-full border border-white shadow-sm no-print ${isT ? 'bg-pink-500 scale-150' : 'bg-pink-100'}`} />
-              
-              <div className="mb-2">
-                <h3 className={`text-sm font-black flex items-center gap-2 ${isT ? 'text-pink-600' : 'text-gray-700'}`}>
-                  {format(day, 'dd')} <span className="text-[10px] opacity-40 uppercase font-bold tracking-widest">{format(day, 'EEE', { locale: ptBR })}</span>
-                  {isT && <span className="text-[8px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded-full uppercase ml-1">Hoje</span>}
-                </h3>
-              </div>
+            const hasAnyone = morning.length > 0 || afternoon.length > 0 || night.length > 0;
+            const isT = isToday(day);
 
-              {!hasAnyone && vacation.length === 0 ? (
-                <div className="py-2 opacity-20 text-[8px] font-black uppercase tracking-widest">---</div>
-              ) : (
-                <div className="space-y-3">
-                  {[WorkTurn.MORNING, WorkTurn.AFTERNOON, WorkTurn.NIGHT].map(turn => {
-                    const workers = workersByTurn[turn as WorkTurn];
-                    if (workers.length === 0) return null;
-                    const style = getTurnStyles(turn as WorkTurn);
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.01 }}
+                key={day.toISOString()}
+                className="relative pl-6 border-l border-pink-100 day-container"
+              >
+                <div className={`absolute -left-[4.5px] top-0 w-2 h-2 rounded-full border border-white shadow-sm no-print ${isT ? 'bg-pink-500 scale-150' : 'bg-pink-100'}`} />
 
-                    return (
-                      <div key={turn} className="flex flex-wrap gap-1.5 items-center">
-                        <div className={`flex items-center gap-1 min-w-[50px] ${style.color}`}>
-                          {style.icon}
-                          <span className="text-[7px] font-black uppercase tracking-tighter opacity-70">{turn.slice(0, 1)}</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5 flex-1">
-                          {workers.map(w => {
-                            const isExtra = w.overtimeDates?.includes(dateStr);
-                            return (
-                              <div key={w.id} className={`flex items-center gap-2 rounded-full bg-white border border-gray-100 shadow-sm px-2.5 py-1.5 ${w.id === activeConfig.id ? 'border-pink-200 ring-1 ring-pink-500/10' : ''} ${isExtra ? 'border-purple-200' : ''}`}>
-                                <div className={`w-4 h-4 rounded-full flex items-center justify-center font-black text-[7px] border no-print ${w.id === activeConfig.id ? (isExtra ? 'bg-purple-600 border-purple-400 text-white' : 'bg-pink-500 border-pink-400 text-white') : 'bg-gray-100 border-gray-200 text-gray-400'}`}>{w.name.charAt(0)}</div>
-                                <div className="flex flex-col">
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-[10px] font-bold text-gray-700 leading-none">{w.name.split(' ')[0]}</span>
-                                    {isExtra && <Zap size={8} className="text-purple-500 fill-purple-500" />}
+                <div className="mb-2">
+                  <h3 className={`text-sm font-black flex items-center gap-2 ${isT ? 'text-pink-600' : 'text-gray-700'}`}>
+                    {format(day, 'dd')} <span className="text-[10px] opacity-40 uppercase font-bold tracking-widest">{format(day, 'EEE', { locale: ptBR })}</span>
+                    {isT && <span className="text-[8px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded-full uppercase ml-1">Hoje</span>}
+                  </h3>
+                </div>
+
+                {!hasAnyone && vacation.length === 0 ? (
+                  <div className="py-2 opacity-20 text-[8px] font-black uppercase tracking-widest">---</div>
+                ) : (
+                  <div className="space-y-3">
+                    {[WorkTurn.MORNING, WorkTurn.AFTERNOON, WorkTurn.NIGHT].map(turn => {
+                      const workers = workersByTurn[turn as WorkTurn];
+                      if (workers.length === 0) return null;
+                      const style = getTurnStyles(turn as WorkTurn);
+
+                      return (
+                        <div key={turn} className="flex flex-wrap gap-1.5 items-center">
+                          <div className={`flex items-center gap-1 min-w-[50px] ${style.color}`}>
+                            {style.icon}
+                            <span className="text-[7px] font-black uppercase tracking-tighter opacity-70">{turn.slice(0, 1)}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 flex-1">
+                            {workers.map(w => {
+                              const isExtra = w.overtimeDates?.includes(dateStr);
+                              return (
+                                <div key={w.id} className={`flex items-center gap-2 rounded-full bg-white border border-gray-100 shadow-sm px-2.5 py-1.5 ${w.id === activeConfig.id ? 'border-pink-200 ring-1 ring-pink-500/10' : ''} ${isExtra ? 'border-purple-200' : ''}`}>
+                                  <div className={`w-4 h-4 rounded-full flex items-center justify-center font-black text-[7px] border no-print ${w.id === activeConfig.id ? (isExtra ? 'bg-purple-600 border-purple-400 text-white' : 'bg-pink-500 border-pink-400 text-white') : 'bg-gray-100 border-gray-200 text-gray-400'}`}>{w.name.charAt(0)}</div>
+                                  <div className="flex flex-col">
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-[10px] font-bold text-gray-700 leading-none">{w.name.split(' ')[0]}</span>
+                                      {isExtra && <Zap size={8} className="text-purple-500 fill-purple-500" />}
+                                    </div>
+                                    <span className="text-[7px] font-black text-pink-400 uppercase tracking-tighter mt-0.5">{w.role.slice(0, 12)}</span>
                                   </div>
-                                  <span className="text-[7px] font-black text-pink-400 uppercase tracking-tighter mt-0.5">{w.role.slice(0, 12)}</span>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
 
-                  {vacation.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 items-center pt-1 border-t border-sky-50 opacity-60">
+                    {vacation.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 items-center pt-1 border-t border-sky-50 opacity-60">
                         <div className={`flex items-center gap-1 min-w-[50px] text-sky-400`}>
                           <Umbrella size={10} />
                           <span className="text-[6px] font-black uppercase tracking-tighter">FER</span>
@@ -412,13 +414,13 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                             </div>
                           ))}
                         </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </motion.div>
-          );
-        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
       </div>
 
       <AnimatePresence>
@@ -428,7 +430,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
               <h3 className="text-sm font-black uppercase mb-4 text-center">Configurar Impressão</h3>
               <div className="space-y-2 mb-6">
                 {['showRoles', 'compactMode', 'blackAndWhite'].map(opt => (
-                  <button key={opt} onClick={() => setPrintSettings(p => ({...p, [opt]: !p[opt as keyof PrintSettings]}))} className="w-full flex justify-between p-3 rounded-xl bg-gray-50 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                  <button key={opt} onClick={() => setPrintSettings(p => ({ ...p, [opt]: !p[opt as keyof PrintSettings] }))} className="w-full flex justify-between p-3 rounded-xl bg-gray-50 text-[10px] font-bold uppercase tracking-widest text-gray-500">
                     {opt === 'showRoles' ? 'Exibir Cargos' : opt === 'compactMode' ? 'Modo Compacto' : 'Preto e Branco'}
                     <div className={`w-4 h-4 rounded border flex items-center justify-center ${printSettings[opt as keyof PrintSettings] ? 'bg-pink-500 border-pink-500 text-white' : 'bg-white border-gray-200'}`}>
                       {printSettings[opt as keyof PrintSettings] && <Check size={10} strokeWidth={4} />}
