@@ -642,13 +642,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
         ) : (
           <div className="flex flex-col gap-2">
             {config.careerHistory?.find(h => h.date === format(selectedDate, 'yyyy-MM-dd')) && (
-              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center gap-3 mb-2">
+              <div
+                onClick={openSettings}
+                className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center gap-3 mb-2 cursor-pointer hover:bg-emerald-100/50 transition-colors"
+              >
                 <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
                   <Briefcase size={14} />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h4 className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Mudança de Carreira</h4>
                   <p className="text-xs text-emerald-600 font-medium leading-tight">Nova configuração efetiva a partir de hoje.</p>
+                </div>
+                <div className="bg-emerald-100 p-1.5 rounded-full text-emerald-600">
+                  <Settings size={14} />
                 </div>
               </div>
             )}

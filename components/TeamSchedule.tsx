@@ -36,11 +36,12 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
 }) => {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isDaysMenuOpen, setIsDaysMenuOpen] = useState(false);
-  const [printSettings, setPrintSettings] = useState<PrintSettings>({
+  const [printSettings, setPrintSettings] = useState<PrintSettings & { pagesToFit: number }>({
     showRoles: true,
     showIcons: true,
     compactMode: false,
     blackAndWhite: false,
+    pagesToFit: 0 // 0 = Normal/Auto, 1 = 1 Page, 2 = 2 Pages
   });
 
   const monthStart = startOfMonth(currentMonth);
@@ -185,22 +186,48 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
     return `${visibleDays.length} dias selecionados`;
   };
 
+  const getPrintScale = () => {
+    switch (printSettings.pagesToFit) {
+      case 1: return 0.55;
+      case 2: return 0.8;
+      default: return 1;
+    }
+  };
+
   return (
-    <div className="space-y-6 pb-28">
+    <div className={`space-y-6 pb-28 ${printSettings.blackAndWhite ? 'print:grayscale' : ''}`} style={{ ['--print-scale' as any]: getPrintScale() }}>
       <style>{`
         @media print {
-          @page { size: A4; margin: 1cm; }
+          @page { size: A4; margin: 0.5cm; }
+          html, body {
+            height: 100%;
+            overflow: visible !important;
+          }
+          body { 
+            -webkit-print-color-adjust: exact;
+            transform-origin: top left;
+            transform: scale(var(--print-scale));
+            width: calc(100% / var(--print-scale));
+          }
+          /* Force page breaks if needed for multi-page layouts, but avoid them inside days */
+          .day-container { break-inside: avoid; border-left: 1px solid #ddd !important; margin-bottom: 8px !important; }
+          
           nav, button, .no-print { display: none !important; }
-          .day-container { break-inside: avoid; border-left: 1px solid #eee !important; margin-bottom: 10px !important; }
+
+          .print-compact .day-container { margin-bottom: 4px !important; padding-top: 2px !important; padding-bottom: 2px !important; }
+          .print-compact .user-card { padding: 1px 6px !important; }
+          .print:grayscale { filter: grayscale(100%); }
+          .print-hide-roles .role-badge { display: none !important; }
+          .print-header { display: flex !important; flex-direction: row !important; justify-content: space-between !important; align-items: center !important; margin-bottom: 10px !important; }
         }
       `}</style>
 
-      <div className="flex justify-between items-center no-print px-1">
+      <div className="flex justify-between items-center px-1">
         <div>
           <h2 className="text-2xl font-black tracking-tight text-gray-900">Equipe</h2>
           <p className="text-[10px] font-bold text-pink-500 uppercase tracking-[0.2em]">Escala Diária</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 no-print">
           <button onClick={resetFilters} className="p-2.5 bg-white text-gray-400 rounded-xl border border-gray-100 shadow-sm transition-all active:scale-90">
             <RotateCcw size={18} />
           </button>
@@ -344,7 +371,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
         </div>
       </div>
 
-      <div className="space-y-6 mt-4 relative z-0">
+      <div className={`space-y-6 mt-4 relative z-0 ${printSettings.compactMode ? 'print-compact' : ''} ${!printSettings.showRoles ? 'print-hide-roles' : ''}`}>
         {allDaysInMonth
           .filter(day => visibleDays.includes(day.getDate()))
           .map((day, idx) => {
@@ -394,14 +421,14 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                             {workers.map(w => {
                               const isExtra = w.overtimeDates?.includes(dateStr);
                               return (
-                                <div key={w.id} className={`flex items-center gap-2 rounded-full bg-white border border-gray-100 shadow-sm px-2.5 py-1.5 ${w.id === activeConfig.id ? 'border-pink-200 ring-1 ring-pink-500/10' : ''} ${isExtra ? 'border-purple-200' : ''}`}>
+                                <div key={w.id} className={`user-card flex items-center gap-2 rounded-full bg-white border border-gray-100 shadow-sm px-2.5 py-1.5 ${w.id === activeConfig.id ? 'border-pink-200 ring-1 ring-pink-500/10' : ''} ${isExtra ? 'border-purple-200' : ''}`}>
                                   <div className={`w-4 h-4 rounded-full flex items-center justify-center font-black text-[7px] border no-print ${w.id === activeConfig.id ? (isExtra ? 'bg-purple-600 border-purple-400 text-white' : 'bg-pink-500 border-pink-400 text-white') : 'bg-gray-100 border-gray-200 text-gray-400'}`}>{w.name.charAt(0)}</div>
                                   <div className="flex flex-col">
                                     <div className="flex items-center gap-1">
                                       <span className="text-[10px] font-bold text-gray-700 leading-none">{w.name.split(' ')[0]}</span>
                                       {isExtra && <Zap size={8} className="text-purple-500 fill-purple-500" />}
                                     </div>
-                                    <span className="text-[7px] font-black text-pink-400 uppercase tracking-tighter mt-0.5">{(w as any).effectiveRole.slice(0, 12)}</span>
+                                    <span className="role-badge text-[7px] font-black text-pink-400 uppercase tracking-tighter mt-0.5">{(w as any).effectiveRole.slice(0, 12)}</span>
                                   </div>
                                 </div>
                               );
@@ -447,6 +474,17 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                     </div>
                   </button>
                 ))}
+
+                <div className="pt-2 border-t border-gray-100 mt-2">
+                  <label className="text-[9px] font-black opacity-30 uppercase tracking-widest block mb-1.5 ml-1">Ajuste de Páginas (Zoom)</label>
+                  <div className="flex gap-2">
+                    {[0, 1, 2].map(val => (
+                      <button key={val} onClick={() => setPrintSettings(p => ({ ...p, pagesToFit: val }))} className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest rounded-lg border transition-all ${printSettings.pagesToFit === val ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-300 border-gray-200'}`}>
+                        {val === 0 ? 'Normal' : `${val} Pág.`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setIsPrintModalOpen(false)} className="flex-1 py-3 text-[9px] font-black text-gray-400 uppercase">Cancelar</button>
