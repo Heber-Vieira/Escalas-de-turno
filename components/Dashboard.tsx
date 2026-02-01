@@ -408,15 +408,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               className="absolute left-0 right-0 top-full mt-3 z-[60] flex justify-center px-4 pointer-events-none"
             >
-              <div className="bg-white border border-pink-100 p-3 rounded-[30px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] flex gap-3 overflow-x-auto no-scrollbar max-w-full pointer-events-auto backdrop-blur-md">
+              <div className="bg-white/95 border border-pink-100/50 p-1.5 rounded-[26px] shadow-[0_25px_60px_rgba(0,0,0,0.2)] flex gap-1.5 overflow-x-auto no-scrollbar max-w-full pointer-events-auto backdrop-blur-xl">
                 {(Object.entries(THEME_CONFIGS) as [ThemeStyle, any][]).map(([styleName, styleConfig]) => (
                   <button
                     key={styleName}
                     onClick={() => handleThemeChange(styleName)}
-                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all border-2 ${globalTheme === styleName ? 'border-pink-500 bg-pink-50 scale-110' : 'border-gray-50 bg-gray-50/50 grayscale hover:grayscale-0'}`}
+                    className={`flex-shrink-0 w-9 h-9 rounded-[20px] flex items-center justify-center text-lg transition-all duration-500 relative ${globalTheme === styleName ? 'bg-pink-500 shadow-lg shadow-pink-200 -translate-y-1' : 'bg-gray-50/80 hover:bg-white hover:shadow-sm'}`}
                     title={styleName}
                   >
-                    {styleConfig.icon}
+                    <span className={`transition-all duration-500 ${globalTheme === styleName ? 'scale-110 drop-shadow-sm' : 'grayscale opacity-50 contrast-125'}`}>
+                      {styleConfig.icon}
+                    </span>
                   </button>
                 ))}
               </div>
