@@ -1,38 +1,52 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Escala Fácil</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@400;600;800&family=Orbitron:wght@400;700&family=Exo+2:ital,wght@0,400;0,700;1,800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@400;600;800&family=Orbitron:wght@400;700&family=Exo+2:ital,wght@0,400;0,700;1,800&display=swap"
+    rel="stylesheet">
   <style>
     /* Ocultar barra de rolagem globalmente */
     * {
-      scrollbar-width: none; /* Firefox */
-      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none;
+      /* Firefox */
+      -ms-overflow-style: none;
+      /* IE and Edge */
     }
+
     *::-webkit-scrollbar {
-      display: none; /* Chrome, Safari and Opera */
+      display: none;
+      /* Chrome, Safari and Opera */
     }
-    
+
     body {
       -webkit-tap-highlight-color: transparent;
       overscroll-behavior-y: contain;
       overflow-x: hidden;
     }
+
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
+
     .no-scrollbar {
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-    .font-orbitron { font-family: 'Orbitron', sans-serif; }
-    .font-exo { font-family: 'Exo 2', sans-serif; }
+
+    .font-orbitron {
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .font-exo {
+      font-family: 'Exo 2', sans-serif;
+    }
   </style>
-<script type="importmap">
+  <script type="importmap">
 {
   "imports": {
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
@@ -47,10 +61,11 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
+
 <body class="bg-gray-50 text-gray-900 font-sans">
   <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

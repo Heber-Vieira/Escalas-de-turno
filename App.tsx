@@ -51,10 +51,12 @@ const App: React.FC = () => {
     title: string;
     message: string;
     onConfirm: () => void;
+    isAlert?: boolean;
+    confirmText?: string;
   } | null>(null);
 
-  const requestConfirmation = (title: string, message: string, onConfirm: () => void) => {
-    setConfirmConfig({ isOpen: true, title, message, onConfirm });
+  const requestConfirmation = (title: string, message: string, onConfirm: () => void, isAlert = false, confirmText = 'Confirmar') => {
+    setConfirmConfig({ isOpen: true, title, message, onConfirm, isAlert, confirmText });
   };
 
   useEffect(() => {
@@ -207,7 +209,13 @@ const App: React.FC = () => {
 
   const removeProfile = async (id: string) => {
     if (profiles.length <= 1) {
-      alert("O Escala Fácil precisa de pelo menos 1 perfil ativo.");
+      requestConfirmation(
+        "Ação Bloqueada",
+        "O sistema precisa de pelo menos 1 perfil ativo para funcionar. Adicione outro integrante antes de remover este.",
+        () => { },
+        true,
+        "Entendi"
+      );
       return;
     }
     requestConfirmation(
@@ -415,6 +423,9 @@ const App: React.FC = () => {
         onConfirm={confirmConfig?.onConfirm || (() => { })}
         title={confirmConfig?.title || ""}
         message={confirmConfig?.message || ""}
+        type={confirmConfig?.isAlert ? 'warning' : 'danger'}
+        isAlert={confirmConfig?.isAlert}
+        confirmText={confirmConfig?.confirmText}
       />
     </Layout>
   );

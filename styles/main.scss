@@ -1,0 +1,9 @@
+/* Main SCSS File */
+/* Tailwind is loaded via CDN, but you can add custom SASS here */
+
+body {
+  // Example of nesting (SASS)
+  &.custom-theme {
+    background-color: #f0f0f0;
+  }
+}

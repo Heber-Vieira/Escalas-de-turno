@@ -12,6 +12,7 @@ interface ConfirmModalProps {
     confirmText?: string;
     cancelText?: string;
     type?: 'danger' | 'warning';
+    isAlert?: boolean;
 }
 
 export const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -22,7 +23,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     message,
     confirmText = 'Confirmar',
     cancelText = 'Cancelar',
-    type = 'danger'
+    type = 'danger',
+    isAlert = false
 }) => {
     return (
         <AnimatePresence>
@@ -52,12 +54,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
                             </p>
 
                             <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                                <button
-                                    onClick={onClose}
-                                    className="flex-1 py-3.5 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-400 bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-all active:scale-95"
-                                >
-                                    {cancelText}
-                                </button>
+                                {!isAlert && (
+                                    <button
+                                        onClick={onClose}
+                                        className="flex-1 py-3.5 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-400 bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-all active:scale-95"
+                                    >
+                                        {cancelText}
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => {
                                         onConfirm();
