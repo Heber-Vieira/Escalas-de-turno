@@ -646,24 +646,25 @@ export const Dashboard: React.FC<DashboardProps> = ({
         )}
       </motion.div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => setIsStreakInfoOpen(true)}
-          className={`p-5 rounded-[32px] text-center relative overflow-hidden transition-all active:scale-95 group shadow-sm border ${currentStreak > 6 ? 'bg-amber-100 border-amber-300' : 'bg-emerald-600 border-emerald-500 text-white'}`}
+          className={`relative overflow-hidden group transition-all active:scale-95 rounded-[24px] border border-transparent shadow-sm flex flex-col items-center justify-center py-2.5 ${currentStreak > 6 ? 'bg-amber-100 border-amber-200' : 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white'}`}
         >
           {currentStreak > 6 && (
             <div className="absolute top-2 right-2 text-amber-600 animate-pulse">
-              <AlertTriangle size={14} />
+              <AlertTriangle size={12} />
             </div>
           )}
-          <div className={`text-xl font-black mb-0.5 ${currentStreak > 6 ? 'text-amber-800' : ''}`}>{currentStreak}</div>
-          <div className={`text-[7px] font-black uppercase tracking-widest flex items-center justify-center gap-1 ${currentStreak > 6 ? 'text-amber-600' : 'text-white/80'}`}>
-            Dias Seguidos <Info size={10} className="group-hover:scale-125 transition-transform" />
+          <div className={`text-2xl font-black leading-none ${currentStreak > 6 ? 'text-amber-800' : 'text-white drop-shadow-sm'}`}>{currentStreak}</div>
+          <div className={`text-[8px] font-bold uppercase tracking-widest flex items-center gap-1 mt-0.5 ${currentStreak > 6 ? 'text-amber-700' : 'text-emerald-50'}`}>
+            Dias Seguidos <Info size={10} className="opacity-60" />
           </div>
         </button>
-        <div className="p-5 rounded-[32px] text-center bg-white border border-gray-100 shadow-sm flex flex-col items-center justify-center">
-          <div className="text-xl font-black mb-0.5 text-gray-900">{presenceRate}%</div>
-          <div className="text-[7px] font-black uppercase tracking-widest opacity-40">Presença Mês</div>
+
+        <div className="rounded-[24px] bg-white border border-gray-100 shadow-sm flex flex-col items-center justify-center py-2.5">
+          <div className="text-2xl font-black text-gray-800 leading-none">{presenceRate}%</div>
+          <div className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Presença</div>
         </div>
       </div>
 
