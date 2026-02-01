@@ -48,14 +48,14 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white border border-gray-100 p-4 rounded-[28px] shadow-sm">
-                    <div className="text-2xl font-black text-gray-900 leading-none mb-1">{historyStats.thisMonth}</div>
-                    <div className="text-[8px] font-black uppercase tracking-widest text-pink-500/50">Neste Mês</div>
+            <div className="grid grid-cols-2 gap-2">
+                <div className="bg-white border border-gray-100 py-2.5 rounded-[24px] shadow-sm flex flex-col items-center justify-center">
+                    <div className="text-2xl font-black text-gray-900 leading-none">{historyStats.thisMonth}</div>
+                    <div className="text-[8px] font-black uppercase tracking-widest text-pink-500/50 mt-0.5">Neste Mês</div>
                 </div>
-                <div className="bg-gray-900 p-4 rounded-[28px] shadow-lg">
-                    <div className="text-2xl font-black text-white leading-none mb-1">{historyStats.total}</div>
-                    <div className="text-[8px] font-black uppercase tracking-widest text-white/40">Total Geral</div>
+                <div className="bg-gray-900 py-2.5 rounded-[24px] shadow-lg flex flex-col items-center justify-center">
+                    <div className="text-2xl font-black text-white leading-none">{historyStats.total}</div>
+                    <div className="text-[8px] font-black uppercase tracking-widest text-white/40 mt-0.5">Total Geral</div>
                 </div>
             </div>
 
