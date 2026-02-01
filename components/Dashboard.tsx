@@ -21,7 +21,17 @@ interface DashboardProps {
   openSettings: () => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absences, onAddAbsence, onRemoveAbsence, onUpdateConfig, onUpdateTheme, globalTheme, openSettings }) => {
+export const Dashboard: React.FC<DashboardProps> = ({
+  config,
+  allProfiles,
+  absences,
+  onAddAbsence,
+  onRemoveAbsence,
+  onUpdateConfig,
+  onUpdateTheme,
+  globalTheme,
+  openSettings
+}) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [smartAlert, setSmartAlert] = useState<string | null>(null);
@@ -38,7 +48,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
   const [vacationStart, setVacationStart] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [selectedDuration, setSelectedDuration] = useState<number>(10);
 
-  const theme = THEME_CONFIGS[globalTheme] || THEME_CONFIGS[ThemeStyle.MODERN];
+  const theme = (THEME_CONFIGS as Record<ThemeStyle, any>)[globalTheme] || THEME_CONFIGS[ThemeStyle.MODERN];
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
@@ -76,12 +86,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
   }, [config.id, config.shiftType, config.startDate, config.name, config.state, config.overtimeDates]);
 
   const isDayAbsence = (date: Date, profileId: string = config.id) => {
-    const profile = allProfiles.find(p => p.id === profileId) || config;
+    const profile = allProfiles.find((p: UserConfig) => p.id === profileId) || config;
     const start = startOfDay(parse(profile.startDate, 'yyyy-MM-dd', new Date()));
     if (isBefore(startOfDay(date), start)) return false;
 
     const dateStr = format(date, 'yyyy-MM-dd');
-    return absences.some(a => a.date === dateStr && a.profileId === profileId);
+    return absences.some((a: Absence) => a.date === dateStr && a.profileId === profileId);
   };
 
   const isDayVacation = (date: Date, userConfig: UserConfig = config) => {
@@ -101,13 +111,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
   };
 
   const getWhoWorksOn = (date: Date) => {
-    return allProfiles.filter(p => (isWorkDay(date, p) || isDayOvertime(date, p)) && !isDayAbsence(date, p.id) && !isDayVacation(date, p));
+    return allProfiles.filter((p: UserConfig) => (isWorkDay(date, p) || isDayOvertime(date, p)) && !isDayAbsence(date, p.id) && !isDayVacation(date, p));
   };
 
   const teamStats = useMemo(() => {
     const working = getWhoWorksOn(selectedDate);
 
-    const byTurn = {
+    const byTurn: Record<WorkTurn, { active: number, total: number }> = {
       [WorkTurn.MORNING]: { active: 0, total: 0 },
       [WorkTurn.AFTERNOON]: { active: 0, total: 0 },
       [WorkTurn.NIGHT]: { active: 0, total: 0 }
@@ -115,12 +125,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
 
     const byRole: Record<string, { active: number, total: number, workers: UserConfig[] }> = {};
 
-    allProfiles.forEach(p => {
+    allProfiles.forEach((p: UserConfig) => {
       byTurn[p.turn].total++;
       if (!byRole[p.role]) byRole[p.role] = { active: 0, total: 0, workers: [] };
       byRole[p.role].total++;
 
-      const isActive = working.find(w => w.id === p.id);
+      const isActive = working.find((w: UserConfig) => w.id === p.id);
       if (isActive) {
         byTurn[p.turn].active++;
         byRole[p.role].active++;
@@ -153,8 +163,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
       prev = addDays(prev, -1);
     }
 
-    const newVacations = currentVacations.filter(d => !periodToRemove.includes(d));
-    const newOvertime = (config.overtimeDates || []).filter(d => !periodToRemove.includes(d));
+    const newVacations = currentVacations.filter((d: string) => !periodToRemove.includes(d));
+    const newOvertime = (config.overtimeDates || []).filter((d: string) => !periodToRemove.includes(d));
     onUpdateConfig({ ...config, vacationDates: newVacations, overtimeDates: newOvertime });
   };
 
@@ -163,7 +173,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
     const currentOvertime = config.overtimeDates || [];
     let newOvertime;
     if (currentOvertime.includes(dateStr)) {
-      newOvertime = currentOvertime.filter(d => d !== dateStr);
+      newOvertime = currentOvertime.filter((d: string) => d !== dateStr);
     } else {
       newOvertime = [...currentOvertime, dateStr];
     }
@@ -192,7 +202,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
       const end = addDays(start, selectedDuration - 1);
       const interval = eachDayOfInterval({ start, end });
       const currentVacations = config.vacationDates || [];
-      return interval.some(d => currentVacations.includes(format(d, 'yyyy-MM-dd')));
+      return interval.some((d: Date) => currentVacations.includes(format(d, 'yyyy-MM-dd')));
     } catch { return false; }
   }, [vacationStart, selectedDuration, config.vacationDates]);
 
@@ -203,8 +213,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
       if (!isValid(start)) return false;
       const end = addDays(start, selectedDuration - 1);
       const interval = eachDayOfInterval({ start, end });
-      const profileAbsences = absences.filter(a => a.profileId === config.id).map(a => a.date);
-      return interval.some(d => profileAbsences.includes(format(d, 'yyyy-MM-dd')));
+      const profileAbsences = absences.filter((a: Absence) => a.profileId === config.id).map((a: Absence) => a.date);
+      return interval.some((d: Date) => profileAbsences.includes(format(d, 'yyyy-MM-dd')));
     } catch { return false; }
   }, [vacationStart, selectedDuration, absences, config.id]);
 
@@ -217,11 +227,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
       const interval = eachDayOfInterval({ start, end });
       const intervalStr = interval.map(d => format(d, 'yyyy-MM-dd'));
 
-      const peers = allProfiles.filter(p => p.id !== config.id && p.role === config.role);
+      const peers = allProfiles.filter((p: UserConfig) => p.id !== config.id && p.role === config.role);
 
       const conflicts: { profile: UserConfig, dates: string[] }[] = [];
 
-      peers.forEach(peer => {
+      peers.forEach((peer: UserConfig) => {
         const peerVacations = peer.vacationDates || [];
         const commonDates = intervalStr.filter(d => peerVacations.includes(d));
         if (commonDates.length > 0) {
@@ -277,11 +287,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
 
   const getAbsenceForDate = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return absences.find(a => a.date === dateStr && a.profileId === config.id);
+    return absences.find((a: Absence) => a.date === dateStr && a.profileId === config.id);
   };
 
   const workDaysInMonth = days.filter(d => isWorkDay(d, config) || isDayOvertime(d)).length;
-  const monthAbsencesCount = absences.filter(a => {
+  const monthAbsencesCount = absences.filter((a: Absence) => {
     const d = parseISO(a.date);
     return a.profileId === config.id && isWithinInterval(d, { start: monthStart, end: monthEnd });
   }).length;
@@ -351,7 +361,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
   const triggerPicker = (ref: React.RefObject<HTMLInputElement>) => {
     if (ref.current) {
       if ('showPicker' in HTMLInputElement.prototype) {
-        try { (ref.current as any).showPicker(); } catch (e) { ref.current.focus(); }
+        try { (ref.current as any).showPicker(); } catch (e: any) { ref.current.focus(); }
       } else { ref.current.focus(); }
     }
   };
@@ -641,12 +651,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
 
       <AnimatePresence>
         {showCLTViolationAlert && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md">
             <motion.div
               initial={{ scale: 0.8, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 50 }}
-              className="bg-white w-full max-w-sm rounded-[44px] shadow-[0_40px_100px_rgba(0,0,0,0.3)] p-10 relative overflow-hidden border border-red-100"
+              className="bg-white w-full max-w-sm rounded-[32px] sm:rounded-[44px] shadow-[0_40px_100px_rgba(0,0,0,0.3)] p-6 sm:p-10 relative flex flex-col max-h-[90vh] border border-red-100"
             >
               <div className="absolute top-0 left-0 w-full h-2 bg-red-500" />
               <div className="absolute top-0 right-0 p-4">
@@ -655,7 +665,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
                 </div>
               </div>
 
-              <div className="space-y-8">
+              <div className="flex-1 overflow-y-auto pr-1 -mr-1 space-y-8 no-scrollbar">
                 <div className="flex flex-col items-center text-center gap-4">
                   <div className="w-24 h-24 bg-red-100 rounded-[32px] flex items-center justify-center text-red-600 shadow-inner relative">
                     <Footprints size={48} />
@@ -700,12 +710,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
 
       <AnimatePresence>
         {isStreakInfoOpen && (
-          <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-sm">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white w-full max-w-sm rounded-[40px] shadow-2xl p-8 relative overflow-hidden"
+              className="bg-white w-full max-w-sm rounded-[32px] sm:rounded-[40px] shadow-2xl p-6 sm:p-8 relative flex flex-col max-h-[90vh]"
             >
               <button
                 onClick={() => setIsStreakInfoOpen(false)}
@@ -714,7 +724,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
                 <X size={20} />
               </button>
 
-              <div className="space-y-6">
+              <div className="flex-1 overflow-y-auto pr-1 -mr-1 space-y-6 no-scrollbar">
                 <div className="flex items-center gap-4">
                   <div className={`p-4 rounded-3xl shadow-lg ${currentStreak > 6 ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'}`}>
                     {currentStreak > 6 ? <AlertTriangle size={28} /> : <Flame size={28} />}
@@ -734,7 +744,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
                     <div className="space-y-2">
                       <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Sua Sequência Atual:</h4>
                       <div className="flex flex-wrap gap-1.5">
-                        {streakData.dates.map((d, i) => (
+                        {streakData.dates.map((d: string, i: number) => (
                           <span key={i} className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-[9px] font-black text-gray-800">
                             {d}
                           </span>

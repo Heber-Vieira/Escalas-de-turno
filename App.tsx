@@ -22,7 +22,7 @@ import { format, parseISO, isSameMonth, differenceInCalendarDays } from 'date-fn
 
 
 const App: React.FC = () => {
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<any | null>(null);
   const {
     profiles,
     activeProfileId,
@@ -68,19 +68,19 @@ const App: React.FC = () => {
   }, [duplicateErrorName]);
 
   const existingRoles = useMemo(() => {
-    const roles = profiles.map(p => p.role).filter(r => r && r.trim() !== "");
+    const roles = profiles.map((p: UserConfig) => p.role).filter((r: string) => r && r.trim() !== "");
     return Array.from(new Set(roles)).sort();
   }, [profiles]);
 
   const activeAbsences = useMemo(() =>
-    absences.filter(a => a.profileId === activeProfileId),
+    absences.filter((a: Absence) => a.profileId === activeProfileId),
     [absences, activeProfileId]
   );
 
   const allEvents = useMemo(() => {
     if (!activeProfile) return [];
     const events: any[] = [];
-    activeAbsences.forEach(a => {
+    activeAbsences.forEach((a: Absence) => {
       events.push({
         id: a.id,
         date: a.date,
@@ -91,7 +91,7 @@ const App: React.FC = () => {
         icon: <FileText size={18} />
       });
     });
-    (activeProfile.overtimeDates || []).forEach(date => {
+    (activeProfile.overtimeDates || []).forEach((date: string) => {
       events.push({
         id: `ovt-${date}`,
         date: date,
@@ -136,14 +136,14 @@ const App: React.FC = () => {
 
   const historyStats = useMemo(() => {
     const now = new Date();
-    const thisMonthEvents = allEvents.filter(e => {
+    const thisMonthEvents = allEvents.filter((e: any) => {
       try { return isSameMonth(parseISO(e.date), now); } catch { return false; }
     }).length;
     return { total: allEvents.length, thisMonth: thisMonthEvents };
   }, [allEvents]);
 
   const handleAddProfile = async (newConfig: UserConfig) => {
-    const nameExists = profiles.some(p => p.name.trim().toLowerCase() === newConfig.name.trim().toLowerCase());
+    const nameExists = profiles.some((p: UserConfig) => p.name.trim().toLowerCase() === newConfig.name.trim().toLowerCase());
     if (nameExists) {
       setDuplicateErrorName(newConfig.name);
       return;
@@ -162,8 +162,8 @@ const App: React.FC = () => {
   };
 
   const handleBatchConfirm = async (newProfiles: UserConfig[]) => {
-    const existingNames = new Set(profiles.map(p => p.name.trim().toLowerCase()));
-    const uniqueNewProfiles = newProfiles.filter(newP => !existingNames.has(newP.name.trim().toLowerCase()));
+    const existingNames = new Set(profiles.map((p: UserConfig) => p.name.trim().toLowerCase()));
+    const uniqueNewProfiles = newProfiles.filter((newP: UserConfig) => !existingNames.has(newP.name.trim().toLowerCase()));
     if (uniqueNewProfiles.length === 0 && newProfiles.length > 0) {
       setDuplicateErrorName("Múltiplos Integrantes");
       setIsBatchModalOpen(false);
@@ -182,7 +182,7 @@ const App: React.FC = () => {
   };
 
   const handleUpdateActiveProfile = async (newConfig: UserConfig) => {
-    const nameExists = profiles.some(p => p.id !== newConfig.id && p.name.trim().toLowerCase() === newConfig.name.trim().toLowerCase());
+    const nameExists = profiles.some((p: UserConfig) => p.id !== newConfig.id && p.name.trim().toLowerCase() === newConfig.name.trim().toLowerCase());
     if (nameExists) {
       setDuplicateErrorName(newConfig.name);
       return;
@@ -201,7 +201,7 @@ const App: React.FC = () => {
     }
     try {
       await deleteProfile(id);
-      const remainingProfiles = profiles.filter(p => p.id !== id);
+      const remainingProfiles = profiles.filter((p: UserConfig) => p.id !== id);
       if (activeProfileId === id) {
         setActiveProfileId(remainingProfiles[0].id);
       }
@@ -241,10 +241,10 @@ const App: React.FC = () => {
     if (event.type === 'absence') {
       await removeAbsenceHandler(event.id);
     } else if (event.type === 'vacation_period') {
-      const newVacations = (activeProfile?.vacationDates || []).filter(d => !event.dates.includes(d));
+      const newVacations = (activeProfile?.vacationDates || []).filter((d: string) => !event.dates.includes(d));
       await handleUpdateActiveProfile({ ...activeProfile!, vacationDates: newVacations });
     } else if (event.type === 'overtime') {
-      const newOvertime = (activeProfile?.overtimeDates || []).filter(d => d !== event.date);
+      const newOvertime = (activeProfile?.overtimeDates || []).filter((d: string) => d !== event.date);
       await handleUpdateActiveProfile({ ...activeProfile!, overtimeDates: newOvertime });
     }
   };
@@ -254,7 +254,7 @@ const App: React.FC = () => {
     const current = activeProfile.offDays || [];
     let newOffDays;
     if (current.includes(day)) {
-      newOffDays = current.filter(d => d !== day);
+      newOffDays = current.filter((d: number) => d !== day);
     } else {
       newOffDays = [...current, day];
     }
@@ -276,7 +276,7 @@ const App: React.FC = () => {
 
   if (!activeProfile) return null;
 
-  const theme = THEME_CONFIGS[globalTheme] || THEME_CONFIGS[ThemeStyle.MODERN];
+  const theme = (THEME_CONFIGS as Record<ThemeStyle, any>)[globalTheme] || THEME_CONFIGS[ThemeStyle.MODERN];
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

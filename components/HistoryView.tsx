@@ -6,7 +6,16 @@ import { format, parseISO, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface HistoryViewProps {
-    allEvents: any[];
+    allEvents: {
+        id: string;
+        date: string;
+        title: string;
+        description: string;
+        type: 'absence' | 'overtime' | 'vacation_period';
+        color: string;
+        icon: React.ReactNode;
+        dates?: string[];
+    }[];
     historyStats: { total: number; thisMonth: number };
     setView: (view: 'calendar' | 'team_schedule' | 'history' | 'users' | 'profile') => void;
     setIsHelpOpen: (isOpen: boolean) => void;
