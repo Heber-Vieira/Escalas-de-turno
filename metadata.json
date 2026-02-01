@@ -1,0 +1,9 @@
+{
+  "name": "Escala Fácil",
+  "description": "Aplicativo moderno para gestão de escalas de trabalho (5x2, 6x1, 12x36) com feriados brasileiros, registro de ausências e alertas inteligentes por IA.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
