@@ -40,28 +40,28 @@ export const UsersView: React.FC<UsersViewProps> = ({
 
             <div className="space-y-4">
                 <div className="pb-2">
-                    <button onClick={() => setShowOnboarding(true)} className="w-full flex items-center justify-center gap-3 p-8 border-2 border-dashed border-pink-200 rounded-[40px] text-pink-500 font-black text-sm uppercase transition-all hover:bg-pink-50 active:scale-95">
-                        <Plus size={24} /> Adicionar Integrante Manual
+                    <button onClick={() => setShowOnboarding(true)} className="w-full flex items-center justify-center gap-3 p-6 sm:p-8 border-2 border-dashed border-pink-200 rounded-[24px] sm:rounded-[40px] text-pink-500 font-black text-xs sm:text-sm uppercase transition-all hover:bg-pink-50 active:scale-95">
+                        <Plus size={20} className="sm:size-24" /> Adicionar Integrante Manual
                     </button>
                 </div>
 
                 {profiles.map(p => (
-                    <div key={p.id} className={`p-4 flex items-center justify-between transition-all bg-white/85 border-2 rounded-[40px] shadow-sm hover:shadow-md ${p.id === activeProfileId ? 'border-pink-300 ring-4 ring-pink-500/5' : 'border-pink-100/50'}`}>
-                        <button className="flex-1 flex items-center gap-4 text-left" onClick={() => { setActiveProfileId(p.id); setView('calendar'); }}>
-                            <div className="w-12 h-12 rounded-full bg-pink-50 flex items-center justify-center font-bold text-pink-500 text-xl border border-pink-200/30 uppercase">
+                    <div key={p.id} className={`p-3 sm:p-4 flex items-center justify-between transition-all bg-white/85 border-2 rounded-[24px] sm:rounded-[40px] shadow-sm hover:shadow-md ${p.id === activeProfileId ? 'border-pink-300 ring-4 ring-pink-500/5' : 'border-pink-100/50'}`}>
+                        <button className="flex-1 flex items-center gap-3 sm:gap-4 text-left" onClick={() => { setActiveProfileId(p.id); setView('calendar'); }}>
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-pink-50 flex items-center justify-center font-bold text-pink-500 text-lg sm:text-xl border border-pink-200/30 uppercase shrink-0">
                                 {p.name.charAt(0)}
                             </div>
-                            <div>
-                                <div className="font-black text-gray-800 text-lg leading-tight uppercase">{p.name}</div>
-                                <span className="text-[10px] text-pink-500 font-black uppercase tracking-wider">{p.role}</span>
+                            <div className="min-w-0 flex-1">
+                                <div className="font-black text-gray-800 text-base sm:text-lg leading-tight uppercase truncate">{p.name}</div>
+                                <span className="text-[9px] sm:text-[10px] text-pink-500 font-black uppercase tracking-wider truncate block">{p.role}</span>
                             </div>
                         </button>
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => { setActiveProfileId(p.id); setView('profile'); }} className="p-3 text-gray-400 hover:text-pink-500 transition-colors">
-                                <Settings size={22} />
+                        <div className="flex items-center gap-1 sm:gap-2">
+                            <button onClick={() => { setActiveProfileId(p.id); setView('profile'); }} className="p-2 sm:p-3 text-gray-400 hover:text-pink-500 transition-colors">
+                                <Settings size={18} sm:size={22} />
                             </button>
-                            <button onClick={() => removeProfile(p.id)} className="p-3 text-red-100 hover:text-red-500 transition-colors">
-                                <Trash2 size={22} />
+                            <button onClick={() => removeProfile(p.id)} className="p-2 sm:p-3 text-red-100 hover:text-red-500 transition-colors">
+                                <Trash2 size={18} sm:size={22} />
                             </button>
                         </div>
                     </div>

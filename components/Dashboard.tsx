@@ -417,20 +417,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
         {isAlertVisible && smartAlert && (
           <motion.div
             key={smartAlert}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            className={`p-4 rounded-3xl border-l-4 border-pink-500 bg-white shadow-sm flex items-center gap-3`}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            className={`p-3 sm:p-4 rounded-2xl sm:rounded-3xl border-l-4 border-pink-500 bg-white shadow-sm flex items-center gap-2 sm:gap-3`}
           >
-            <div className="bg-pink-50 p-2 rounded-xl text-pink-500">
-              <Clock size={16} />
+            <div className="bg-pink-50 p-1.5 sm:p-2 rounded-xl text-pink-500">
+              <Clock size={14} className="sm:size-16" />
             </div>
-            <p className="text-[11px] font-bold text-gray-700 leading-tight flex-1">{smartAlert}</p>
+            <p className="text-[10px] sm:text-[11px] font-bold text-gray-700 leading-tight flex-1">{smartAlert}</p>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className={`p-5 shadow-sm rounded-[40px] ${theme.card}`}>
+      <div className={`p-3.5 sm:p-5 shadow-sm rounded-[32px] sm:rounded-[40px] ${theme.card}`}>
         <div className="flex items-center justify-between mb-5 px-1">
           <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1 text-gray-400"><ChevronLeft size={18} /></button>
           <span className="font-black text-[10px] uppercase tracking-[0.2em]">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</span>
@@ -445,7 +445,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1.5 mb-6">
+        <div className="grid grid-cols-7 gap-1 sm:gap-1.5 mb-6">
           {spacers.map((_, i) => (
             <div key={`spacer-${i}`} className="aspect-square" />
           ))}
@@ -464,17 +464,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
               <button
                 key={day.toISOString()}
                 onClick={() => setSelectedDate(day)}
-                className={`aspect-square flex items-center justify-center rounded-xl text-[11px] transition-all relative 
+                className={`aspect-square flex items-center justify-center rounded-lg sm:rounded-xl text-[10px] sm:text-[11px] transition-all relative 
                   ${isSel ? 'bg-pink-500 text-white font-black scale-110 shadow-lg z-10' :
                     vacation ? 'bg-sky-500 text-white shadow-sm' :
-                      overtime ? 'bg-purple-600 text-white shadow-md animate-pulse' :
+                      overtime ? 'bg-purple-600 text-white shadow-md' :
                         isBeforeStart ? 'bg-transparent text-gray-300' :
                           isWork ? theme.workDay : theme.offDay} 
                   ${absence ? '!bg-red-50 !text-red-400 border border-red-100' : ''} 
                   ${isT && !isSel ? 'ring-2 ring-pink-300' : ''}`}
               >
                 {day.getDate()}
-                {overtime && !isSel && <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-purple-200 rounded-full" />}
+                {overtime && !isSel && <div className="absolute top-1 right-1 w-1 sm:w-1.5 h-1 sm:h-1.5 bg-purple-200 rounded-full" />}
               </button>
             );
           })}
@@ -926,10 +926,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ config, allProfiles, absen
                   onClick={handleConfirmVacationPeriod}
                   disabled={isSavingBlocked}
                   className={`w-full py-5 rounded-[24px] font-black text-xs uppercase tracking-[0.2em] shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 group ${isSavingBlocked
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
-                      : teamVacationConflict
-                        ? 'bg-amber-500 text-white shadow-amber-200'
-                        : 'bg-gray-900 text-white'
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                    : teamVacationConflict
+                      ? 'bg-amber-500 text-white shadow-amber-200'
+                      : 'bg-gray-900 text-white'
                     }`}
                 >
                   {isSavingBlocked ? (
