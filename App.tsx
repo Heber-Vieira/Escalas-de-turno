@@ -265,6 +265,18 @@ const App: React.FC = () => {
     return <Auth onAuthSuccess={() => setView('calendar')} />;
   }
 
+  if (storageLoading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-10 h-10 border-4 border-pink-500/20 border-t-pink-500 rounded-full shadow-[0_0_15px_rgba(236,72,153,0.3)]"
+        />
+      </div>
+    );
+  }
+
   if (profiles.length === 0 || showOnboarding) {
     return (
       <>
