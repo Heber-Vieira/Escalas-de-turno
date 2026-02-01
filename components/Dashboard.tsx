@@ -408,17 +408,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               className="absolute left-0 right-0 top-full mt-3 z-[60] flex justify-center px-4 pointer-events-none"
             >
-              <div className="bg-white/95 border border-pink-100/50 p-1.5 rounded-[26px] shadow-[0_25px_60px_rgba(0,0,0,0.2)] flex gap-1.5 overflow-x-auto no-scrollbar max-w-full pointer-events-auto backdrop-blur-xl">
+              <div className="bg-white/95 border border-white p-1 rounded-[22px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex gap-1 pointer-events-auto backdrop-blur-2xl">
                 {(Object.entries(THEME_CONFIGS) as [ThemeStyle, any][]).map(([styleName, styleConfig]) => (
                   <button
                     key={styleName}
                     onClick={() => handleThemeChange(styleName)}
-                    className={`flex-shrink-0 w-9 h-9 rounded-[20px] flex items-center justify-center text-lg transition-all duration-500 relative ${globalTheme === styleName ? 'bg-pink-500 shadow-lg shadow-pink-200 -translate-y-1' : 'bg-gray-50/80 hover:bg-white hover:shadow-sm'}`}
+                    className={`flex-shrink-0 w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-[16px] flex items-center justify-center text-[15px] sm:text-base transition-all duration-300 relative ${globalTheme === styleName ? 'bg-pink-500 shadow-lg shadow-pink-200 text-white scale-105' : 'hover:bg-gray-50'}`}
                     title={styleName}
                   >
-                    <span className={`transition-all duration-500 ${globalTheme === styleName ? 'scale-110 drop-shadow-sm' : 'grayscale opacity-50 contrast-125'}`}>
+                    <span className={`transition-all duration-300 ${globalTheme === styleName ? 'scale-110 drop-shadow-sm' : 'grayscale opacity-40 contrast-125'}`}>
                       {styleConfig.icon}
                     </span>
+                    {globalTheme === styleName && (
+                      <motion.div layoutId="activeDot" className="absolute -bottom-1 w-1 h-1 bg-white rounded-full" />
+                    )}
                   </button>
                 ))}
               </div>
