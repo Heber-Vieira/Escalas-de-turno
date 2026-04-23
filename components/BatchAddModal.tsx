@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { UserConfig, ShiftType, WorkTurn, ThemeStyle } from '../types';
 import { GoogleGenAI, Type } from "@google/genai";
-import Papa from 'papaparse';
+import { read, utils, writeFile } from 'xlsx';
 
 interface BatchAddModalProps {
   isOpen: boolean;
@@ -40,20 +40,45 @@ export const BatchAddModal: React.FC<BatchAddModalProps> = ({ isOpen, onClose, o
     const file = e.target.files?.[0];
     if (!file) return;
 
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const data = results.data as any[];
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = utils.sheet_to_json(ws) as any[];
+
+        const formatDateForApp = (val: any) => {
+          if (!val) return new Date().toISOString().split('T')[0];
+          
+          // Se já estiver no formato yyyy-mm-dd
+          if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+          
+          // Se estiver no formato dd/mm/yyyy
+          if (typeof val === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
+            const [d, m, y] = val.split('/');
+            return `${y}-${m}-${d}`;
+          }
+
+          // Se for um número (data do Excel)
+          if (typeof val === 'number') {
+            const date = new Date((val - 25569) * 86400 * 1000);
+            return date.toISOString().split('T')[0];
+          }
+
+          return val;
+        };
+
         const newMembers = data.map(row => ({
           id: Math.random().toString(36).substr(2, 9),
-          name: row.nome || row.name || 'Novo Integrante',
-          role: row.cargo || row.role || row.funcao || 'Operador',
-          shiftType: (row.escala || row.shift) as ShiftType || defaultShift,
-          turn: (row.turno || row.turn) as WorkTurn || defaultTurn,
-          startDate: row.data_inicio || row.startDate || new Date().toISOString().split('T')[0],
-          state: row.estado || row.state || 'SP',
-          city: row.cidade || row.city || 'São Paulo',
+          name: row.Nome || row.nome || row.Name || row.name || 'Novo Integrante',
+          role: row.Cargo || row.cargo || row.Role || row.role || row.Função || row.funcao || 'Operador',
+          shiftType: (row.Escala || row.escala || row.Shift || row.shift) as ShiftType || defaultShift,
+          turn: (row.Turno || row.turno || row.Turn || row.turn) as WorkTurn || defaultTurn,
+          startDate: formatDateForApp(row.Data_Inicio || row.data_inicio || row.StartDate || row.startDate),
+          state: row.Estado || row.estado || row.State || row.state || 'SP',
+          city: row.Cidade || row.cidade || row.City || row.city || 'São Paulo',
           offDays: [0],
           rotatingWorkDays: 5,
           rotatingOffDays: 1,
@@ -62,9 +87,31 @@ export const BatchAddModal: React.FC<BatchAddModalProps> = ({ isOpen, onClose, o
         setPreviewList(prev => [...prev, ...newMembers]);
         setError(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
-      },
-      error: () => setError('Erro ao ler arquivo CSV.')
-    });
+      } catch (err) {
+        setError('Erro ao ler arquivo Excel. Verifique o formato.');
+        console.error(err);
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
+  const downloadTemplate = () => {
+    const templateData = [
+      {
+        'Nome': 'Exemplo Silva',
+        'Cargo': 'Analista',
+        'Escala': '5x2',
+        'Turno': 'Manhã',
+        'Data_Inicio': '01/05/2024',
+        'Estado': 'SP',
+        'Cidade': 'São Paulo'
+      }
+    ];
+
+    const ws = utils.json_to_sheet(templateData);
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, "Modelo");
+    writeFile(wb, "modelo_escala.xlsx");
   };
 
   const handleAIParsing = async () => {
@@ -192,7 +239,7 @@ export const BatchAddModal: React.FC<BatchAddModalProps> = ({ isOpen, onClose, o
                     onClick={() => setActiveTab('file')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'file' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}
                   >
-                    <FileSpreadsheet size={14} /> CSV / Excel
+                    <FileSpreadsheet size={14} /> Excel
                   </button>
                 </div>
 
@@ -230,14 +277,27 @@ export const BatchAddModal: React.FC<BatchAddModalProps> = ({ isOpen, onClose, o
                         <Upload size={32} />
                       </div>
                       <div className="text-center">
-                        <p className="text-sm font-black text-gray-800">Selecione o arquivo</p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Formato suportado: .CSV</p>
+                        <p className="text-sm font-black text-gray-800">Selecione o arquivo Excel</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Formato suportado: .XLSX, .XLS</p>
+                      </div>
+                      <div className="flex gap-3">
+                        <button 
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadTemplate();
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-pink-100 transition-all border border-pink-100"
+                        >
+                          <FileSpreadsheet size={14} />
+                          Baixar Modelo
+                        </button>
                       </div>
                       <input 
                         type="file" 
                         ref={fileInputRef} 
                         onChange={handleFileUpload} 
-                        accept=".csv" 
+                        accept=".xlsx, .xls" 
                         className="hidden" 
                       />
                     </div>
