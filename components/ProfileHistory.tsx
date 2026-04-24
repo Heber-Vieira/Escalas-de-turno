@@ -143,7 +143,7 @@ export const ProfileHistory: React.FC<ProfileHistoryProps> = ({ profile, onUpdat
 
                                     <div className="flex items-center gap-2 mb-2">
                                         <div className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] font-black uppercase tracking-widest border border-gray-200">
-                                            {format(parseISO(item.date), 'dd/MM/yyyy')}
+                                            {isValid(parseISO(item.date)) ? format(parseISO(item.date), 'dd/MM/yyyy') : item.date}
                                         </div>
                                         <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Início Vigência</span>
                                     </div>

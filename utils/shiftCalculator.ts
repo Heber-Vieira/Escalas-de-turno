@@ -72,8 +72,21 @@ export function isWorkDay(date: Date, config: Partial<UserConfig>): boolean {
   // Obter a configuração efetiva para esta data específica
   const effectiveConfig = getEffectiveConfig(checkDate, config);
 
-  // Normalizar a data de início para o horário local
-  const start = startOfDay(parse(effectiveConfig.startDate, 'yyyy-MM-dd', new Date()));
+  // Normalizar a data de início para o horário local com fallback seguro
+  let start: Date;
+  try {
+    const startDateStr = String(effectiveConfig.startDate || '2024-01-01');
+    start = parseISO(startDateStr);
+    if (!isValid(start)) {
+      start = parse(startDateStr, 'yyyy-MM-dd', new Date());
+    }
+    if (!isValid(start)) {
+      start = new Date(); // Fallback final
+    }
+  } catch {
+    start = new Date();
+  }
+  start = startOfDay(start);
 
   // REGRA CRÍTICA: Não há programação de escala antes da data de início oficial (da configuração efetiva)
   // Se a data verificada for anterior ao início desta fase da carreira/regime, 

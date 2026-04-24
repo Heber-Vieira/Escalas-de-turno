@@ -100,7 +100,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const isDayAbsence = (date: Date, profileId: string = config.id) => {
     const profile = allProfiles.find((p: UserConfig) => p.id === profileId) || config;
-    const start = startOfDay(parse(profile.startDate, 'yyyy-MM-dd', new Date()));
+    let start = parseISO(profile.startDate);
+    if (!isValid(start)) start = parse(profile.startDate, 'yyyy-MM-dd', new Date());
+    if (!isValid(start)) start = new Date();
+    start = startOfDay(start);
     if (isBefore(startOfDay(date), start)) return false;
 
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -108,7 +111,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const isDayVacation = (date: Date, userConfig: UserConfig = config) => {
-    const start = startOfDay(parse(userConfig.startDate, 'yyyy-MM-dd', new Date()));
+    let start = parseISO(userConfig.startDate);
+    if (!isValid(start)) start = parse(userConfig.startDate, 'yyyy-MM-dd', new Date());
+    if (!isValid(start)) start = new Date();
+    start = startOfDay(start);
     if (isBefore(startOfDay(date), start)) return false;
 
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -116,7 +122,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const isDayOvertime = (date: Date, userConfig: UserConfig = config) => {
-    const start = startOfDay(parse(userConfig.startDate, 'yyyy-MM-dd', new Date()));
+    let start = parseISO(userConfig.startDate);
+    if (!isValid(start)) start = parse(userConfig.startDate, 'yyyy-MM-dd', new Date());
+    if (!isValid(start)) start = new Date();
+    start = startOfDay(start);
     if (isBefore(startOfDay(date), start)) return false;
 
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -190,9 +199,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const newVacations = currentVacations.filter((d: string) => !periodToRemove.includes(d));
     const newOvertime = (config.overtimeDates || []).filter((d: string) => !periodToRemove.includes(d));
 
+    const startStr = periodToRemove[periodToRemove.length - 1];
+    const endStr = periodToRemove[0];
+    const startD = parseISO(startStr);
+    const endD = parseISO(endStr);
+    const formattedStart = isValid(startD) ? format(startD, 'dd/MM') : startStr;
+    const formattedEnd = isValid(endD) ? format(endD, 'dd/MM') : endStr;
+
     onConfirm(
       "Remover Período de Férias",
-      `Deseja remover o período de férias de ${format(parseISO(periodToRemove[periodToRemove.length - 1]), 'dd/MM')} até ${format(parseISO(periodToRemove[0]), 'dd/MM')}?`,
+      `Deseja remover o período de férias de ${formattedStart} até ${formattedEnd}?`,
       () => onUpdateConfig({ ...config, vacationDates: newVacations, overtimeDates: newOvertime })
     );
   };
@@ -334,7 +350,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
     let streak = 0;
     let streakDates: string[] = [];
     let checkDate = startOfDay(selectedDate);
-    const profileStart = startOfDay(parse(config.startDate, 'yyyy-MM-dd', new Date()));
+    
+    let profileStart = parseISO(config.startDate);
+    if (!isValid(profileStart)) profileStart = parse(config.startDate, 'yyyy-MM-dd', new Date());
+    if (!isValid(profileStart)) profileStart = new Date();
+    profileStart = startOfDay(profileStart);
 
     if (isBefore(checkDate, profileStart)) return { count: 0, dates: [] };
 

@@ -19,7 +19,7 @@ import { useEscalaStorage } from './hooks/useEscalaStorage';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, Zap, Umbrella, FileText, LogOut, Briefcase } from 'lucide-react';
 import { THEME_CONFIGS } from './constants';
-import { format, parseISO, isSameMonth, differenceInCalendarDays } from 'date-fns';
+import { format, parseISO, isSameMonth, differenceInCalendarDays, isValid } from 'date-fns';
 
 
 const App: React.FC = () => {
@@ -128,24 +128,27 @@ const App: React.FC = () => {
         const prevDate = parseISO(vacationDates[i - 1]);
         const currDateStr = vacationDates[i];
         const currDate = currDateStr ? parseISO(currDateStr) : null;
-        if (currDate && differenceInCalendarDays(currDate, prevDate) === 1) {
+        if (currDate && isValid(currDate) && isValid(prevDate) && differenceInCalendarDays(currDate, prevDate) === 1) {
           currentPeriod.push(currDateStr);
         } else {
           const start = currentPeriod[0];
           const end = currentPeriod[currentPeriod.length - 1];
           const totalDays = currentPeriod.length;
-          events.push({
-            id: `vac-period-${start}`,
-            date: start,
-            title: 'Período de Férias',
-            description: totalDays === 1
-              ? `Dia único de descanso`
-              : `${format(parseISO(start), 'dd/MM')} a ${format(parseISO(end), 'dd/MM')} • ${totalDays} dias`,
-            type: 'vacation_period' as const,
-            dates: [...currentPeriod],
-            color: 'bg-sky-500',
-            icon: <Umbrella size={18} />
-          });
+          
+          if (isValid(parseISO(start)) && isValid(parseISO(end))) {
+            events.push({
+              id: `vac-period-${start}`,
+              date: start,
+              title: 'Período de Férias',
+              description: totalDays === 1
+                ? `Dia único de descanso`
+                : `${format(parseISO(start), 'dd/MM')} a ${format(parseISO(end), 'dd/MM')} • ${totalDays} dias`,
+              type: 'vacation_period' as const,
+              dates: [...currentPeriod],
+              color: 'bg-sky-500',
+              icon: <Umbrella size={18} />
+            });
+          }
           if (currDateStr) currentPeriod = [currDateStr];
         }
       }

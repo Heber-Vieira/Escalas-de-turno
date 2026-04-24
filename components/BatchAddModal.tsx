@@ -52,33 +52,66 @@ export const BatchAddModal: React.FC<BatchAddModalProps> = ({ isOpen, onClose, o
         const formatDateForApp = (val: any) => {
           if (!val) return new Date().toISOString().split('T')[0];
           
-          // Se já estiver no formato yyyy-mm-dd
-          if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
-          
-          // Se estiver no formato dd/mm/yyyy
-          if (typeof val === 'string' && /^\d{2}\/\d{2}\/\d{4}$/.test(val)) {
-            const [d, m, y] = val.split('/');
-            return `${y}-${m}-${d}`;
+          // Se for um objeto Date
+          if (val instanceof Date && !isNaN(val.getTime())) {
+            return val.toISOString().split('T')[0];
           }
 
           // Se for um número (data do Excel)
           if (typeof val === 'number') {
-            const date = new Date((val - 25569) * 86400 * 1000);
-            return date.toISOString().split('T')[0];
+            // Excel counts days from 1900-01-01, but with a leap year bug.
+            // (val - 25569) is the offset from Unix Epoch.
+            const date = new Date(Math.round((val - 25569) * 86400 * 1000));
+            if (!isNaN(date.getTime())) return date.toISOString().split('T')[0];
           }
 
-          return val;
+          if (typeof val !== 'string') return new Date().toISOString().split('T')[0];
+
+          // Se já estiver no formato yyyy-mm-dd
+          if (/^\d{4}-\d{2}-\d{2}/.test(val)) return val.split('T')[0];
+          
+          // Se estiver no formato dd/mm/yyyy
+          if (/^\d{2}\/\d{2}\/\d{4}/.test(val)) {
+            const parts = val.split(' ')[0].split('/');
+            const [d, m, y] = parts;
+            return `${y}-${m}-${d}`;
+          }
+
+          // Tentar parse genérico se nada funcionar
+          const parsed = new Date(val);
+          if (!isNaN(parsed.getTime())) return parsed.toISOString().split('T')[0];
+
+          return new Date().toISOString().split('T')[0];
+        };
+
+        const getShiftType = (val: any): ShiftType => {
+          if (!val) return defaultShift;
+          const strVal = String(val).trim().toLowerCase();
+          // Mapeamento específico para lidar com variações comuns
+          if (strVal === '5x2' || strVal.includes('5 x 2')) return ShiftType.FIVE_TWO;
+          if (strVal === '6x1' || strVal.includes('6 x 1')) return ShiftType.SIX_ONE;
+          if (strVal === '12x36' || strVal.includes('12 x 36')) return ShiftType.TWELVE_THIRTY_SIX;
+          
+          const match = Object.values(ShiftType).find(s => s.toLowerCase() === strVal);
+          return (match as ShiftType) || defaultShift;
+        };
+
+        const getWorkTurn = (val: any): WorkTurn => {
+          if (!val) return defaultTurn;
+          const strVal = String(val).trim().toLowerCase();
+          const match = Object.values(WorkTurn).find(t => t.toLowerCase() === strVal);
+          return (match as WorkTurn) || defaultTurn;
         };
 
         const newMembers = data.map(row => ({
           id: Math.random().toString(36).substr(2, 9),
-          name: row.Nome || row.nome || row.Name || row.name || 'Novo Integrante',
-          role: row.Cargo || row.cargo || row.Role || row.role || row.Função || row.funcao || 'Operador',
-          shiftType: (row.Escala || row.escala || row.Shift || row.shift) as ShiftType || defaultShift,
-          turn: (row.Turno || row.turno || row.Turn || row.turn) as WorkTurn || defaultTurn,
+          name: String(row.Nome || row.nome || row.Name || row.name || 'Novo Integrante').trim(),
+          role: String(row.Cargo || row.cargo || row.Role || row.role || row.Função || row.funcao || 'Operador').trim(),
+          shiftType: getShiftType(row.Escala || row.escala || row.Shift || row.shift),
+          turn: getWorkTurn(row.Turno || row.turno || row.Turn || row.turn),
           startDate: formatDateForApp(row.Data_Inicio || row.data_inicio || row.StartDate || row.startDate),
-          state: row.Estado || row.estado || row.State || row.state || 'SP',
-          city: row.Cidade || row.cidade || row.City || row.city || 'São Paulo',
+          state: String(row.Estado || row.estado || row.State || row.state || 'SP').trim().toUpperCase(),
+          city: String(row.Cidade || row.cidade || row.City || row.city || 'São Paulo').trim(),
           offDays: [0],
           rotatingWorkDays: 5,
           rotatingOffDays: 1,

@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, parseISO, differenceInCalendarDays } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, parseISO, differenceInCalendarDays, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { UserConfig, Absence, WorkTurn, ThemeStyle } from '../types';
 import { isWorkDay, getEffectiveConfig } from '../utils/shiftCalculator';
@@ -96,7 +96,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
         const currStr = dates[i];
         const curr = currStr ? parseISO(currStr) : null;
 
-        if (curr && differenceInCalendarDays(curr, prev) === 1) {
+        if (curr && isValid(curr) && isValid(prev) && differenceInCalendarDays(curr, prev) === 1) {
           currentGroup.push(currStr);
         } else {
           const startStr = currentGroup[0];
@@ -104,13 +104,15 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
           const startD = parseISO(startStr);
           const endD = parseISO(endStr);
 
-          // Verifica se o período tem intersecção com o mês visualizado
-          const inMonth = (startD >= monthStart && startD <= monthEnd) ||
-            (endD >= monthStart && endD <= monthEnd) ||
-            (startD < monthStart && endD > monthEnd);
+          if (isValid(startD) && isValid(endD)) {
+            // Verifica se o período tem intersecção com o mês visualizado
+            const inMonth = (startD >= monthStart && startD <= monthEnd) ||
+              (endD >= monthStart && endD <= monthEnd) ||
+              (startD < monthStart && endD > monthEnd);
 
-          if (inMonth) {
-            periods.push({ start: startStr, end: endStr, count: currentGroup.length });
+            if (inMonth) {
+              periods.push({ start: startStr, end: endStr, count: currentGroup.length });
+            }
           }
           if (currStr) currentGroup = [currStr];
         }
@@ -263,7 +265,11 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                   </div>
                 </div>
                 <div className="text-right space-y-1">
-                  {periods.map((p, i) => (
+                  {periods.map((p, i) => {
+                    const startValid = isValid(parseISO(p.start));
+                    const endValid = isValid(parseISO(p.end));
+                    if (!startValid || !endValid) return null;
+                    return (
                     <div key={i} className="flex flex-col items-end">
                       <span className="text-[10px] font-black text-sky-700">
                         {format(parseISO(p.start), 'dd/MM')} a {format(parseISO(p.end), 'dd/MM')}
@@ -272,7 +278,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                         {p.count} Dias
                       </span>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
             ))}
