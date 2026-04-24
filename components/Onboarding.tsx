@@ -153,7 +153,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, is
               className={`p-3 sm:p-4 rounded-2xl flex items-center gap-3 sm:gap-4 border-2 transition-all ${config.turn === t.id ? 'border-orange-500 bg-orange-50 text-orange-700 ring-4 ring-orange-500/10' : 'border-gray-100 hover:border-orange-200 text-gray-700'}`}
             >
               <div className={config.turn === t.id ? 'text-orange-500' : 'text-gray-300'}>
-                {React.cloneElement(t.icon as React.ReactElement, { size: 20 })}
+                {t.icon}
               </div>
               <div className="text-left">
                 <div className="font-black text-base sm:text-lg">{t.label}</div>

@@ -33,13 +33,13 @@ export const UsersView: React.FC<UsersViewProps> = ({
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
                     <button onClick={() => setView('calendar')} className="p-2 sm:p-2.5 bg-white shadow-sm border border-gray-100 rounded-full text-gray-500 transition-all active:scale-90 flex-shrink-0">
-                        <ArrowLeft size={18} className="sm:size-20" />
+                        <ArrowLeft className="w-[18px] h-[18px] sm:w-[20px] sm:h-[20px]" />
                     </button>
                     <h2 className="text-lg sm:text-2xl font-black text-gray-800 uppercase tracking-tight truncate">Equipe</h2>
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
                     <button onClick={() => setIsBatchModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-900 text-pink-500 rounded-full shadow-lg transition-all active:scale-95" title="Importação em Lote">
-                        <Layers size={14} className="sm:size-18" />
+                        <Layers className="w-[14px] h-[14px] sm:w-[18px] sm:h-[18px]" />
                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-white">Lote</span>
                     </button>
                 </div>
@@ -48,7 +48,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
             <div className="space-y-2.5 sm:space-y-4">
                 <div className="pb-0.5">
                     <button onClick={() => setShowOnboarding(true)} className="w-full flex items-center justify-center gap-3 p-4 sm:p-8 border-2 border-dashed border-pink-200 rounded-[24px] sm:rounded-[40px] text-pink-500 font-black text-[9px] sm:text-sm uppercase transition-all hover:bg-pink-50 active:scale-95">
-                        <Plus size={16} className="sm:size-24" /> Novo Integrante
+                        <Plus className="w-[16px] h-[16px] sm:w-[24px] sm:h-[24px]" /> Novo Integrante
                     </button>
                 </div>
 
@@ -65,10 +65,10 @@ export const UsersView: React.FC<UsersViewProps> = ({
                         </button>
                         <div className="flex items-center gap-0">
                             <button onClick={() => { setActiveProfileId(p.id); setView('profile'); }} className="p-2 sm:p-3 text-gray-400 hover:text-pink-500 transition-colors">
-                                <Settings size={16} sm:size={22} />
+                                <Settings className="w-[16px] h-[16px] sm:w-[22px] sm:h-[22px]" />
                             </button>
                             <button onClick={() => removeProfile(p.id)} className="p-2 sm:p-3 text-red-100 hover:text-red-500 transition-colors">
-                                <Trash2 size={16} sm:size={22} />
+                                <Trash2 className="w-[16px] h-[16px] sm:w-[22px] sm:h-[22px]" />
                             </button>
                         </div>
                     </div>
