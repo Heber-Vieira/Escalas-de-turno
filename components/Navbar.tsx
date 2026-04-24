@@ -1,15 +1,16 @@
 
 import React from 'react';
-import { Calendar, History, Users, ListTodo } from 'lucide-react';
+import { Calendar, History, Users, ListTodo, ShieldCheck } from 'lucide-react';
 import { ThemeConfig } from '../constants';
 
 interface NavbarProps {
     view: string;
     setView: (view: any) => void;
     theme: ThemeConfig;
+    systemRole?: 'admin' | 'user';
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme }) => {
+export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme, systemRole }) => {
     const getActiveTabColor = (isActive: boolean) => {
         if (!isActive) return 'text-gray-400';
         return 'text-pink-600';
@@ -48,6 +49,16 @@ export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme }) => {
                 <Users size={19} />
                 <span className="text-[8px] uppercase font-black tracking-widest">Time</span>
             </button>
+
+            {systemRole === 'admin' && (
+                <button
+                    onClick={() => setView('admin')}
+                    className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'admin')}`}
+                >
+                    <ShieldCheck size={19} />
+                    <span className="text-[8px] uppercase font-black tracking-widest">Acessos</span>
+                </button>
+            )}
         </nav>
     );
 };

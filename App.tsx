@@ -14,10 +14,12 @@ import { UsersView } from './components/UsersView';
 import { DuplicateAlert } from './components/DuplicateAlert';
 import { Auth } from './components/Auth';
 import { ConfirmModal } from './components/ConfirmModal';
+import { AccessDenied } from './components/AccessDenied';
+import { SystemAccessManagement } from './components/SystemAccessManagement';
 import { supabase } from './services/supabase';
 import { useEscalaStorage } from './hooks/useEscalaStorage';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HelpCircle, Zap, Umbrella, FileText, LogOut, Briefcase } from 'lucide-react';
+import { HelpCircle, Zap, Umbrella, FileText, LogOut, Briefcase, ShieldCheck } from 'lucide-react';
 import { THEME_CONFIGS } from './constants';
 import { format, parseISO, isSameMonth, differenceInCalendarDays, isValid } from 'date-fns';
 
@@ -37,10 +39,13 @@ const App: React.FC = () => {
     updateProfile,
     deleteProfile,
     syncAbsence,
-    deleteAbsence
+    deleteAbsence,
+    systemUser,
+    fetchAllSystemUsers,
+    updateSystemUserAccess
   } = useEscalaStorage(session);
 
-  const [view, setView] = useState<'calendar' | 'history' | 'profile' | 'users' | 'team_schedule'>('calendar');
+  const [view, setView] = useState<'calendar' | 'history' | 'profile' | 'users' | 'team_schedule' | 'admin'>('calendar');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -322,44 +327,75 @@ const App: React.FC = () => {
     handleUpdateActiveProfile({ ...activeProfile, offDays: newOffDays });
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   if (!session) {
     return <Auth onAuthSuccess={() => { }} />;
   }
 
-  if (profiles.length === 0 || showOnboarding) {
+  // Verifica se o usuário tem a role no banco de dados.
+  // Pode ser nulo durante o carregamento inicial.
+  if (systemUser && !systemUser.is_approved) {
+    return <AccessDenied onLogout={handleLogout} />;
+  }
+
+  if ((profiles.length === 0 || showOnboarding) && view !== 'admin') {
     return (
-      <>
+      <div className="min-h-screen bg-[#0a0a0f]">
+        {systemUser?.role === 'admin' && (
+          <div className="absolute top-4 right-4 z-50">
+            <button
+              onClick={() => {
+                setShowOnboarding(false);
+                setView('admin');
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+            >
+              <ShieldCheck size={16} /> Painel Administrador
+            </button>
+          </div>
+        )}
         <DuplicateAlert duplicateErrorName={duplicateErrorName} setDuplicateErrorName={setDuplicateErrorName} />
         <Onboarding onComplete={handleAddProfile} onCancel={() => setShowOnboarding(false)} isAddingExtra={profiles.length > 0} existingRoles={existingRoles} />
-      </>
+      </div>
     );
   }
 
-  if (!activeProfile) return null;
+  if (!activeProfile && view !== 'admin') return null;
 
   const theme = (THEME_CONFIGS as Record<ThemeStyle, any>)[globalTheme] || THEME_CONFIGS[ThemeStyle.MODERN];
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
 
   return (
     <Layout themeStyle={globalTheme}>
       <DuplicateAlert duplicateErrorName={duplicateErrorName} setDuplicateErrorName={setDuplicateErrorName} />
 
-      <div className="flex justify-between items-center mb-2 px-1">
+      <div className="flex justify-between items-center mb-4 px-2">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-full text-[9px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-90"
+          className="flex items-center gap-2 px-3 py-2 bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-xl text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-90"
         >
           <LogOut size={14} /> Sair
         </button>
-        <button
-          onClick={() => setIsHelpOpen(true)}
-          className="flex items-center gap-2 px-3 py-1.5 bg-white/50 backdrop-blur-sm border border-gray-100 rounded-full text-[9px] font-black text-pink-500 uppercase tracking-widest hover:bg-white transition-all active:scale-90"
-        >
-          <HelpCircle size={14} /> Ajuda
-        </button>
+
+        <div className="flex gap-2">
+          {systemUser?.role === 'admin' && view !== 'admin' && (
+            <button
+              onClick={() => setView('admin')}
+              className="flex items-center gap-2 px-3 py-2 bg-purple-500/20 backdrop-blur-sm border border-purple-500/50 rounded-xl text-[10px] font-black text-purple-400 uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all active:scale-90 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+            >
+              <ShieldCheck size={14} /> Painel Admin
+            </button>
+          )}
+
+          <button
+            onClick={() => setIsHelpOpen(true)}
+            className="flex items-center gap-2 px-3 py-2 bg-white/50 backdrop-blur-sm border border-gray-100 rounded-xl text-[10px] font-black text-pink-500 uppercase tracking-widest hover:bg-white transition-all active:scale-90"
+          >
+            <HelpCircle size={14} /> Ajuda
+          </button>
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
@@ -405,7 +441,7 @@ const App: React.FC = () => {
           />
         )}
 
-        {view === 'profile' && (
+        {view === 'profile' && activeProfile && (
           <ProfileView
             activeProfile={activeProfile}
             theme={theme}
@@ -431,9 +467,15 @@ const App: React.FC = () => {
             onLogout={handleLogout}
           />
         )}
+        {view === 'admin' && systemUser?.role === 'admin' && (
+          <SystemAccessManagement 
+            fetchAllSystemUsers={fetchAllSystemUsers} 
+            updateSystemUserAccess={updateSystemUserAccess} 
+          />
+        )}
       </AnimatePresence>
 
-      <Navbar view={view} setView={setView} theme={theme} />
+      <Navbar view={view} setView={setView} theme={theme} systemRole={systemUser?.role} />
 
       <HelpCenter isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       <BatchAddModal

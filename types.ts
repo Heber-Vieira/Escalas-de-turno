@@ -83,3 +83,11 @@ export interface AuditLog {
   newData?: any;
   createdAt: string;
 }
+
+export interface SystemUser {
+  id: string;
+  email: string;
+  role: 'admin' | 'user';
+  is_approved: boolean;
+  created_at: string;
+}

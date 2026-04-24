@@ -110,7 +110,8 @@ export const HistoryView: React.FC<HistoryViewProps> = ({
                                         </button>
                                     </div>
                                 </motion.div>
-                            ))}
+                            );
+                            })}
                         </AnimatePresence>
                     </div>
                 )}

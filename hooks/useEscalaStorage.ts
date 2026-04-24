@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
-import { UserConfig, Absence, ThemeStyle } from '../types';
+import { UserConfig, Absence, ThemeStyle, SystemUser } from '../types';
 import { supabase } from '../services/supabase';
 
 export const useEscalaStorage = (session: any) => {
@@ -8,6 +8,7 @@ export const useEscalaStorage = (session: any) => {
     const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
     const [absences, setAbsences] = useState<Absence[]>([]);
     const [globalTheme, setGlobalTheme] = useState<ThemeStyle>(ThemeStyle.MODERN);
+    const [systemUser, setSystemUser] = useState<SystemUser | null>(null);
     const [loading, setLoading] = useState(false);
 
     // Initial Load from Supabase
@@ -23,6 +24,16 @@ export const useEscalaStorage = (session: any) => {
                     .select('*')
                     .eq('user_id', session.user.id)
                     .maybeSingle();
+
+                // Fetch System User details
+                const { data: sysUser, error: sysError } = await supabase
+                    .from('system_users')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .maybeSingle();
+                
+                if (sysError) console.error('Error fetching system user:', sysError);
+                if (sysUser) setSystemUser(sysUser as SystemUser);
 
                 if (sError) console.error('Error fetching settings:', sError);
 
@@ -282,6 +293,22 @@ export const useEscalaStorage = (session: any) => {
         setAbsences(prev => prev.filter(a => a.id !== id));
     };
 
+    const fetchAllSystemUsers = async () => {
+        if (!systemUser || systemUser.role !== 'admin') return [];
+        const { data, error } = await supabase.from('system_users').select('*').order('created_at', { ascending: false });
+        if (error) {
+            console.error('Error fetching all system users:', error);
+            return [];
+        }
+        return data as SystemUser[];
+    };
+
+    const updateSystemUserAccess = async (userId: string, is_approved: boolean, role: 'admin' | 'user') => {
+        if (!systemUser || systemUser.role !== 'admin') return;
+        const { error } = await supabase.from('system_users').update({ is_approved, role }).eq('id', userId);
+        if (error) throw error;
+    };
+
     return {
         profiles,
         activeProfileId,
@@ -295,6 +322,9 @@ export const useEscalaStorage = (session: any) => {
         updateProfile,
         deleteProfile,
         syncAbsence,
-        deleteAbsence
+        deleteAbsence,
+        systemUser,
+        fetchAllSystemUsers,
+        updateSystemUserAccess
     };
 };

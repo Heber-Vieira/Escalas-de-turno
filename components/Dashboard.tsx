@@ -342,6 +342,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const workDaysInMonth = days.filter(d => isWorkDay(d, config) || isDayOvertime(d)).length;
   const monthAbsencesCount = absences.filter((a: Absence) => {
     const d = parseISO(a.date);
+    if (!isValid(d)) return false;
     return a.profileId === config.id && isWithinInterval(d, { start: monthStart, end: monthEnd });
   }).length;
   const presenceRate = workDaysInMonth > 0 ? Math.round(((workDaysInMonth - monthAbsencesCount) / workDaysInMonth) * 100) : 100;
@@ -532,7 +533,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
             const vacation = isDayVacation(day);
             const overtime = isDayOvertime(day);
 
-            const profileStart = startOfDay(parse(config.startDate, 'yyyy-MM-dd', new Date()));
+            let profileStart = parseISO(config.startDate);
+            if (!isValid(profileStart)) profileStart = parse(config.startDate, 'yyyy-MM-dd', new Date());
+            if (!isValid(profileStart)) profileStart = new Date();
+            profileStart = startOfDay(profileStart);
             const isBeforeStart = isBefore(startOfDay(day), profileStart);
 
             return (
