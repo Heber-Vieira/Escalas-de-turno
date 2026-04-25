@@ -257,10 +257,10 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
               <div key={profile.id} className="bg-sky-50/50 border border-sky-100 rounded-3xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-2xl bg-sky-500 text-white flex items-center justify-center font-black text-sm shadow-lg shadow-sky-200">
-                    {profile.name.charAt(0)}
+                    {(profile.name || 'Usuário').charAt(0)}
                   </div>
                   <div>
-                    <span className="text-[12px] font-black text-sky-900 block">{profile.name.split(' ')[0]}</span>
+                    <span className="text-[12px] font-black text-sky-900 block">{(profile.name || 'Usuário').split(' ')[0]}</span>
                     <span className="text-[8px] font-bold text-sky-400 uppercase tracking-tighter">{profile.role}</span>
                   </div>
                 </div>
@@ -428,10 +428,10 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                               const isExtra = w.overtimeDates?.includes(dateStr);
                               return (
                                 <div key={w.id} className={`user-card flex items-center gap-2 rounded-full bg-white border border-gray-100 shadow-sm px-2.5 py-1.5 ${w.id === activeConfig.id ? 'border-pink-200 ring-1 ring-pink-500/10' : ''} ${isExtra ? 'border-purple-200' : ''}`}>
-                                  <div className={`w-4 h-4 rounded-full flex items-center justify-center font-black text-[7px] border no-print ${w.id === activeConfig.id ? (isExtra ? 'bg-purple-600 border-purple-400 text-white' : 'bg-pink-500 border-pink-400 text-white') : 'bg-gray-100 border-gray-200 text-gray-400'}`}>{w.name.charAt(0)}</div>
+                                  <div className={`w-4 h-4 rounded-full flex items-center justify-center font-black text-[7px] border no-print ${w.id === activeConfig.id ? (isExtra ? 'bg-purple-600 border-purple-400 text-white' : 'bg-pink-500 border-pink-400 text-white') : 'bg-gray-100 border-gray-200 text-gray-400'}`}>{(w.name || 'Usuário').charAt(0)}</div>
                                   <div className="flex flex-col">
                                     <div className="flex items-center gap-1">
-                                      <span className="text-[10px] font-bold text-gray-700 leading-none">{w.name.split(' ')[0]}</span>
+                                      <span className="text-[10px] font-bold text-gray-700 leading-none">{(w.name || 'Usuário').split(' ')[0]}</span>
                                       {isExtra && <Zap size={8} className="text-purple-500 fill-purple-500" />}
                                     </div>
                                     <span className="role-badge text-[7px] font-black text-pink-400 uppercase tracking-tighter mt-0.5">{((w as any).effectiveRole || 'Sem Função').slice(0, 12)}</span>
@@ -453,7 +453,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                         <div className="flex flex-wrap gap-1 flex-1">
                           {vacation.map(w => (
                             <div key={w.id} className="px-2 py-0.5 rounded-full bg-sky-50/50 border border-sky-100 text-[8px] font-bold text-sky-400 uppercase">
-                              {w.name.split(' ')[0]}
+                              {(w.name || 'Usuário').split(' ')[0]}
                             </div>
                           ))}
                         </div>

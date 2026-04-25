@@ -16,6 +16,7 @@ import { Auth } from './components/Auth';
 import { ConfirmModal } from './components/ConfirmModal';
 import { AccessDenied } from './components/AccessDenied';
 import { SystemAccessManagement } from './components/SystemAccessManagement';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { supabase } from './services/supabase';
 import { useEscalaStorage } from './hooks/useEscalaStorage';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,6 +24,7 @@ import { HelpCircle, Zap, Umbrella, FileText, LogOut, Briefcase, ShieldCheck } f
 import { THEME_CONFIGS } from './constants';
 import { format, parseISO, isSameMonth, differenceInCalendarDays, isValid } from 'date-fns';
 
+const ensureArray = (arr: any) => Array.isArray(arr) ? arr : [];
 
 const App: React.FC = () => {
   const [session, setSession] = useState<any | null>(null);
@@ -115,7 +117,7 @@ const App: React.FC = () => {
         icon: <FileText size={18} />
       });
     });
-    (activeProfile.overtimeDates || []).forEach((date: string) => {
+    ensureArray(activeProfile.overtimeDates).forEach((date: string) => {
       events.push({
         id: `ovt-${date}`,
         date: date,
@@ -126,7 +128,7 @@ const App: React.FC = () => {
         icon: <Zap size={18} />
       });
     });
-    const vacationDates = [...(activeProfile.vacationDates || [])].sort();
+    const vacationDates = [...ensureArray(activeProfile.vacationDates)].sort();
     if (vacationDates.length > 0) {
       let currentPeriod: string[] = [vacationDates[0]];
       for (let i = 1; i <= vacationDates.length; i++) {
@@ -335,12 +337,23 @@ const App: React.FC = () => {
     return <Auth onAuthSuccess={() => { }} />;
   }
 
-  // Verifica se o usuário tem a role no banco de dados.
-  // Pode ser nulo durante o carregamento inicial.
-  if (systemUser && !systemUser.is_approved) {
+  // Mostra loading enquanto os dados do banco estão sendo carregados
+  if (storageLoading) {
+    return (
+      <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center gap-4">
+        <div className="w-10 h-10 rounded-2xl bg-pink-500 animate-pulse" />
+        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Carregando...</p>
+      </div>
+    );
+  }
+
+  // Só bloqueia se o systemUser EXISTE e explicitamente NÃO está aprovado
+  // Se systemUser for null (não encontrado na tabela), deixa prosseguir
+  if (systemUser !== null && !systemUser.is_approved) {
     return <AccessDenied onLogout={handleLogout} />;
   }
 
+  // Se não há perfis OU o onboarding foi solicitado, mostra o onboarding
   if ((profiles.length === 0 || showOnboarding) && view !== 'admin') {
     return (
       <div className="min-h-screen bg-[#0a0a0f]">
@@ -357,13 +370,36 @@ const App: React.FC = () => {
             </button>
           </div>
         )}
+        <div className="absolute top-4 left-4 z-50">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-[10px] font-black text-red-400 uppercase tracking-widest hover:bg-red-500/20 transition-all"
+          >
+            <LogOut size={14} /> Sair
+          </button>
+        </div>
         <DuplicateAlert duplicateErrorName={duplicateErrorName} setDuplicateErrorName={setDuplicateErrorName} />
         <Onboarding onComplete={handleAddProfile} onCancel={() => setShowOnboarding(false)} isAddingExtra={profiles.length > 0} existingRoles={existingRoles} />
       </div>
     );
   }
 
-  if (!activeProfile && view !== 'admin') return null;
+  // Se após o carregamento não houver perfil ativo (não deveria acontecer, mas safety net)
+  if (!activeProfile && view !== 'admin') {
+    return (
+      <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center gap-4 p-8">
+        <div className="text-4xl">⚠️</div>
+        <h2 className="text-lg font-black text-gray-800">Nenhum perfil encontrado</h2>
+        <p className="text-sm text-gray-500 text-center">Não foi possível carregar seu perfil. Por favor, faça logout e entre novamente.</p>
+        <button
+          onClick={handleLogout}
+          className="px-6 py-3 bg-pink-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg"
+        >
+          Fazer Logout
+        </button>
+      </div>
+    );
+  }
 
   const theme = (THEME_CONFIGS as Record<ThemeStyle, any>)[globalTheme] || THEME_CONFIGS[ThemeStyle.MODERN];
 
@@ -403,32 +439,36 @@ const App: React.FC = () => {
       <AnimatePresence mode="wait">
         {view === 'calendar' && (
           <motion.div key="calendar" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <Dashboard
-              config={activeProfile}
-              allProfiles={profiles}
-              absences={absences}
-              onAddAbsence={addAbsenceHandler}
-              onRemoveAbsence={removeAbsenceHandler}
-              onUpdateConfig={handleUpdateActiveProfile}
-              onUpdateTheme={updateTheme}
-              globalTheme={globalTheme}
-              openSettings={() => setView('users')}
-              onConfirm={requestConfirmation}
-            />
+            <ErrorBoundary onLogout={handleLogout}>
+              <Dashboard
+                config={activeProfile}
+                allProfiles={profiles}
+                absences={absences}
+                onAddAbsence={addAbsenceHandler}
+                onRemoveAbsence={removeAbsenceHandler}
+                onUpdateConfig={handleUpdateActiveProfile}
+                onUpdateTheme={updateTheme}
+                globalTheme={globalTheme}
+                openSettings={() => setView('users')}
+                onConfirm={requestConfirmation}
+              />
+            </ErrorBoundary>
           </motion.div>
         )}
 
         {view === 'team_schedule' && (
           <motion.div key="team_schedule" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <TeamSchedule
-              activeConfig={activeProfile}
-              allProfiles={profiles}
-              absences={absences}
-              currentMonth={currentMonth}
-              onMonthChange={setCurrentMonth}
-              onOpenHelp={() => setIsHelpOpen(true)}
-              onLogout={handleLogout}
-            />
+            <ErrorBoundary onLogout={handleLogout}>
+              <TeamSchedule
+                activeConfig={activeProfile}
+                allProfiles={profiles}
+                absences={absences}
+                currentMonth={currentMonth}
+                onMonthChange={setCurrentMonth}
+                onOpenHelp={() => setIsHelpOpen(true)}
+                onLogout={handleLogout}
+              />
+            </ErrorBoundary>
           </motion.div>
         )}
 

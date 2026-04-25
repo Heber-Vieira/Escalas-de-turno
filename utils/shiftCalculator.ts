@@ -25,12 +25,14 @@ export function getEffectiveConfig(date: Date, config: Partial<UserConfig>): {
     turn: config.turn
   };
 
-  if (!config.careerHistory || config.careerHistory.length === 0) {
+  const ensureArray = (arr: any) => Array.isArray(arr) ? arr : [];
+  
+  if (!config.careerHistory || ensureArray(config.careerHistory).length === 0) {
     return effective;
   }
 
   // Ordenar histórico por data (antigo -> recente)
-  const sortedHistory = [...config.careerHistory].sort((a, b) =>
+  const sortedHistory = [...ensureArray(config.careerHistory)].sort((a, b) =>
     a.date.localeCompare(b.date)
   );
 
@@ -123,8 +125,10 @@ export function isWorkDay(date: Date, config: Partial<UserConfig>): boolean {
       return posInCycle < work;
     }
 
-    case ShiftType.FLEXIBLE:
-      return !effectiveConfig.offDays.includes(dayOfWeek);
+    case ShiftType.FLEXIBLE: {
+      const offDays = Array.isArray(effectiveConfig.offDays) ? effectiveConfig.offDays : [];
+      return !offDays.includes(dayOfWeek);
+    }
 
     default:
       return true;

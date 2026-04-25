@@ -9,6 +9,8 @@ import { ChevronLeft, ChevronRight, Palette, Settings, Eye, EyeOff, ShieldCheck,
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSmartAlert } from '../services/geminiService';
 
+const ensureArray = (arr: any) => Array.isArray(arr) ? arr : [];
+
 interface DashboardProps {
   config: UserConfig;
   allProfiles: UserConfig[];
@@ -107,7 +109,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     if (isBefore(startOfDay(date), start)) return false;
 
     const dateStr = format(date, 'yyyy-MM-dd');
-    return absences.some((a: Absence) => a.date === dateStr && a.profileId === profileId);
+    return ensureArray(absences).some((a: Absence) => a.date === dateStr && a.profileId === profileId);
   };
 
   const isDayVacation = (date: Date, userConfig: UserConfig = config) => {
@@ -118,7 +120,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     if (isBefore(startOfDay(date), start)) return false;
 
     const dateStr = format(date, 'yyyy-MM-dd');
-    return userConfig.vacationDates?.includes(dateStr) || false;
+    return ensureArray(userConfig.vacationDates).includes(dateStr);
   };
 
   const isDayOvertime = (date: Date, userConfig: UserConfig = config) => {
@@ -129,7 +131,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     if (isBefore(startOfDay(date), start)) return false;
 
     const dateStr = format(date, 'yyyy-MM-dd');
-    return userConfig.overtimeDates?.includes(dateStr) || false;
+    return ensureArray(userConfig.overtimeDates).includes(dateStr);
   };
 
   const getWhoWorksOn = (date: Date, effectiveProfiles: UserConfig[]) => {
@@ -138,13 +140,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const teamStats = useMemo(() => {
     // 1. Calcular configs efetivas para TODOS os perfis na data selecionada
+    const validTurnValues = Object.values(WorkTurn) as string[];
     const effectiveProfiles = allProfiles.map(p => {
       const eff = getEffectiveConfig(selectedDate, p);
+      const rawTurn = eff.turn || p.turn || '';
       return {
         ...p,
-        role: eff.role || p.role,
+        role: (eff.role || p.role || '').trim() || 'Sem Função',
         shiftType: eff.shiftType || p.shiftType,
-        turn: eff.turn || p.turn
+        turn: (validTurnValues.includes(rawTurn) ? rawTurn : WorkTurn.MORNING) as WorkTurn
       };
     });
 
@@ -157,9 +161,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
     };
 
     const byRole: Record<string, { active: number, total: number, workers: UserConfig[] }> = {};
+
     effectiveProfiles.forEach((p: UserConfig) => {
-      const turn = p.turn || WorkTurn.MORNING;
-      const role = p.role || 'Sem Função';
+      // turn e role já foram validados ao construir effectiveProfiles acima
+      const turn = p.turn as WorkTurn;
+      const role = (p.role && p.role.trim()) ? p.role.trim() : 'Sem Função';
 
       byTurn[turn].total++;
       if (!byRole[role]) byRole[role] = { active: 0, total: 0, workers: [] };
@@ -182,7 +188,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const toggleVacation = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    const currentVacations = config.vacationDates || [];
+    const currentVacations = ensureArray(config.vacationDates);
 
     if (!currentVacations.includes(dateStr)) return;
 
@@ -199,7 +205,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     }
 
     const newVacations = currentVacations.filter((d: string) => !periodToRemove.includes(d));
-    const newOvertime = (config.overtimeDates || []).filter((d: string) => !periodToRemove.includes(d));
+    const newOvertime = ensureArray(config.overtimeDates).filter((d: string) => !periodToRemove.includes(d));
 
     const startStr = periodToRemove[periodToRemove.length - 1];
     const endStr = periodToRemove[0];
@@ -217,7 +223,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const toggleOvertime = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    const currentOvertime = config.overtimeDates || [];
+    const currentOvertime = ensureArray(config.overtimeDates);
     let newOvertime;
     if (currentOvertime.includes(dateStr)) {
       onConfirm(
@@ -252,7 +258,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       if (!isValid(start)) return false;
       const end = addDays(start, selectedDuration - 1);
       const interval = eachDayOfInterval({ start, end });
-      const currentVacations = config.vacationDates || [];
+      const currentVacations = ensureArray(config.vacationDates);
       return interval.some((d: Date) => currentVacations.includes(format(d, 'yyyy-MM-dd')));
     } catch { return false; }
   }, [vacationStart, selectedDuration, config.vacationDates]);
@@ -264,7 +270,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       if (!isValid(start)) return false;
       const end = addDays(start, selectedDuration - 1);
       const interval = eachDayOfInterval({ start, end });
-      const profileAbsences = absences.filter((a: Absence) => a.profileId === config.id).map((a: Absence) => a.date);
+      const profileAbsences = ensureArray(absences).filter((a: Absence) => a.profileId === config.id).map((a: Absence) => a.date);
       return interval.some((d: Date) => profileAbsences.includes(format(d, 'yyyy-MM-dd')));
     } catch { return false; }
   }, [vacationStart, selectedDuration, absences, config.id]);
@@ -283,7 +289,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       const conflicts: { profile: UserConfig, dates: string[] }[] = [];
 
       peers.forEach((peer: UserConfig) => {
-        const peerVacations = peer.vacationDates || [];
+        const peerVacations = ensureArray(peer.vacationDates);
         const commonDates = intervalStr.filter(d => peerVacations.includes(d));
         if (commonDates.length > 0) {
           conflicts.push({ profile: peer, dates: commonDates });
@@ -309,7 +315,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const newDateStrings = interval.map(d => format(d, 'yyyy-MM-dd'));
 
     // Mesclagem simples sem remover registros antigos (exceto se o usuário for desabilitar essa trava no futuro)
-    const currentVacations = config.vacationDates || [];
+    const currentVacations = ensureArray(config.vacationDates);
     const mergedVacations = Array.from(new Set([...currentVacations, ...newDateStrings]));
 
     onUpdateConfig({
@@ -338,11 +344,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const getAbsenceForDate = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return absences.find((a: Absence) => a.date === dateStr && a.profileId === config.id);
+    return ensureArray(absences).find((a: Absence) => a.date === dateStr && a.profileId === config.id);
   };
 
   const workDaysInMonth = days.filter(d => isWorkDay(d, config) || isDayOvertime(d)).length;
-  const monthAbsencesCount = absences.filter((a: Absence) => {
+  const monthAbsencesCount = ensureArray(absences).filter((a: Absence) => {
     const d = parseISO(a.date);
     if (!isValid(d)) return false;
     return a.profileId === config.id && isWithinInterval(d, { start: monthStart, end: monthEnd });
@@ -409,6 +415,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       case WorkTurn.MORNING: return <Sun size={8} className="text-orange-400" />;
       case WorkTurn.AFTERNOON: return <CloudSun size={8} className="text-pink-400" />;
       case WorkTurn.NIGHT: return <Moon size={8} className="text-indigo-400" />;
+      default: return <Sun size={8} className="text-gray-300" />;
     }
   };
 
@@ -430,10 +437,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="flex items-center justify-between mb-2">
           <button onClick={openSettings} className="flex items-center gap-3 text-left">
             <div className="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center font-black text-sm border-2 border-pink-100 shadow-sm transition-transform active:scale-95">
-              {config.name.charAt(0)}
+              {(config.name || 'Usuário').charAt(0)}
             </div>
             <div>
-              <h2 className="text-lg font-black text-gray-800 leading-tight">{config.name.split(' ')[0]}</h2>
+              <h2 className="text-lg font-black text-gray-800 leading-tight">{(config.name || 'Usuário').split(' ')[0]}</h2>
               <div className="flex flex-col">
                 {effectiveConfig.role && (
                   <span className="text-[9px] font-black uppercase text-gray-500 leading-tight tracking-wider mb-0.5 opacity-80">{effectiveConfig.role}</span>
@@ -632,7 +639,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     <div className="flex flex-wrap gap-1.5">
                       {stats.workers.map(p => {
-                        const isExtra = p.overtimeDates?.includes(format(selectedDate, 'yyyy-MM-dd'));
+                        const isExtra = ensureArray(p.overtimeDates).includes(format(selectedDate, 'yyyy-MM-dd'));
                         return (
                           <motion.div
                             key={p.id}
@@ -641,9 +648,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             className={`flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 rounded-full bg-white border shadow-xs transition-all ${p.id === config.id ? 'border-indigo-400 ring-2 ring-indigo-500/5' : 'border-indigo-50/50'}`}
                           >
                             <div className={`w-5 h-5 rounded-full flex items-center justify-center font-black text-[8px] shrink-0 ${p.id === config.id ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-400'}`}>
-                              {p.name.charAt(0)}
+                              {(p.name || 'Usuário').charAt(0)}
                             </div>
-                            <span className="text-[9px] font-bold text-gray-700 truncate max-w-[60px]">{p.name.split(' ')[0]}</span>
+                            <span className="text-[9px] font-bold text-gray-700 truncate max-w-[60px]">{(p.name || 'Usuário').split(' ')[0]}</span>
                             <div className="flex items-center gap-0.5 ml-0.5">
                               {getTurnIcon(p.turn)}
                               {isExtra && <Zap size={7} className="text-purple-500 fill-purple-500" />}
@@ -667,7 +674,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            {config.careerHistory?.find(h => h.date === format(selectedDate, 'yyyy-MM-dd')) && (
+            {ensureArray(config.careerHistory).find(h => h.date === format(selectedDate, 'yyyy-MM-dd')) && (
               <div
                 onClick={openSettings}
                 className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center gap-3 mb-2 cursor-pointer hover:bg-emerald-100/50 transition-colors"
