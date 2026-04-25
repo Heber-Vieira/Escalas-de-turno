@@ -8,6 +8,7 @@ import {
   UserX
 } from 'lucide-react';
 import { UserConfig, ShiftType, WorkTurn, ThemeStyle } from '../types';
+import { formatName } from '../utils/shiftCalculator';
 import { GoogleGenAI, Type } from "@google/genai";
 import { read, utils, writeFile } from 'xlsx';
 
@@ -105,7 +106,7 @@ export const BatchAddModal: React.FC<BatchAddModalProps> = ({ isOpen, onClose, o
 
         const newMembers = data.map(row => ({
           id: Math.random().toString(36).substr(2, 9),
-          name: String(row.Nome || row.nome || row.Name || row.name || 'Novo Integrante').trim(),
+          name: formatName(String(row.Nome || row.nome || row.Name || row.name || 'Novo Integrante')),
           role: String(row.Cargo || row.cargo || row.Role || row.role || row.Função || row.funcao || 'Operador').trim(),
           shiftType: getShiftType(row.Escala || row.escala || row.Shift || row.shift),
           turn: getWorkTurn(row.Turno || row.turno || row.Turn || row.turn),
@@ -184,7 +185,7 @@ export const BatchAddModal: React.FC<BatchAddModalProps> = ({ isOpen, onClose, o
       const result = JSON.parse(response.text || '[]');
       const newMembers = result.map((item: any) => ({
         id: Math.random().toString(36).substr(2, 9),
-        name: item.name,
+        name: formatName(item.name),
         role: item.role || 'Operador',
         shiftType: item.shiftType || defaultShift,
         turn: item.turn || defaultTurn,

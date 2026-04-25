@@ -25,8 +25,29 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     handleUpdateActiveProfile,
     toggleOffDay,
     existingRoles = [],
-    onRequestConfirmation
+    onRequestConfirmation,
+    onUploadAvatar
 }) => {
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [uploading, setUploading] = React.useState(false);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const url = await onUploadAvatar(activeProfile.id, file);
+            if (url) {
+                handleUpdateActiveProfile({ ...activeProfile, avatarUrl: url });
+            }
+        } catch (err) {
+            console.error('Error uploading avatar:', err);
+            alert('Erro ao fazer upload da imagem.');
+        } finally {
+            setUploading(false);
+        }
+    };
     return (
         <motion.div key="profile" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4 sm:space-y-6 pb-32">
             <div className="flex items-center justify-between gap-4">
@@ -37,6 +58,41 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
 
             <div className={`p-4 sm:p-6 space-y-4 sm:space-y-6 ${theme.card}`}>
+                <div className="flex flex-col items-center gap-4 py-4">
+                    <div className="relative group">
+                        <div 
+                            className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white shadow-xl bg-pink-50 flex items-center justify-center cursor-pointer hover:opacity-90 transition-all"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            {activeProfile.avatarUrl ? (
+                                <img src={activeProfile.avatarUrl} alt={activeProfile.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="text-4xl sm:text-5xl font-black text-pink-500 uppercase">
+                                    {activeProfile.name.charAt(0)}
+                                </div>
+                            )}
+                            
+                            {uploading && (
+                                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center rounded-full">
+                                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                </div>
+                            )}
+
+                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-full">
+                                <UserCircle className="text-white w-8 h-8" />
+                            </div>
+                        </div>
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            onChange={handleFileChange} 
+                            accept="image/*" 
+                            className="hidden" 
+                        />
+                    </div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Toque para alterar a foto</p>
+                </div>
+
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 mb-1"><UserCircle size={12} className="opacity-40" /><label className="text-[9px] sm:text-[10px] font-bold opacity-40 uppercase tracking-widest">Nome</label></div>
                     <input className={`w-full p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-white/10 ${theme.bg.includes('white') ? 'bg-gray-50/85' : 'bg-gray-800/85'} ${theme.text} font-bold text-sm sm:text-base`} value={activeProfile.name} onChange={e => handleUpdateActiveProfile({ ...activeProfile, name: e.target.value })} />

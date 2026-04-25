@@ -77,7 +77,8 @@ export const useEscalaStorage = (session: any) => {
                     careerHistory: p.career_history || []
                 }));
 
-                setProfiles(mappedProfiles);
+                const sortedProfiles = mappedProfiles.sort((a, b) => a.name.localeCompare(b.name));
+                setProfiles(sortedProfiles);
 
                 // Fetch Absences
                 const { data: dbAbsences, error: aError } = await supabase
@@ -193,7 +194,7 @@ export const useEscalaStorage = (session: any) => {
             id: inserted.id
         };
 
-        setProfiles(prev => [...prev, mapped]);
+        setProfiles(prev => [...prev, mapped].sort((a, b) => a.name.localeCompare(b.name)));
         return mapped;
     };
 
@@ -232,7 +233,7 @@ export const useEscalaStorage = (session: any) => {
 
         if (error) throw error;
 
-        setProfiles(prev => prev.map(p => p.id === id ? config : p));
+        setProfiles(prev => prev.map(p => p.id === id ? config : p).sort((a, b) => a.name.localeCompare(b.name)));
     };
 
     const deleteProfile = async (id: string) => {
@@ -315,6 +316,27 @@ export const useEscalaStorage = (session: any) => {
         if (error) throw error;
     };
 
+    const uploadAvatar = async (profileId: string, file: File) => {
+        if (!session?.user?.id) return null;
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${profileId}-${Math.random()}.${fileExt}`;
+        const filePath = `${session.user.id}/${fileName}`;
+
+        // Upload to 'avatars' bucket
+        const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, file, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(filePath);
+
+        return publicUrl;
+    };
+
     return {
         profiles,
         activeProfileId,
@@ -332,6 +354,7 @@ export const useEscalaStorage = (session: any) => {
         systemUser,
         fetchAllSystemUsers,
         updateSystemUserAccess,
-        deleteSystemUser
+        deleteSystemUser,
+        uploadAvatar
     };
 };

@@ -55,7 +55,7 @@ export function getEffectiveConfig(date: Date, config: Partial<UserConfig>): {
       if (change.offDays) effective.offDays = change.offDays;
       if (change.rotatingWorkDays) effective.rotatingWorkDays = change.rotatingWorkDays;
       if (change.rotatingOffDays) effective.rotatingOffDays = change.rotatingOffDays;
-      if (change.role) effective.role = change.role;
+      if (change.role) effective.role = change.role.trim();
       if (change.turn) effective.turn = change.turn;
     }
   }
@@ -133,4 +133,16 @@ export function isWorkDay(date: Date, config: Partial<UserConfig>): boolean {
     default:
       return true;
   }
+}
+
+/**
+ * Formats a name to Title Case: First letter uppercase, rest lowercase.
+ */
+export function formatName(name: string): string {
+  if (!name) return '';
+  const particles = ['de', 'da', 'do', 'dos', 'das', 'e'];
+  return name.trim().toLowerCase().split(/\s+/).map((word, index) => {
+    if (particles.includes(word) && index > 0) return word;
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }).join(' ');
 }

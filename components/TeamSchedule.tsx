@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, parseISO, differenceInCalendarDays, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { UserConfig, Absence, WorkTurn, ThemeStyle } from '../types';
-import { isWorkDay, getEffectiveConfig } from '../utils/shiftCalculator';
+import { isWorkDay, getEffectiveConfig, formatName } from '../utils/shiftCalculator';
 import { THEME_CONFIGS } from '../constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, CloudSun, Moon, ChevronLeft, ChevronRight, Printer, X, Check, Settings2, Filter, CalendarDays, Clock, RotateCcw, ChevronDown, Umbrella, Zap, HelpCircle, LogOut } from 'lucide-react';
@@ -55,9 +55,9 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
   const allRoles = useMemo(() => {
     const roles = new Set<string>();
     allProfiles.forEach(p => {
-      if (p.role) roles.add(p.role);
+      if (p.role) roles.add(p.role.trim());
       p.careerHistory?.forEach(h => {
-        if (h.role) roles.add(h.role);
+        if (h.role) roles.add(h.role.trim());
       });
     });
     return Array.from(roles).sort();
@@ -128,6 +128,25 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
 
   const getWorkersByDayAndTurn = (day: Date) => {
     const dateStr = format(day, 'yyyy-MM-dd');
+    
+    // Canonical role for matching (handles gender and common spelling variations)
+    const getCanonicalRole = (role: string) => {
+      if (!role) return '';
+      return role.trim().toLowerCase()
+        .replace(/ss/g, 's') // profisSional vs profisional
+        .replace(/ã/g, 'a') // função vs funcao
+        .replace(/ç/g, 'c')
+        .replace(/ê/g, 'e')
+        .replace(/é/g, 'e')
+        .replace(/í/g, 'i')
+        .replace(/ó/g, 'o')
+        .replace(/õ/g, 'o')
+        .replace(/ú/g, 'u')
+        .replace(/\b(bombeira|bombeiro)\b/g, 'bombeir') // Gender neutral
+        .replace(/\b(mecanica|mecanico)\b/g, 'mecanic')
+        .replace(/\b(tecnica|tecnico)\b/g, 'tecnic')
+        .replace(/\b(auxiliara|auxiliar)\b/g, 'auxiliar');
+    };
 
     const workersWithConfig = allProfiles.map(p => {
       const effective = getEffectiveConfig(day, p);
@@ -142,20 +161,20 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
       return (isWorkDay(day, p) || (p.overtimeDates?.includes(dateStr))) &&
         !absences.some(a => a.date === dateStr && a.profileId === p.id) &&
         !(p.vacationDates?.includes(dateStr)) &&
-        selectedRoles.includes(p.effectiveRole) &&
-        selectedTurns.includes(p.effectiveTurn);
+        selectedRoles.some(r => getCanonicalRole(r) === getCanonicalRole(p.effectiveRole)) &&
+        selectedTurns.some(t => getCanonicalRole(t) === getCanonicalRole(p.effectiveTurn));
     });
 
     const onVacation = workersWithConfig.filter(p =>
       p.vacationDates?.includes(dateStr) &&
-      selectedRoles.includes(p.effectiveRole) &&
-      selectedTurns.includes(p.effectiveTurn)
+      selectedRoles.some(r => getCanonicalRole(r) === getCanonicalRole(p.effectiveRole)) &&
+      selectedTurns.some(t => getCanonicalRole(t) === getCanonicalRole(p.effectiveTurn))
     );
 
     return {
-      [WorkTurn.MORNING]: workers.filter(w => w.effectiveTurn === WorkTurn.MORNING),
-      [WorkTurn.AFTERNOON]: workers.filter(w => w.effectiveTurn === WorkTurn.AFTERNOON),
-      [WorkTurn.NIGHT]: workers.filter(w => w.effectiveTurn === WorkTurn.NIGHT),
+      [WorkTurn.MORNING]: workers.filter(w => getCanonicalRole(w.effectiveTurn) === getCanonicalRole(WorkTurn.MORNING)),
+      [WorkTurn.AFTERNOON]: workers.filter(w => getCanonicalRole(w.effectiveTurn) === getCanonicalRole(WorkTurn.AFTERNOON)),
+      [WorkTurn.NIGHT]: workers.filter(w => getCanonicalRole(w.effectiveTurn) === getCanonicalRole(WorkTurn.NIGHT)),
       vacation: onVacation
     };
   };
@@ -227,7 +246,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
       <div className="flex justify-between items-center px-1">
         <div>
           <h2 className="text-2xl font-black tracking-tight text-gray-900">Equipe</h2>
-          <p className="text-[10px] font-bold text-pink-500 uppercase tracking-[0.2em]">Escala Diária</p>
+          <p className="text-[10px] font-bold text-pink-500 tracking-[0.2em]">Escala Diária</p>
         </div>
         <div className="flex gap-2 no-print">
           <button onClick={resetFilters} className="p-2.5 bg-white text-gray-400 rounded-xl border border-gray-100 shadow-sm transition-all active:scale-90">
@@ -241,7 +260,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
 
       <div className={`flex items-center justify-between p-3 shadow-sm no-print rounded-3xl ${theme.card}`}>
         <button onClick={() => { const d = new Date(currentMonth); d.setMonth(d.getMonth() - 1); onMonthChange(d); }} className="p-1 opacity-40 hover:opacity-100"><ChevronLeft size={18} /></button>
-        <span className="font-black uppercase text-[10px] tracking-widest">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</span>
+        <span className="font-black text-[10px] tracking-widest">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</span>
         <button onClick={() => { const d = new Date(currentMonth); d.setMonth(d.getMonth() + 1); onMonthChange(d); }} className="p-1 opacity-40 hover:opacity-100"><ChevronRight size={18} /></button>
       </div>
 
@@ -250,7 +269,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
         <div className="no-print space-y-3">
           <div className="flex items-center gap-2 px-2">
             <Umbrella size={16} className="text-sky-500" />
-            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Resumo de Férias ({format(currentMonth, 'MMM', { locale: ptBR })})</h3>
+            <h3 className="text-[10px] font-black text-gray-400 tracking-widest">Resumo de Férias ({format(currentMonth, 'MMM', { locale: ptBR })})</h3>
           </div>
           <div className="flex flex-col gap-2">
             {vacationPeriodsSummary.map(({ profile, periods }) => (
@@ -260,8 +279,10 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                     {(profile.name || 'Usuário').charAt(0)}
                   </div>
                   <div>
-                    <span className="text-[12px] font-black text-sky-900 block">{(profile.name || 'Usuário').split(' ')[0]}</span>
-                    <span className="text-[8px] font-bold text-sky-400 uppercase tracking-tighter">{profile.role}</span>
+                    <span className="text-[12px] font-black text-sky-900 block">
+                      {formatName((profile.name || 'Usuário').split(' ')[0])}
+                    </span>
+                    <span className="text-[8px] font-bold text-sky-400 tracking-tighter">{formatName(profile.role)}</span>
                   </div>
                 </div>
                 <div className="text-right space-y-1">
@@ -274,7 +295,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                       <span className="text-[10px] font-black text-sky-700">
                         {format(parseISO(p.start), 'dd/MM')} a {format(parseISO(p.end), 'dd/MM')}
                       </span>
-                      <span className="text-[8px] bg-white px-2 py-0.5 rounded-full border border-sky-100 text-sky-400 font-bold uppercase tracking-tighter">
+                      <span className="text-[8px] bg-white px-2 py-0.5 rounded-full border border-sky-100 text-sky-400 font-bold tracking-tighter">
                         {p.count} Dias
                       </span>
                     </div>
@@ -297,10 +318,10 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                 <button
                   key={role}
                   onClick={() => toggleFilter(selectedRoles, role, setSelectedRoles)}
-                  className={`px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-wider transition-all border ${selectedRoles.includes(role) ? 'bg-pink-500 border-pink-500 text-white' : 'bg-gray-50 border-gray-100 text-gray-400'
+                  className={`px-3 py-1.5 rounded-full text-[8px] font-black tracking-wider transition-all border ${selectedRoles.includes(role) ? 'bg-pink-500 border-pink-500 text-white' : 'bg-gray-50 border-gray-100 text-gray-400'
                     }`}
                 >
-                  {role}
+                  {formatName(role)}
                 </button>
               ))}
             </div>
@@ -322,7 +343,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                       }`}
                   >
                     <span className={isActive ? style.color : 'text-gray-300'}>{style.icon}</span>
-                    <span className="text-[8px] font-black uppercase tracking-tighter">{turn}</span>
+                    <span className="text-[8px] font-black tracking-tighter">{formatName(turn)}</span>
                   </button>
                 );
               })}
@@ -334,7 +355,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
           <div className="flex items-center justify-between px-1">
             <span className="text-[9px] font-black opacity-30 uppercase tracking-widest">Dias</span>
             <div className="flex gap-2">
-              <button onClick={() => handleQuickDaySelect('all')} className="text-[8px] font-black text-pink-500 uppercase">Todos</button>
+              <button onClick={() => handleQuickDaySelect('all')} className="text-[8px] font-black text-pink-500">Todos</button>
               <button onClick={() => handleQuickDaySelect('weekdays')} className="text-[8px] font-black text-pink-500 uppercase">Úteis</button>
             </div>
           </div>
@@ -343,7 +364,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
             onClick={() => setIsDaysMenuOpen(!isDaysMenuOpen)}
             className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-left transition-all"
           >
-            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+            <span className="text-[10px] font-bold text-gray-600 tracking-widest">
               {visibleDaysSummary()}
             </span>
             <ChevronDown size={14} className={`text-gray-300 transition-transform ${isDaysMenuOpen ? 'rotate-180 text-pink-500' : ''}`} />
@@ -403,8 +424,8 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
 
                 <div className="mb-2">
                   <h3 className={`text-sm font-black flex items-center gap-2 ${isT ? 'text-pink-600' : 'text-gray-700'}`}>
-                    {format(day, 'dd')} <span className="text-[10px] opacity-40 uppercase font-bold tracking-widest">{format(day, 'EEE', { locale: ptBR })}</span>
-                    {isT && <span className="text-[8px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded-full uppercase ml-1">Hoje</span>}
+                    {format(day, 'dd')} <span className="text-[10px] opacity-40 font-bold tracking-widest">{format(day, 'EEE', { locale: ptBR })}</span>
+                    {isT && <span className="text-[8px] bg-pink-100 text-pink-600 px-1.5 py-0.5 rounded-full ml-1">Hoje</span>}
                   </h3>
                 </div>
 
@@ -431,10 +452,12 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                                   <div className={`w-4 h-4 rounded-full flex items-center justify-center font-black text-[7px] border no-print ${w.id === activeConfig.id ? (isExtra ? 'bg-purple-600 border-purple-400 text-white' : 'bg-pink-500 border-pink-400 text-white') : 'bg-gray-100 border-gray-200 text-gray-400'}`}>{(w.name || 'Usuário').charAt(0)}</div>
                                   <div className="flex flex-col">
                                     <div className="flex items-center gap-1">
-                                      <span className="text-[10px] font-bold text-gray-700 leading-none">{(w.name || 'Usuário').split(' ')[0]}</span>
+                                      <span className="text-[10px] font-bold text-gray-700 leading-none">
+                                        {formatName((w.name || 'Usuário').split(' ')[0])}
+                                      </span>
                                       {isExtra && <Zap size={8} className="text-purple-500 fill-purple-500" />}
                                     </div>
-                                    <span className="role-badge text-[7px] font-black text-pink-400 uppercase tracking-tighter mt-0.5">{((w as any).effectiveRole || 'Sem Função').slice(0, 12)}</span>
+                                    <span className="role-badge text-[7px] font-black text-pink-400 tracking-tighter mt-0.5">{formatName(((w as any).effectiveRole || 'Sem Função').slice(0, 15))}</span>
                                   </div>
                                 </div>
                               );
@@ -453,7 +476,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                         <div className="flex flex-wrap gap-1 flex-1">
                           {vacation.map(w => (
                             <div key={w.id} className="px-2 py-0.5 rounded-full bg-sky-50/50 border border-sky-100 text-[8px] font-bold text-sky-400 uppercase">
-                              {(w.name || 'Usuário').split(' ')[0]}
+                              {formatName((w.name || 'Usuário').split(' ')[0])}
                             </div>
                           ))}
                         </div>

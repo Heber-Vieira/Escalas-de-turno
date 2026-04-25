@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, addMonths, subMonths, isSameDay, isWithinInterval, parseISO, getDay, addDays, differenceInDays, startOfDay, parse, isBefore, isValid } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { UserConfig, Holiday, Absence, ThemeStyle, ShiftType, WorkTurn } from '../types';
-import { isWorkDay, getEffectiveConfig } from '../utils/shiftCalculator';
+import { isWorkDay, getEffectiveConfig, formatName } from '../utils/shiftCalculator';
 import { NATIONAL_HOLIDAYS, STATE_HOLIDAYS, THEME_CONFIGS } from '../constants';
 import { ChevronLeft, ChevronRight, Palette, Settings, Eye, EyeOff, ShieldCheck, Clock, Umbrella, Calendar as CalendarIcon, ArrowRight, X, Zap, AlertCircle, Info, CheckCircle2, AlertTriangle, Users2, Briefcase, FileWarning, Sun, Moon, CloudSun, Sparkles, LayoutGrid, Check, Users, Undo2, Ban, HelpCircle, Flame, Siren, Footprints, Coffee, RotateCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -436,19 +436,23 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="relative">
         <div className="flex items-center justify-between mb-2">
           <button onClick={openSettings} className="flex items-center gap-3 text-left">
-            <div className="w-10 h-10 rounded-full bg-pink-500 text-white flex items-center justify-center font-black text-sm border-2 border-pink-100 shadow-sm transition-transform active:scale-95">
-              {(config.name || 'Usuário').charAt(0)}
+            <div className="w-10 h-10 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center font-black text-sm border-2 border-pink-100 shadow-sm transition-transform active:scale-95 overflow-hidden">
+              {config.avatarUrl ? (
+                <img src={config.avatarUrl} alt={config.name} className="w-full h-full object-cover" />
+              ) : (
+                (config.name || 'Usuário').charAt(0)
+              )}
             </div>
             <div>
               <h2 className="text-lg font-black text-gray-800 leading-tight">{(config.name || 'Usuário').split(' ')[0]}</h2>
               <div className="flex flex-col">
                 {effectiveConfig.role && (
-                  <span className="text-[9px] font-black uppercase text-gray-500 leading-tight tracking-wider mb-0.5 opacity-80">{effectiveConfig.role}</span>
+                  <span className="text-[9px] font-black text-gray-500 leading-tight tracking-wider mb-0.5 opacity-80">{formatName(effectiveConfig.role)}</span>
                 )}
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[8px] font-black uppercase text-pink-500 leading-tight tracking-widest">{effectiveConfig.shiftType}</span>
+                  <span className="text-[8px] font-black text-pink-500 leading-tight tracking-widest">{formatName(effectiveConfig.shiftType)}</span>
                   <span className="w-1 h-1 rounded-full bg-gray-200" />
-                  <span className="text-[8px] font-black uppercase text-gray-400 leading-tight tracking-widest">{effectiveConfig.turn}</span>
+                  <span className="text-[8px] font-black text-gray-400 leading-tight tracking-widest">{formatName(effectiveConfig.turn)}</span>
                 </div>
               </div>
             </div>
@@ -518,7 +522,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className={`p-3.5 sm:p-5 shadow-sm rounded-[32px] sm:rounded-[40px] ${theme.card}`}>
         <div className="flex items-center justify-between mb-5 px-1">
           <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1 text-gray-400"><ChevronLeft size={18} /></button>
-          <span className="font-black text-[10px] uppercase tracking-[0.2em]">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</span>
+          <span className="font-black text-[10px] tracking-[0.2em]">{format(currentMonth, 'MMMM yyyy', { locale: ptBR })}</span>
           <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-1 text-gray-400"><ChevronRight size={18} /></button>
         </div>
 
@@ -595,7 +599,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <motion.div layout className={`p-4 rounded-[28px] shadow-sm border-t-2 ${isTeamView ? 'border-indigo-500 bg-indigo-50/20' : 'border-pink-500 bg-white'}`}>
         <div className="flex justify-between items-center mb-4">
           <div className="space-y-0.5">
-            <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}</h3>
+            <h3 className="text-[10px] font-black text-gray-400 tracking-widest">{format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}</h3>
             {isTeamView && (
               <div className="flex items-center gap-3">
                 {(Object.entries(teamStats.byTurn) as [WorkTurn, { active: number; total: number }][]).map(([turn, stats]) => {
@@ -615,7 +619,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="bg-indigo-600 text-white px-2.5 py-1 rounded-xl flex items-center gap-2 shadow-md">
               <span className="text-[12px] font-black leading-none">{teamStats.globalPercent}%</span>
               <div className="w-[1px] h-3 bg-white/20" />
-              <span className="text-[7px] font-black uppercase tracking-widest opacity-70">ATIVO</span>
+              <span className="text-[7px] font-black tracking-widest opacity-70">ATIVO</span>
             </div>
           )}
         </div>
@@ -631,7 +635,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <div key={role} className="space-y-2">
                     <div className="flex items-center justify-between px-0.5">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">{role}</span>
+                        <span className="text-[8px] font-black text-indigo-400 tracking-widest">{formatName(role)}</span>
                         <span className="text-[7px] font-bold text-indigo-200">({stats.active}/{stats.total})</span>
                       </div>
                       <span className={`text-[8px] font-black ${percent === 100 ? 'text-emerald-500' : 'text-indigo-400'}`}>{percent}%</span>
@@ -647,8 +651,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             animate={{ opacity: 1, scale: 1 }}
                             className={`flex items-center gap-1.5 pl-1.5 pr-2.5 py-1 rounded-full bg-white border shadow-xs transition-all ${p.id === config.id ? 'border-indigo-400 ring-2 ring-indigo-500/5' : 'border-indigo-50/50'}`}
                           >
-                            <div className={`w-5 h-5 rounded-full flex items-center justify-center font-black text-[8px] shrink-0 ${p.id === config.id ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-400'}`}>
-                              {(p.name || 'Usuário').charAt(0)}
+                            <div className={`w-5 h-5 rounded-full flex items-center justify-center font-black text-[8px] shrink-0 overflow-hidden ${p.id === config.id ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-400'}`}>
+                              {p.avatarUrl ? (
+                                <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
+                              ) : (
+                                (p.name || 'Usuário').charAt(0)
+                              )}
                             </div>
                             <span className="text-[9px] font-bold text-gray-700 truncate max-w-[60px]">{(p.name || 'Usuário').split(' ')[0]}</span>
                             <div className="flex items-center gap-0.5 ml-0.5">
@@ -683,7 +691,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <Briefcase size={14} />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Mudança de Carreira</h4>
+                  <h4 className="text-[10px] font-bold text-emerald-800 tracking-wider">Mudança de Carreira</h4>
                   <p className="text-xs text-emerald-600 font-medium leading-tight">Nova configuração efetiva a partir de hoje.</p>
                 </div>
                 <div className="bg-emerald-100 p-1.5 rounded-full text-emerald-600">
@@ -693,15 +701,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
             )}
             <div className="flex gap-2">
               {getAbsenceForDate(selectedDate) ? (
-                <button onClick={() => onRemoveAbsence(getAbsenceForDate(selectedDate)!.id)} className="flex-1 py-3.5 bg-red-50 text-red-500 rounded-2xl text-[9px] font-black uppercase tracking-widest border border-red-100 active:scale-95 transition-all">Remover Ausência</button>
+                <button onClick={() => onRemoveAbsence(getAbsenceForDate(selectedDate)!.id)} className="flex-1 py-3.5 bg-red-50 text-red-500 rounded-2xl text-[9px] font-black tracking-widest border border-red-100 active:scale-95 transition-all">Remover Ausência</button>
               ) : (
                 <>
                   {(isWorkDay(selectedDate, config) || isDayOvertime(selectedDate)) && !isDayVacation(selectedDate) && (
-                    <button onClick={() => onAddAbsence({ date: format(selectedDate, 'yyyy-MM-dd') })} className="flex-1 py-3.5 bg-gray-900 text-white rounded-2xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all">Lançar Ausência</button>
+                    <button onClick={() => onAddAbsence({ date: format(selectedDate, 'yyyy-MM-dd') })} className="flex-1 py-3.5 bg-gray-900 text-white rounded-2xl text-[9px] font-black tracking-widest active:scale-95 transition-all">Lançar Ausência</button>
                   )}
                   <button
                     onClick={() => isDayVacation(selectedDate) ? toggleVacation(selectedDate) : openVacationModal()}
-                    className={`flex-1 py-3.5 rounded-2xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 ${isDayVacation(selectedDate) ? 'bg-sky-50 text-sky-600 border border-sky-100' : 'bg-sky-500 text-white shadow-md'}`}
+                    className={`flex-1 py-3.5 rounded-2xl text-[9px] font-black tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 ${isDayVacation(selectedDate) ? 'bg-sky-50 text-sky-600 border border-sky-100' : 'bg-sky-500 text-white shadow-md'}`}
                   >
                     <Umbrella size={14} />
                     {isDayVacation(selectedDate) ? 'Remover Férias' : 'Planejar Férias'}
@@ -713,7 +721,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {!isWorkDay(selectedDate, config) && !isDayVacation(selectedDate) && !getAbsenceForDate(selectedDate) && (
               <button
                 onClick={() => toggleOvertime(selectedDate)}
-                className={`w-full py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 ${isDayOvertime(selectedDate) ? 'bg-purple-50 text-purple-600 border border-purple-200' : 'bg-purple-600 text-white shadow-lg'}`}
+                className={`w-full py-3 rounded-2xl text-[9px] font-black tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 ${isDayOvertime(selectedDate) ? 'bg-purple-50 text-purple-600 border border-purple-200' : 'bg-purple-600 text-white shadow-lg'}`}
               >
                 <Zap size={14} />
                 {isDayOvertime(selectedDate) ? 'Remover Hora Extra' : 'Lançar Hora Extra'}

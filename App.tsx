@@ -45,7 +45,8 @@ const App: React.FC = () => {
     systemUser,
     fetchAllSystemUsers,
     updateSystemUserAccess,
-    deleteSystemUser
+    deleteSystemUser,
+    uploadAvatar
   } = useEscalaStorage(session);
 
   const [view, setView] = useState<'calendar' | 'history' | 'profile' | 'users' | 'team_schedule' | 'admin'>('calendar');
@@ -494,6 +495,7 @@ const App: React.FC = () => {
             toggleOffDay={toggleOffDay}
             existingRoles={existingRoles}
             onRequestConfirmation={requestConfirmation}
+            onUploadAvatar={uploadAvatar}
           />
         )}
 
