@@ -100,8 +100,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const isDayAbsence = (date: Date, profileId: string = config.id) => {
     const profile = allProfiles.find((p: UserConfig) => p.id === profileId) || config;
-    let start = parseISO(profile.startDate);
-    if (!isValid(start)) start = parse(profile.startDate, 'yyyy-MM-dd', new Date());
+    let start = parseISO(String(profile.startDate || '2024-01-01'));
+    if (!isValid(start)) start = parse(String(profile.startDate || '2024-01-01'), 'yyyy-MM-dd', new Date());
     if (!isValid(start)) start = new Date();
     start = startOfDay(start);
     if (isBefore(startOfDay(date), start)) return false;
@@ -111,8 +111,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const isDayVacation = (date: Date, userConfig: UserConfig = config) => {
-    let start = parseISO(userConfig.startDate);
-    if (!isValid(start)) start = parse(userConfig.startDate, 'yyyy-MM-dd', new Date());
+    let start = parseISO(String(userConfig.startDate || '2024-01-01'));
+    if (!isValid(start)) start = parse(String(userConfig.startDate || '2024-01-01'), 'yyyy-MM-dd', new Date());
     if (!isValid(start)) start = new Date();
     start = startOfDay(start);
     if (isBefore(startOfDay(date), start)) return false;
@@ -122,8 +122,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const isDayOvertime = (date: Date, userConfig: UserConfig = config) => {
-    let start = parseISO(userConfig.startDate);
-    if (!isValid(start)) start = parse(userConfig.startDate, 'yyyy-MM-dd', new Date());
+    let start = parseISO(String(userConfig.startDate || '2024-01-01'));
+    if (!isValid(start)) start = parse(String(userConfig.startDate || '2024-01-01'), 'yyyy-MM-dd', new Date());
     if (!isValid(start)) start = new Date();
     start = startOfDay(start);
     if (isBefore(startOfDay(date), start)) return false;
@@ -352,8 +352,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     let streakDates: string[] = [];
     let checkDate = startOfDay(selectedDate);
     
-    let profileStart = parseISO(config.startDate);
-    if (!isValid(profileStart)) profileStart = parse(config.startDate, 'yyyy-MM-dd', new Date());
+    let profileStart = parseISO(String(config.startDate || '2024-01-01'));
+    if (!isValid(profileStart)) profileStart = parse(String(config.startDate || '2024-01-01'), 'yyyy-MM-dd', new Date());
     if (!isValid(profileStart)) profileStart = new Date();
     profileStart = startOfDay(profileStart);
 
@@ -533,8 +533,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             const vacation = isDayVacation(day);
             const overtime = isDayOvertime(day);
 
-            let profileStart = parseISO(config.startDate);
-            if (!isValid(profileStart)) profileStart = parse(config.startDate, 'yyyy-MM-dd', new Date());
+            let profileStart = parseISO(String(config.startDate || '2024-01-01'));
+            if (!isValid(profileStart)) profileStart = parse(String(config.startDate || '2024-01-01'), 'yyyy-MM-dd', new Date());
             if (!isValid(profileStart)) profileStart = new Date();
             profileStart = startOfDay(profileStart);
             const isBeforeStart = isBefore(startOfDay(day), profileStart);

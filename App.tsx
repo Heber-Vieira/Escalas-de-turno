@@ -372,11 +372,7 @@ const App: React.FC = () => {
       <DuplicateAlert duplicateErrorName={duplicateErrorName} setDuplicateErrorName={setDuplicateErrorName} />
 
       <div className="flex justify-between items-center mb-4 px-2">
-        {/* TEMPORARY DEBUG INFO */}
-        <div className="fixed top-20 left-4 z-50 bg-black/80 text-white p-2 text-xs border border-red-500 rounded">
-          Debug systemUser:<br/>
-          {JSON.stringify(systemUser, null, 2) || 'null'}
-        </div>
+
 
         <button
           onClick={handleLogout}
