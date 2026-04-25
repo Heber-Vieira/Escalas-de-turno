@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Shield, ShieldCheck, ShieldAlert, User, UserPlus, Mail, Key } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Shield, ShieldCheck, ShieldAlert, User, UserPlus, Mail, Key, Trash2, X, AlertTriangle } from 'lucide-react';
 import { SystemUser } from '../types';
 import { supabase } from '../services/supabase';
 
 interface SystemAccessManagementProps {
   fetchAllSystemUsers: () => Promise<SystemUser[]>;
   updateSystemUserAccess: (userId: string, is_approved: boolean, role: 'admin' | 'user') => Promise<void>;
+  deleteSystemUser: (userId: string) => Promise<void>;
+  currentUserId?: string;
 }
 
 export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({ 
     fetchAllSystemUsers, 
-    updateSystemUserAccess 
+    updateSystemUserAccess,
+    deleteSystemUser,
+    currentUserId
 }) => {
   const [users, setUsers] = useState<SystemUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +24,8 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
   const [newPassword, setNewPassword] = useState('');
   const [addingUser, setAddingUser] = useState(false);
   const [addError, setAddError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState<SystemUser | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -50,6 +56,21 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
     } catch (err) {
       console.error('Erro ao atualizar função:', err);
       alert('Erro ao atualizar função do usuário.');
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    try {
+      await deleteSystemUser(confirmDelete.id);
+      setUsers(prev => prev.filter(u => u.id !== confirmDelete.id));
+      setConfirmDelete(null);
+    } catch (err: any) {
+      console.error('Erro ao excluir usuário:', err);
+      alert('Erro ao excluir usuário: ' + (err.message || 'Tente novamente.'));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -130,20 +151,91 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
                   {user.role === 'admin' ? 'Administrador' : 'Usuário Comum'}
               </button>
               
-              <button
-                onClick={() => handleToggleStatus(user)}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-[15px] text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 ${
-                  user.is_approved
-                      ? 'bg-white text-gray-500 border-2 border-gray-100 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
-                      : 'bg-emerald-50 text-emerald-600 border-2 border-emerald-200 hover:bg-emerald-100'
-                }`}
-              >
-                {user.is_approved ? 'Bloquear Acesso' : 'Liberar Acesso'}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleToggleStatus(user)}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-[15px] text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 ${
+                    user.is_approved
+                        ? 'bg-white text-gray-500 border-2 border-gray-100 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
+                        : 'bg-emerald-50 text-emerald-600 border-2 border-emerald-200 hover:bg-emerald-100'
+                  }`}
+                >
+                  {user.is_approved ? 'Bloquear Acesso' : 'Liberar Acesso'}
+                </button>
+
+                {user.id !== currentUserId && (
+                  <button
+                    onClick={() => setConfirmDelete(user)}
+                    title="Excluir usuário"
+                    className="flex items-center justify-center w-12 h-12 rounded-[15px] border-2 border-red-100 bg-red-50 text-red-400 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all active:scale-95"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Modal de Confirmação de Exclusão */}
+      <AnimatePresence>
+        {confirmDelete && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="w-full max-w-sm bg-white border-2 border-red-100 rounded-[30px] p-6 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <div className="w-11 h-11 bg-red-50 border-2 border-red-100 rounded-2xl flex items-center justify-center">
+                  <AlertTriangle size={20} className="text-red-500" />
+                </div>
+                <button
+                  onClick={() => setConfirmDelete(null)}
+                  className="p-2 rounded-xl text-gray-300 hover:text-gray-500 hover:bg-gray-50 transition-all"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <h3 className="text-base font-black text-gray-900 uppercase tracking-tight mb-1">
+                Excluir Usuário
+              </h3>
+              <p className="text-xs text-gray-500 font-medium leading-relaxed mb-1">
+                Tem certeza que deseja excluir este usuário do sistema?
+              </p>
+              <div className="my-4 p-3 bg-gray-50 border border-gray-100 rounded-2xl">
+                <p className="text-[11px] font-black text-gray-700 truncate">{confirmDelete.email}</p>
+                <p className={`text-[9px] font-black uppercase tracking-widest mt-0.5 ${confirmDelete.is_approved ? 'text-emerald-500' : 'text-red-400'}`}>
+                  {confirmDelete.role === 'admin' ? 'Administrador' : 'Usuário Comum'} • {confirmDelete.is_approved ? 'Acesso Liberado' : 'Bloqueado'}
+                </p>
+              </div>
+              <p className="text-[10px] text-red-400 font-bold mb-5 leading-tight">
+                ⚠ Esta ação remove o acesso permanentemente. O usuário não poderá mais entrar no sistema.
+              </p>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirmDelete(null)}
+                  className="flex-1 py-3.5 border-2 border-gray-100 text-gray-500 rounded-[15px] text-[10px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all active:scale-95"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeleteUser}
+                  disabled={deleting}
+                  className="flex-1 py-3.5 bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white rounded-[15px] text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2 shadow-md"
+                >
+                  <Trash2 size={13} />
+                  {deleting ? 'Excluindo...' : 'Confirmar'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">

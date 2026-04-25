@@ -44,7 +44,8 @@ const App: React.FC = () => {
     deleteAbsence,
     systemUser,
     fetchAllSystemUsers,
-    updateSystemUserAccess
+    updateSystemUserAccess,
+    deleteSystemUser
   } = useEscalaStorage(session);
 
   const [view, setView] = useState<'calendar' | 'history' | 'profile' | 'users' | 'team_schedule' | 'admin'>('calendar');
@@ -512,7 +513,9 @@ const App: React.FC = () => {
         {view === 'admin' && systemUser?.role === 'admin' && (
           <SystemAccessManagement 
             fetchAllSystemUsers={fetchAllSystemUsers} 
-            updateSystemUserAccess={updateSystemUserAccess} 
+            updateSystemUserAccess={updateSystemUserAccess}
+            deleteSystemUser={deleteSystemUser}
+            currentUserId={session?.user?.id}
           />
         )}
       </AnimatePresence>

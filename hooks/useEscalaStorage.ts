@@ -309,6 +309,12 @@ export const useEscalaStorage = (session: any) => {
         if (error) throw error;
     };
 
+    const deleteSystemUser = async (userId: string) => {
+        if (!systemUser || systemUser.role !== 'admin') return;
+        const { error } = await supabase.from('system_users').delete().eq('id', userId);
+        if (error) throw error;
+    };
+
     return {
         profiles,
         activeProfileId,
@@ -325,6 +331,7 @@ export const useEscalaStorage = (session: any) => {
         deleteAbsence,
         systemUser,
         fetchAllSystemUsers,
-        updateSystemUserAccess
+        updateSystemUserAccess,
+        deleteSystemUser
     };
 };
