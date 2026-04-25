@@ -133,8 +133,8 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
       const effective = getEffectiveConfig(day, p);
       return {
         ...p,
-        effectiveRole: effective.role || p.role,
-        effectiveTurn: effective.turn || p.turn
+        effectiveRole: effective.role || p.role || 'Sem Função',
+        effectiveTurn: effective.turn || p.turn || WorkTurn.MORNING
       };
     });
 
@@ -434,7 +434,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                                       <span className="text-[10px] font-bold text-gray-700 leading-none">{w.name.split(' ')[0]}</span>
                                       {isExtra && <Zap size={8} className="text-purple-500 fill-purple-500" />}
                                     </div>
-                                    <span className="role-badge text-[7px] font-black text-pink-400 uppercase tracking-tighter mt-0.5">{(w as any).effectiveRole.slice(0, 12)}</span>
+                                    <span className="role-badge text-[7px] font-black text-pink-400 uppercase tracking-tighter mt-0.5">{((w as any).effectiveRole || 'Sem Função').slice(0, 12)}</span>
                                   </div>
                                 </div>
                               );

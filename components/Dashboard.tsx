@@ -157,17 +157,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
     };
 
     const byRole: Record<string, { active: number, total: number, workers: UserConfig[] }> = {};
-
     effectiveProfiles.forEach((p: UserConfig) => {
-      byTurn[p.turn].total++;
-      if (!byRole[p.role]) byRole[p.role] = { active: 0, total: 0, workers: [] };
-      byRole[p.role].total++;
+      const turn = p.turn || WorkTurn.MORNING;
+      const role = p.role || 'Sem Função';
+
+      byTurn[turn].total++;
+      if (!byRole[role]) byRole[role] = { active: 0, total: 0, workers: [] };
+      byRole[role].total++;
 
       const isActive = working.find((w: UserConfig) => w.id === p.id);
       if (isActive) {
-        byTurn[p.turn].active++;
-        byRole[p.role].active++;
-        byRole[p.role].workers.push(isActive);
+        byTurn[turn].active++;
+        byRole[role].active++;
+        byRole[role].workers.push(isActive);
       }
     });
 
