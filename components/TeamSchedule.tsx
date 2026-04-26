@@ -6,7 +6,7 @@ import { UserConfig, Absence, WorkTurn, ThemeStyle } from '../types';
 import { isWorkDay, getEffectiveConfig, formatName } from '../utils/shiftCalculator';
 import { THEME_CONFIGS } from '../constants';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, CloudSun, Moon, ChevronLeft, ChevronRight, Printer, X, Check, Settings2, Filter, CalendarDays, Clock, RotateCcw, ChevronDown, Umbrella, Zap, HelpCircle, LogOut } from 'lucide-react';
+import { Sun, CloudSun, Moon, ChevronLeft, ChevronRight, Printer, X, Check, Settings2, Filter, CalendarDays, Clock, RotateCcw, ChevronDown, Umbrella, Zap, HelpCircle, LogOut, Calendar, Briefcase, CheckSquare } from 'lucide-react';
 
 interface TeamScheduleProps {
   activeConfig: UserConfig;
@@ -36,6 +36,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
 }) => {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isDaysMenuOpen, setIsDaysMenuOpen] = useState(false);
+  const [isRolesMenuOpen, setIsRolesMenuOpen] = useState(false);
   const [printSettings, setPrintSettings] = useState<PrintSettings & { pagesToFit: number }>({
     showRoles: true,
     showIcons: true,
@@ -307,91 +308,123 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
         </div>
       )}
 
-      <div className={`space-y-4 no-print bg-white/95 backdrop-blur-md border border-pink-50 rounded-[32px] p-5 shadow-sm relative ${isDaysMenuOpen ? 'z-[90]' : 'z-20'}`}>
-        <div className="grid grid-cols-1 gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 px-1">
-              <span className="text-[9px] font-black opacity-30 uppercase tracking-widest">Cargos</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {allRoles.map(role => (
-                <button
-                  key={role}
-                  onClick={() => toggleFilter(selectedRoles, role, setSelectedRoles)}
-                  className={`px-3 py-1.5 rounded-full text-[8px] font-black tracking-wider transition-all border ${selectedRoles.includes(role) ? 'bg-pink-500 border-pink-500 text-white' : 'bg-gray-50 border-gray-100 text-gray-400'
-                    }`}
-                >
-                  {formatName(role)}
-                </button>
-              ))}
-            </div>
+      <div className={`no-print flex items-center gap-2 bg-white/95 backdrop-blur-md border border-gray-100 rounded-full p-2 shadow-sm relative overflow-visible ${isDaysMenuOpen ? 'z-[90]' : 'z-20'}`}>
+        
+        {/* Filtro de Dias */}
+        <div className="relative shrink-0 flex items-center bg-gray-50 rounded-full pr-1 border border-gray-100">
+          <div className="px-3 py-1.5 flex items-center gap-1.5 border-r border-gray-200">
+             <Calendar size={12} className="text-pink-500" />
           </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 px-1">
-              <span className="text-[9px] font-black opacity-30 uppercase tracking-widest">Turnos</span>
-            </div>
-            <div className="flex gap-1.5">
-              {Object.values(WorkTurn).map(turn => {
-                const style = getTurnStyles(turn);
-                const isActive = selectedTurns.includes(turn);
-                return (
-                  <button
-                    key={turn}
-                    onClick={() => toggleFilter(selectedTurns, turn, setSelectedTurns)}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all ${isActive ? 'bg-white border-pink-500 text-gray-900 shadow-sm' : 'bg-gray-50 border-gray-100 text-gray-300'
-                      }`}
-                  >
-                    <span className={isActive ? style.color : 'text-gray-300'}>{style.icon}</span>
-                    <span className="text-[8px] font-black tracking-tighter">{formatName(turn)}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-2 relative">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-[9px] font-black opacity-30 uppercase tracking-widest">Dias</span>
-            <div className="flex gap-2">
-              <button onClick={() => handleQuickDaySelect('all')} className="text-[8px] font-black text-pink-500">Todos</button>
-              <button onClick={() => handleQuickDaySelect('weekdays')} className="text-[8px] font-black text-pink-500 uppercase">Úteis</button>
-            </div>
-          </div>
-
           <button
             onClick={() => setIsDaysMenuOpen(!isDaysMenuOpen)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl text-left transition-all"
+            className="flex items-center gap-1.5 pl-2 pr-3 py-1.5 text-[9px] font-black text-gray-600 uppercase tracking-widest hover:text-pink-500 transition-colors"
           >
-            <span className="text-[10px] font-bold text-gray-600 tracking-widest">
-              {visibleDaysSummary()}
-            </span>
-            <ChevronDown size={14} className={`text-gray-300 transition-transform ${isDaysMenuOpen ? 'rotate-180 text-pink-500' : ''}`} />
+            {visibleDays.length === allDaysInMonth.length ? 'Todos' : visibleDays.length === 0 ? 'Nenhum' : `${visibleDays.length} Dias`}
+            <ChevronDown size={10} className={`transition-transform ${isDaysMenuOpen ? 'rotate-180' : ''}`} />
           </button>
-
+          
           <AnimatePresence>
             {isDaysMenuOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
-                className="absolute top-full left-0 right-0 z-[100] mt-2 p-3 bg-white border border-pink-50 rounded-2xl shadow-xl grid grid-cols-7 gap-1"
+                initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
+                className="absolute top-full left-0 mt-2 p-3 w-[280px] bg-white border border-gray-100 rounded-3xl shadow-xl z-[100]"
               >
-                {allDaysInMonth.map(day => {
-                  const dateNum = day.getDate();
-                  const isActive = visibleDays.includes(dateNum);
-                  return (
-                    <button
-                      key={dateNum}
-                      onClick={() => toggleFilter(visibleDays, dateNum, setVisibleDays)}
-                      className={`aspect-square rounded-lg flex flex-col items-center justify-center transition-all border ${isActive
-                        ? 'bg-pink-500 border-pink-500 text-white'
-                        : 'bg-gray-50 border-gray-50 text-gray-300'
-                        }`}
-                    >
-                      <span className="text-[10px] font-black">{dateNum}</span>
-                    </button>
-                  );
-                })}
+                <div className="flex justify-between items-center mb-3 px-1 border-b border-gray-50 pb-2">
+                  <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Seleção Rápida</span>
+                  <div className="flex gap-2">
+                    <button onClick={() => handleQuickDaySelect('all')} className="text-[8px] font-bold text-pink-500 px-2 py-1 rounded-md hover:bg-pink-50 transition-colors">Todos</button>
+                    <button onClick={() => handleQuickDaySelect('weekdays')} className="text-[8px] font-bold text-pink-500 px-2 py-1 rounded-md hover:bg-pink-50 transition-colors">Úteis</button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {allDaysInMonth.map(day => {
+                    const dateNum = day.getDate();
+                    const isActive = visibleDays.includes(dateNum);
+                    return (
+                      <button
+                        key={dateNum}
+                        onClick={() => toggleFilter(visibleDays, dateNum, setVisibleDays)}
+                        className={`aspect-square rounded-lg flex flex-col items-center justify-center transition-all border ${isActive
+                          ? 'bg-pink-500 border-pink-500 text-white'
+                          : 'bg-gray-50 border-gray-50 text-gray-400 hover:border-gray-200'
+                          }`}
+                      >
+                        <span className="text-[10px] font-black">{dateNum}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Divisor */}
+        <div className="w-px h-4 bg-gray-200 shrink-0 hidden sm:block" />
+
+        {/* Filtro de Turnos */}
+        <div className="flex gap-1 shrink-0 bg-gray-50 p-1 rounded-full border border-gray-100 hidden sm:flex">
+          {Object.values(WorkTurn).map(turn => {
+            const style = getTurnStyles(turn);
+            const isActive = selectedTurns.includes(turn);
+            return (
+              <button
+                key={turn}
+                onClick={() => toggleFilter(selectedTurns, turn, setSelectedTurns)}
+                className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${isActive ? 'bg-white shadow-sm ring-1 ring-black/5' : 'hover:bg-gray-200'}`}
+                title={formatName(turn)}
+              >
+                <span className={isActive ? style.color : 'text-gray-400 opacity-50'}>
+                  {React.cloneElement(style.icon as React.ReactElement<any>, { size: 12 })}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Divisor */}
+        <div className="w-px h-4 bg-gray-200 shrink-0" />
+
+        {/* Filtro de Cargos Dropdown */}
+        <div className="relative shrink-0 flex items-center bg-gray-50 rounded-full pr-1 border border-gray-100">
+          <div className="px-3 py-1.5 flex items-center gap-1.5 border-r border-gray-200">
+             <Briefcase size={12} className="text-pink-500" />
+          </div>
+          <button
+            onClick={() => setIsRolesMenuOpen(!isRolesMenuOpen)}
+            className="flex items-center gap-1.5 pl-2 pr-3 py-1.5 text-[9px] font-black text-gray-600 uppercase tracking-widest hover:text-pink-500 transition-colors"
+          >
+            {selectedRoles.length === allRoles.length ? 'Todos' : `${selectedRoles.length} Cargos`}
+            <ChevronDown size={10} className={`transition-transform ${isRolesMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+          
+          <AnimatePresence>
+            {isRolesMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
+                className="absolute top-full left-auto right-0 mt-2 p-3 w-[240px] bg-white border border-gray-100 rounded-3xl shadow-xl z-[100]"
+              >
+                <div className="flex justify-between items-center mb-3 px-1 border-b border-gray-50 pb-2">
+                  <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Selecionar Cargos</span>
+                  <button onClick={() => setSelectedRoles(allRoles)} className="text-[8px] font-bold text-pink-500 hover:bg-pink-50 px-2 py-1 rounded-md transition-colors">Selecionar Todos</button>
+                </div>
+                <div className="max-h-[250px] overflow-y-auto no-scrollbar space-y-1 pr-1">
+                  {allRoles.map(role => {
+                    const isActive = selectedRoles.includes(role);
+                    return (
+                      <button
+                        key={role}
+                        onClick={() => toggleFilter(selectedRoles, role, setSelectedRoles)}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all border ${isActive ? 'bg-pink-50 border-pink-100 text-pink-700' : 'bg-gray-50 border-transparent text-gray-600 hover:bg-gray-100'}`}
+                      >
+                        <div className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors ${isActive ? 'bg-pink-500 border-pink-500 text-white' : 'bg-white border-gray-300'}`}>
+                          {isActive && <Check size={10} strokeWidth={4} />}
+                        </div>
+                        <span className="text-[10px] font-bold tracking-wide text-left flex-1 truncate">{formatName(role)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
