@@ -308,7 +308,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
         </div>
       )}
 
-      <div className={`no-print flex items-center gap-1 sm:gap-2 bg-white/95 backdrop-blur-md border border-gray-100 rounded-full p-1 sm:p-2 shadow-sm relative overflow-x-auto no-scrollbar ${isDaysMenuOpen ? 'z-[90]' : 'z-20'}`}>
+      <div className={`no-print flex items-center justify-center gap-1 sm:gap-2 bg-white/95 backdrop-blur-md border border-gray-100 rounded-full p-1 sm:p-2 shadow-sm relative ${isDaysMenuOpen || isRolesMenuOpen ? 'z-[90]' : 'z-20'}`}>
         
         {/* Filtro de Dias */}
         <div className="relative shrink-0 flex items-center bg-gray-50 rounded-full pr-0.5 sm:pr-1 border border-gray-100">
@@ -327,7 +327,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
             {isDaysMenuOpen && (
               <motion.div
                 initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
-                className="absolute top-full left-0 mt-2 p-3 w-[280px] bg-white border border-gray-100 rounded-3xl shadow-xl z-[100]"
+                className="absolute top-full left-0 sm:left-0 mt-2 p-3 w-[260px] sm:w-[280px] bg-white border border-gray-100 rounded-3xl shadow-2xl z-[100]"
               >
                 <div className="flex justify-between items-center mb-3 px-1 border-b border-gray-50 pb-2">
                   <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Seleção Rápida</span>
@@ -402,7 +402,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
             {isRolesMenuOpen && (
               <motion.div
                 initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
-                className="absolute top-full left-auto right-0 mt-2 p-3 w-[240px] bg-white border border-gray-100 rounded-3xl shadow-xl z-[100]"
+                className="absolute top-full right-0 sm:right-0 mt-2 p-3 w-[220px] sm:w-[240px] bg-white border border-gray-100 rounded-3xl shadow-2xl z-[100]"
               >
                 <div className="flex justify-between items-center mb-3 px-1 border-b border-gray-50 pb-2">
                   <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Selecionar Cargos</span>
