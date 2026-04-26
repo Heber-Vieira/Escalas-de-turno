@@ -360,10 +360,10 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
         </div>
 
         {/* Divisor */}
-        <div className="w-px h-4 bg-gray-200 shrink-0 hidden sm:block" />
+        <div className="w-px h-4 bg-gray-200 shrink-0" />
 
         {/* Filtro de Turnos */}
-        <div className="flex gap-1 shrink-0 bg-gray-50 p-1 rounded-full border border-gray-100 hidden sm:flex">
+        <div className="flex gap-1 shrink-0 bg-gray-50 p-1 rounded-full border border-gray-100">
           {Object.values(WorkTurn).map(turn => {
             const style = getTurnStyles(turn);
             const isActive = selectedTurns.includes(turn);
