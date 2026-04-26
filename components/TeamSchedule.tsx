@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, parseISO, differenceInCalendarDays, isValid } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, parseISO, differenceInCalendarDays, isValid, getWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { UserConfig, Absence, WorkTurn, ThemeStyle } from '../types';
 import { isWorkDay, getEffectiveConfig, formatName } from '../utils/shiftCalculator';
@@ -434,7 +434,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
       <div className={`space-y-6 mt-4 relative z-0 ${printSettings.compactMode ? 'print-compact' : ''} ${!printSettings.showRoles ? 'print-hide-roles' : ''}`}>
         {allDaysInMonth
           .filter(day => visibleDays.includes(day.getDate()))
-          .map((day, idx) => {
+          .map((day, idx, array) => {
             const dateStr = format(day, 'yyyy-MM-dd');
             const workersByTurn = getWorkersByDayAndTurn(day);
             const { morning, afternoon, night, vacation } = {
@@ -447,12 +447,23 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
             const hasAnyone = morning.length > 0 || afternoon.length > 0 || night.length > 0;
             const isT = isToday(day);
 
+            // Detectar quebra de semana (se a semana do dia atual for diferente da semana do dia anterior renderizado)
+            const prevDay = idx > 0 ? array[idx - 1] : null;
+            const isNewWeek = prevDay ? getWeek(day, { weekStartsOn: 0 }) !== getWeek(prevDay, { weekStartsOn: 0 }) : false;
+
             return (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.01 }}
-                key={day.toISOString()}
-                className="relative pl-6 border-l border-pink-100 day-container"
-              >
+              <React.Fragment key={day.toISOString()}>
+                {isNewWeek && (
+                  <div className="week-separator py-4 flex items-center gap-4">
+                    <div className="h-px bg-gradient-to-r from-transparent via-pink-200 to-transparent flex-1" />
+                    <span className="text-[8px] font-black text-pink-400 uppercase tracking-[0.3em] bg-pink-50 px-4 py-1.5 rounded-full border border-pink-100 shadow-sm">Nova Semana</span>
+                    <div className="h-px bg-gradient-to-r from-transparent via-pink-200 to-transparent flex-1" />
+                  </div>
+                )}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.01 }}
+                  className="relative pl-6 border-l border-pink-100 day-container"
+                >
                 <div className={`absolute -left-[4.5px] top-0 w-2 h-2 rounded-full border border-white shadow-sm no-print ${isT ? 'bg-pink-500 scale-150' : 'bg-pink-100'}`} />
 
                 <div className="mb-2">
@@ -518,7 +529,8 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                   </div>
                 )}
               </motion.div>
-            );
+            </React.Fragment>
+          );
           })}
       </div>
 
