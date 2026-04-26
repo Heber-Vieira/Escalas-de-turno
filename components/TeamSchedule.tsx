@@ -308,19 +308,19 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
         </div>
       )}
 
-      <div className={`no-print flex items-center gap-2 bg-white/95 backdrop-blur-md border border-gray-100 rounded-full p-2 shadow-sm relative overflow-visible ${isDaysMenuOpen ? 'z-[90]' : 'z-20'}`}>
+      <div className={`no-print flex items-center gap-1 sm:gap-2 bg-white/95 backdrop-blur-md border border-gray-100 rounded-full p-1 sm:p-2 shadow-sm relative overflow-x-auto no-scrollbar ${isDaysMenuOpen ? 'z-[90]' : 'z-20'}`}>
         
         {/* Filtro de Dias */}
-        <div className="relative shrink-0 flex items-center bg-gray-50 rounded-full pr-1 border border-gray-100">
-          <div className="px-3 py-1.5 flex items-center gap-1.5 border-r border-gray-200">
-             <Calendar size={12} className="text-pink-500" />
+        <div className="relative shrink-0 flex items-center bg-gray-50 rounded-full pr-0.5 sm:pr-1 border border-gray-100">
+          <div className="px-2 py-1 sm:px-3 sm:py-1.5 flex items-center gap-1.5 border-r border-gray-200">
+             <Calendar size={10} className="text-pink-500 sm:w-[12px] sm:h-[12px]" />
           </div>
           <button
             onClick={() => setIsDaysMenuOpen(!isDaysMenuOpen)}
-            className="flex items-center gap-1.5 pl-2 pr-3 py-1.5 text-[9px] font-black text-gray-600 uppercase tracking-widest hover:text-pink-500 transition-colors"
+            className="flex items-center gap-1 pl-1.5 pr-2 sm:pl-2 sm:pr-3 py-1 sm:py-1.5 text-[8px] sm:text-[9px] font-black text-gray-600 uppercase tracking-widest hover:text-pink-500 transition-colors"
           >
-            {visibleDays.length === allDaysInMonth.length ? 'Todos' : visibleDays.length === 0 ? 'Nenhum' : `${visibleDays.length} Dias`}
-            <ChevronDown size={10} className={`transition-transform ${isDaysMenuOpen ? 'rotate-180' : ''}`} />
+            {visibleDays.length === allDaysInMonth.length ? 'Todos' : `${visibleDays.length}D`}
+            <ChevronDown size={8} className={`sm:w-[10px] sm:h-[10px] transition-transform ${isDaysMenuOpen ? 'rotate-180' : ''}`} />
           </button>
           
           <AnimatePresence>
@@ -363,7 +363,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
         <div className="w-px h-4 bg-gray-200 shrink-0" />
 
         {/* Filtro de Turnos */}
-        <div className="flex gap-1 shrink-0 bg-gray-50 p-1 rounded-full border border-gray-100">
+        <div className="flex gap-0.5 sm:gap-1 shrink-0 bg-gray-50 p-1 rounded-full border border-gray-100">
           {Object.values(WorkTurn).map(turn => {
             const style = getTurnStyles(turn);
             const isActive = selectedTurns.includes(turn);
@@ -371,11 +371,11 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
               <button
                 key={turn}
                 onClick={() => toggleFilter(selectedTurns, turn, setSelectedTurns)}
-                className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${isActive ? 'bg-white shadow-sm ring-1 ring-black/5' : 'hover:bg-gray-200'}`}
+                className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center transition-all ${isActive ? 'bg-white shadow-sm ring-1 ring-black/5' : 'hover:bg-gray-200'}`}
                 title={formatName(turn)}
               >
                 <span className={isActive ? style.color : 'text-gray-400 opacity-50'}>
-                  {React.cloneElement(style.icon as React.ReactElement<any>, { size: 12 })}
+                  {React.cloneElement(style.icon as React.ReactElement<any>, { size: 10 })}
                 </span>
               </button>
             );
@@ -386,16 +386,16 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
         <div className="w-px h-4 bg-gray-200 shrink-0" />
 
         {/* Filtro de Cargos Dropdown */}
-        <div className="relative shrink-0 flex items-center bg-gray-50 rounded-full pr-1 border border-gray-100">
-          <div className="px-3 py-1.5 flex items-center gap-1.5 border-r border-gray-200">
-             <Briefcase size={12} className="text-pink-500" />
+        <div className="relative shrink-0 flex items-center bg-gray-50 rounded-full pr-0.5 sm:pr-1 border border-gray-100">
+          <div className="px-2 py-1 sm:px-3 sm:py-1.5 flex items-center gap-1.5 border-r border-gray-200">
+             <Briefcase size={10} className="text-pink-500 sm:w-[12px] sm:h-[12px]" />
           </div>
           <button
             onClick={() => setIsRolesMenuOpen(!isRolesMenuOpen)}
-            className="flex items-center gap-1.5 pl-2 pr-3 py-1.5 text-[9px] font-black text-gray-600 uppercase tracking-widest hover:text-pink-500 transition-colors"
+            className="flex items-center gap-1 pl-1.5 pr-2 sm:pl-2 sm:pr-3 py-1 sm:py-1.5 text-[8px] sm:text-[9px] font-black text-gray-600 uppercase tracking-widest hover:text-pink-500 transition-colors"
           >
-            {selectedRoles.length === allRoles.length ? 'Todos' : `${selectedRoles.length} Cargos`}
-            <ChevronDown size={10} className={`transition-transform ${isRolesMenuOpen ? 'rotate-180' : ''}`} />
+            {selectedRoles.length === allRoles.length ? 'Todos' : `${selectedRoles.length}C`}
+            <ChevronDown size={8} className={`sm:w-[10px] sm:h-[10px] transition-transform ${isRolesMenuOpen ? 'rotate-180' : ''}`} />
           </button>
           
           <AnimatePresence>
