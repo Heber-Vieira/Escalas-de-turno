@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, ShieldCheck, ShieldAlert, User, UserPlus, Mail, Key, Trash2, X, AlertTriangle } from 'lucide-react';
+import { Shield, ShieldCheck, ShieldAlert, User, UserPlus, Mail, Key, Trash2, X, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 import { SystemUser } from '../types';
 import { supabase } from '../services/supabase';
 
@@ -26,6 +26,7 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
   const [addError, setAddError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<SystemUser | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -278,14 +279,21 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
                         <div className="relative">
                             <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                             <input
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 required
                                 minLength={6}
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 placeholder="Mínimo 6 caracteres"
-                                className="w-full bg-gray-50 border-2 border-gray-100 rounded-[20px] py-3 pl-12 pr-4 text-gray-800 text-sm outline-none focus:border-pink-500 focus:bg-white transition-all"
+                                className="w-full bg-gray-50 border-2 border-gray-100 rounded-[20px] py-3 pl-12 pr-12 text-gray-800 text-sm outline-none focus:border-pink-500 focus:bg-white transition-all"
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-pink-500 transition-colors"
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
                         </div>
                     </div>
 

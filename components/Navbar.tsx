@@ -34,13 +34,15 @@ export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme, systemRole
                 <span className="text-[8px] uppercase font-black tracking-widest">Geral</span>
             </button>
 
-            <button
-                onClick={() => setView('history')}
-                className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'history')}`}
-            >
-                <History size={19} />
-                <span className="text-[8px] uppercase font-black tracking-widest">Logs</span>
-            </button>
+            {systemRole === 'admin' && (
+                <button
+                    onClick={() => setView('history')}
+                    className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'history')}`}
+                >
+                    <History size={19} />
+                    <span className="text-[8px] uppercase font-black tracking-widest">Logs</span>
+                </button>
+            )}
 
             <button
                 onClick={() => setView('users')}

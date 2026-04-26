@@ -474,7 +474,7 @@ const App: React.FC = () => {
           </motion.div>
         )}
 
-        {view === 'history' && (
+        {view === 'history' && systemUser?.role === 'admin' && (
           <HistoryView
             allEvents={allEvents}
             historyStats={historyStats}
