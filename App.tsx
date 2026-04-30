@@ -19,6 +19,7 @@ import { SystemAccessManagement } from './components/SystemAccessManagement';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { supabase } from './services/supabase';
 import { useEscalaStorage } from './hooks/useEscalaStorage';
+import { formatName } from './utils/shiftCalculator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, Zap, Umbrella, FileText, LogOut, Briefcase, ShieldCheck } from 'lucide-react';
 import { THEME_CONFIGS } from './constants';
@@ -410,31 +411,40 @@ const App: React.FC = () => {
     <Layout themeStyle={globalTheme}>
       <DuplicateAlert duplicateErrorName={duplicateErrorName} setDuplicateErrorName={setDuplicateErrorName} />
 
-      <div className="flex justify-between items-center mb-4 px-2">
+      <div className="flex justify-between items-center mb-6 px-2">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-3 py-2 bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-xl text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-90"
+          >
+            <LogOut size={14} /> Sair
+          </button>
+          
+          <div className="flex flex-col pl-3 border-l border-gray-200">
+            <span className="text-[10px] font-black text-gray-900 leading-none mb-1 truncate max-w-[80px] sm:max-w-[120px]">
+              {formatName((session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário').split(' ')[0])}
+            </span>
+            <span className="text-[7px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+              {systemUser?.role === 'admin' ? 'Admin' : 'Colab'}
+            </span>
+          </div>
+        </div>
 
-
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-3 py-2 bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-xl text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-90"
-        >
-          <LogOut size={14} /> Sair
-        </button>
-
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 sm:gap-2">
           {systemUser?.role === 'admin' && view !== 'admin' && (
             <button
               onClick={() => setView('admin')}
-              className="flex items-center gap-2 px-3 py-2 bg-purple-500/20 backdrop-blur-sm border border-purple-500/50 rounded-xl text-[10px] font-black text-purple-400 uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all active:scale-90 shadow-[0_0_15px_rgba(168,85,247,0.3)]"
+              className="flex items-center gap-1.5 px-2.5 py-2 bg-purple-500/20 backdrop-blur-sm border border-purple-500/50 rounded-xl text-[9px] font-black text-purple-400 uppercase tracking-widest hover:bg-purple-50 hover:text-purple-600 transition-all active:scale-90 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
             >
-              <ShieldCheck size={14} /> Painel Admin
+              <ShieldCheck size={12} /> <span className="hidden sm:inline">Painel Admin</span><span className="sm:hidden">Admin</span>
             </button>
           )}
 
           <button
             onClick={() => setIsHelpOpen(true)}
-            className="flex items-center gap-2 px-3 py-2 bg-white/50 backdrop-blur-sm border border-gray-100 rounded-xl text-[10px] font-black text-pink-500 uppercase tracking-widest hover:bg-white transition-all active:scale-90"
+            className="flex items-center gap-1.5 px-2.5 py-2 bg-white/50 backdrop-blur-sm border border-gray-100 rounded-xl text-[9px] font-black text-pink-500 uppercase tracking-widest hover:bg-white transition-all active:scale-90"
           >
-            <HelpCircle size={14} /> Ajuda
+            <HelpCircle size={12} /> <span className="hidden sm:inline">Ajuda</span>
           </button>
         </div>
       </div>
