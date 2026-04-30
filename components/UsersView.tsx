@@ -102,18 +102,18 @@ export const UsersView: React.FC<UsersViewProps> = ({
                 </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white/95 backdrop-blur-md border border-pink-50 rounded-[24px] p-1.5 shadow-sm relative z-50">
+            <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md border border-pink-50 rounded-[24px] p-1 shadow-sm relative z-50">
                 {/* Busca Integrada */}
                 <div className="relative flex-1 group min-w-0">
-                    <div className={`absolute inset-y-0 left-3.5 flex items-center pointer-events-none transition-colors ${searchQuery ? 'text-pink-500' : 'text-gray-400'}`}>
-                        <Search size={14} />
+                    <div className={`absolute inset-y-0 left-2.5 sm:left-3.5 flex items-center pointer-events-none transition-colors ${searchQuery ? 'text-pink-500' : 'text-gray-400'}`}>
+                        <Search size={12} className="sm:w-[14px] sm:h-[14px]" />
                     </div>
                     <input
                         type="text"
                         placeholder="Buscar..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-gray-50/50 border border-transparent rounded-full py-2 pl-10 pr-8 text-[11px] font-bold text-gray-800 placeholder:text-gray-300 outline-none focus:bg-white focus:border-pink-200 transition-all"
+                        className="w-full bg-gray-50/50 border border-transparent rounded-full py-1.5 sm:py-2 pl-8 sm:pl-10 pr-6 sm:pr-8 text-[9px] sm:text-[11px] font-bold text-gray-800 placeholder:text-gray-300 outline-none focus:bg-white focus:border-pink-200 transition-all"
                     />
                     {searchQuery && (
                         <button 
@@ -125,9 +125,9 @@ export const UsersView: React.FC<UsersViewProps> = ({
                     )}
                 </div>
 
-                <div className="hidden sm:block w-px h-5 bg-gray-100" />
+                <div className="w-px h-4 bg-gray-100 shrink-0" />
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 shrink-0">
                     {/* Filtro de Turnos */}
                     <div className="flex gap-0.5 shrink-0 bg-gray-50/50 p-0.5 rounded-full border border-gray-100">
                         {Object.values(WorkTurn).map(turn => {
@@ -151,7 +151,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                     <div className="w-px h-5 bg-gray-100 shrink-0" />
 
                     {/* Filtro de Cargos Dropdown */}
-                    <div ref={rolesMenuRef} className="relative flex-1 sm:flex-initial flex items-center bg-gray-50/50 rounded-full pr-1 border border-gray-100 min-w-[110px] sm:min-w-[130px]">
+                    <div ref={rolesMenuRef} className="relative flex-initial flex items-center bg-gray-50/50 rounded-full pr-1 border border-gray-100 min-w-[75px] sm:min-w-[130px]">
                         <div className="px-2 py-1.5 flex items-center gap-1 border-r border-gray-200">
                             <Briefcase size={10} className="text-pink-500" />
                         </div>
