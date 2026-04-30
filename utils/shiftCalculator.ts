@@ -101,13 +101,18 @@ export function isWorkDay(date: Date, config: Partial<UserConfig>): boolean {
 
   const dayOfWeek = getDay(checkDate); // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
 
-  switch (effectiveConfig.shiftType) {
+  // Normalizar o tipo de escala para comparação robusta
+  const shiftType = String(effectiveConfig.shiftType || '').trim();
+
+  switch (shiftType) {
+    case '5x2':
     case ShiftType.FIVE_TWO:
-      // Segunda (1) a Sexta (5) fixa
+      // Segunda (1) a Sexta (5) fixa - Padrão CLT
       return dayOfWeek >= 1 && dayOfWeek <= 5;
 
+    case '6x1':
     case ShiftType.SIX_ONE:
-      // Segunda (1) a Sábado (6) fixa
+      // Segunda (1) a Sábado (6) fixa - Padrão CLT
       return dayOfWeek >= 1 && dayOfWeek <= 6;
 
     case ShiftType.TWELVE_THIRTY_SIX: {

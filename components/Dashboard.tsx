@@ -44,7 +44,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const [isStreakInfoOpen, setIsStreakInfoOpen] = useState(false);
   const [showCLTViolationAlert, setShowCLTViolationAlert] = useState(false);
-  const [lastAlertedStreak, setLastAlertedStreak] = useState(0);
+  const [lastAlertedStreak, setLastAlertedStreak] = useState(() => {
+    try {
+      return Number(sessionStorage.getItem(`last_alerted_streak_${config.id}`)) || 0;
+    } catch { return 0; }
+  });
 
   const vacationStartRef = useRef<HTMLInputElement>(null);
 
@@ -391,8 +395,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
     if (currentStreak > 6 && currentStreak !== lastAlertedStreak) {
       setShowCLTViolationAlert(true);
       setLastAlertedStreak(currentStreak);
+      try {
+        sessionStorage.setItem(`last_alerted_streak_${config.id}`, String(currentStreak));
+      } catch (e) { console.error(e); }
     }
-  }, [currentStreak, lastAlertedStreak]);
+  }, [currentStreak, lastAlertedStreak, config.id]);
 
   const getStreakMessage = (count: number) => {
     if (count === 0) return "Momento de pausa! O motor está desligado para recarregar as baterias.";
