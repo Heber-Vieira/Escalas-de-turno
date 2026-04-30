@@ -102,7 +102,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                 </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white/95 backdrop-blur-md border border-pink-50 rounded-[24px] p-1.5 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white/95 backdrop-blur-md border border-pink-50 rounded-[24px] p-1.5 shadow-sm relative z-50">
                 {/* Busca Integrada */}
                 <div className="relative flex-1 group min-w-0">
                     <div className={`absolute inset-y-0 left-3.5 flex items-center pointer-events-none transition-colors ${searchQuery ? 'text-pink-500' : 'text-gray-400'}`}>
