@@ -10,7 +10,7 @@ interface SystemAccessManagementProps {
   updateSystemUserAccess: (userId: string, is_approved: boolean, role: 'admin' | 'user') => Promise<void>;
   deleteSystemUser: (userId: string) => Promise<void>;
   currentUserId?: string;
-  updateSystemUserVisibility: (userId: string, can_view_all: boolean) => Promise<void>;
+  updateSystemUserVisibility: (userId: string, visibility: 'all' | 'self' | 'created') => Promise<void>;
 }
 
 export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({ 

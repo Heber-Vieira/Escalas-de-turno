@@ -25,14 +25,21 @@ export const useEscalaStorage = (session: any) => {
                     .eq('user_id', session.user.id)
                     .maybeSingle();
 
-                // Fetch System User details
+                // Fetch System User details with robust matching (properly quoted for .or filter)
+                const userEmail = session.user.email?.trim().toLowerCase() || '';
                 const { data: sysUser, error: sysError } = await supabase
                     .from('system_users')
                     .select('*')
-                    .eq('id', session.user.id)
+                    .or(`email.ilike."${userEmail}",id.eq.${session.user.id}`)
                     .maybeSingle();
                 
                 if (sysError) console.error('Error fetching system user:', sysError);
+                
+                // VÍNCULO DEFINITIVO: Se encontrou pelo e-mail mas o ID está diferente ou vazio, atualiza agora
+                if (sysUser && sysUser.id !== session.user.id && sysUser.email.toLowerCase() === userEmail) {
+                    await supabase.from('system_users').update({ id: session.user.id }).eq('email', sysUser.email);
+                }
+
                 if (sysUser) setSystemUser(sysUser as SystemUser);
 
                 const visibility = sysUser?.visibility || 'self';
@@ -52,14 +59,15 @@ export const useEscalaStorage = (session: any) => {
                 // Fetch Profiles
                 let profilesQuery = supabase.from('profiles').select('*');
                 
-                if (!isAdmin && visibility !== 'all') {
-                    if (visibility === 'self') {
-                        profilesQuery = profilesQuery.eq('email', session.user.email);
-                    } else if (visibility === 'created') {
-                        // Ver perfis criados por ele OU o perfil dele (pelo email)
-                        profilesQuery = profilesQuery.or(`user_id.eq.${session.user.id},email.eq.${session.user.email}`);
-                    }
+                // IMPORTANTE: Só aplicamos filtros se NÃO for 'all'.
+                // Se for 'all', a query continua sendo .select('*') para trazer tudo.
+                if (visibility === 'self') {
+                    profilesQuery = profilesQuery.eq('email', session.user.email);
+                } else if (visibility === 'created') {
+                    // Ver perfis criados por ele OU o perfil dele (pelo email)
+                    profilesQuery = profilesQuery.or(`user_id.eq.${session.user.id},email.eq.${session.user.email}`);
                 }
+                // Se visibility === 'all', não entra em nenhum IF e traz tudo.
 
                 const { data: dbProfiles, error: pError } = await profilesQuery;
 
@@ -91,7 +99,7 @@ export const useEscalaStorage = (session: any) => {
                 const sortedProfiles = mappedProfiles.sort((a, b) => a.name.localeCompare(b.name));
                 setProfiles(sortedProfiles);
 
-                const canSeeAll = isAdmin || visibility === 'all';
+                const canSeeAll = visibility === 'all';
                 const visibleProfileIds = sortedProfiles.map(p => p.id);
 
                 // Fetch Absences for visible profiles
