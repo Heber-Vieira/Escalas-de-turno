@@ -9,7 +9,7 @@ import {
   Trophy, Lightbulb, Rocket, Fingerprint, LifeBuoy, Siren, Flame, LayoutGrid,
   ThumbsUp, ThumbsDown
 } from 'lucide-react';
-import { formatName } from '../utils/shiftCalculator';
+import { formatName, normalizeString } from '../utils/shiftCalculator';
 
 interface HelpTopic {
   id: string;
@@ -190,9 +190,10 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
   ];
 
   const filteredTopics = topics.filter(t => {
-    const matchesSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.tags.some(tag => tag.includes(searchTerm.toLowerCase()));
+    const normalizedSearch = normalizeString(searchTerm);
+    const matchesSearch = normalizeString(t.title).includes(normalizedSearch) ||
+      normalizeString(t.description).includes(normalizedSearch) ||
+      t.tags.some(tag => normalizeString(tag).includes(normalizedSearch));
     
     const matchesTab = activeTab === 'all' || t.category === activeTab;
     

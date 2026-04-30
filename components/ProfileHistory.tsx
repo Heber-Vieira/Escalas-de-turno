@@ -3,6 +3,7 @@ import { UserConfig, CareerChange, ShiftType, WorkTurn, ThemeStyle } from '../ty
 import { Settings2, Plus, Trash2, Calendar, Briefcase, Clock, CalendarDays, History, Save, X, Pencil } from 'lucide-react';
 import { format, parseISO, isValid } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import { normalizeString } from '../utils/shiftCalculator';
 
 interface ProfileHistoryProps {
     profile: UserConfig;
@@ -217,14 +218,14 @@ export const ProfileHistory: React.FC<ProfileHistoryProps> = ({ profile, onUpdat
                                             placeholder="Ex: Supervisor"
                                         />
                                         <AnimatePresence>
-                                            {showSuggestions && existingRoles.filter(r => r.toLowerCase().includes((newChange.role || '').toLowerCase()) && r !== newChange.role).length > 0 && (
+                                            {showSuggestions && existingRoles.filter(r => normalizeString(r).includes(normalizeString(newChange.role || '')) && r !== newChange.role).length > 0 && (
                                                 <motion.div
                                                     initial={{ opacity: 0, y: 5 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     exit={{ opacity: 0, y: 5 }}
                                                     className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-xl z-50 max-h-40 overflow-y-auto"
                                                 >
-                                                    {existingRoles.filter(r => r.toLowerCase().includes((newChange.role || '').toLowerCase()) && r !== newChange.role).map((role) => (
+                                                    {existingRoles.filter(r => normalizeString(r).includes(normalizeString(newChange.role || '')) && r !== newChange.role).map((role) => (
                                                         <button
                                                             key={role}
                                                             onMouseDown={() => {

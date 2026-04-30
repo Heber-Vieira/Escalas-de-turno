@@ -177,3 +177,12 @@ export function formatName(name: string): string {
     return word.charAt(0).toUpperCase() + word.slice(1);
   }).join(' ');
 }
+
+export function normalizeString(str: string): string {
+  if (!str) return '';
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}

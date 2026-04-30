@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Layers, HelpCircle, Plus, Settings, Trash2, LogOut, Search, X, Sun, CloudSun, Moon, ChevronDown, Check, Briefcase } from 'lucide-react';
 import { UserConfig, WorkTurn } from '../types';
-import { formatName } from '../utils/shiftCalculator';
+import { formatName, normalizeString } from '../utils/shiftCalculator';
 
 interface UsersViewProps {
     profiles: UserConfig[];
@@ -76,8 +76,9 @@ export const UsersView: React.FC<UsersViewProps> = ({
     };
 
     const filteredProfiles = profiles.filter(p => {
-        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                             p.role.toLowerCase().includes(searchQuery.toLowerCase());
+        const normalizedSearch = normalizeString(searchQuery);
+        const matchesSearch = normalizeString(p.name).includes(normalizedSearch) || 
+                             normalizeString(p.role).includes(normalizedSearch);
         const matchesRole = selectedRoles.includes(p.role);
         const matchesTurn = selectedTurns.includes(p.turn);
         return matchesSearch && matchesRole && matchesTurn;
