@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, parseISO, differenceInCalendarDays, isValid, getWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { UserConfig, Absence, WorkTurn, ThemeStyle } from '../types';
@@ -44,6 +44,28 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
     blackAndWhite: false,
     pagesToFit: 0 // 0 = Normal/Auto, 1 = 1 Page, 2 = 2 Pages
   });
+
+  const rolesMenuRef = useRef<HTMLDivElement>(null);
+  const daysMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (rolesMenuRef.current && !rolesMenuRef.current.contains(event.target as Node)) {
+        setIsRolesMenuOpen(false);
+      }
+      if (daysMenuRef.current && !daysMenuRef.current.contains(event.target as Node)) {
+        setIsDaysMenuOpen(false);
+      }
+    };
+
+    if (isRolesMenuOpen || isDaysMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isRolesMenuOpen, isDaysMenuOpen]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -311,7 +333,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
       <div className={`no-print flex items-center justify-center gap-1 sm:gap-2 bg-white/95 backdrop-blur-md border border-gray-100 rounded-full p-1 sm:p-2 shadow-sm relative ${isDaysMenuOpen || isRolesMenuOpen ? 'z-[90]' : 'z-20'}`}>
         
         {/* Filtro de Dias */}
-        <div className="relative shrink-0 flex items-center bg-gray-50 rounded-full pr-0.5 sm:pr-1 border border-gray-100">
+        <div ref={daysMenuRef} className="relative shrink-0 flex items-center bg-gray-50 rounded-full pr-0.5 sm:pr-1 border border-gray-100">
           <div className="px-2 py-1 sm:px-3 sm:py-1.5 flex items-center gap-1.5 border-r border-gray-200">
              <Calendar size={10} className="text-pink-500 sm:w-[12px] sm:h-[12px]" />
           </div>
@@ -386,7 +408,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
         <div className="w-px h-4 bg-gray-200 shrink-0" />
 
         {/* Filtro de Cargos Dropdown */}
-        <div className="relative shrink-0 flex items-center bg-gray-50 rounded-full pr-0.5 sm:pr-1 border border-gray-100">
+        <div ref={rolesMenuRef} className="relative shrink-0 flex items-center bg-gray-50 rounded-full pr-0.5 sm:pr-1 border border-gray-100">
           <div className="px-2 py-1 sm:px-3 sm:py-1.5 flex items-center gap-1.5 border-r border-gray-200">
              <Briefcase size={10} className="text-pink-500 sm:w-[12px] sm:h-[12px]" />
           </div>
@@ -406,7 +428,10 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
               >
                 <div className="flex justify-between items-center mb-3 px-1 border-b border-gray-50 pb-2">
                   <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Selecionar Cargos</span>
-                  <button onClick={() => setSelectedRoles(allRoles)} className="text-[8px] font-bold text-pink-500 hover:bg-pink-50 px-2 py-1 rounded-md transition-colors">Selecionar Todos</button>
+                  <div className="flex gap-2">
+                    <button onClick={() => setSelectedRoles(allRoles)} className="text-[8px] font-bold text-pink-500 hover:bg-pink-50 px-2 py-1 rounded-md transition-colors">Todos</button>
+                    <button onClick={() => setSelectedRoles([])} className="text-[8px] font-bold text-gray-400 hover:bg-gray-50 px-2 py-1 rounded-md transition-colors">Nenhum</button>
+                  </div>
                 </div>
                 <div className="max-h-[250px] overflow-y-auto no-scrollbar space-y-1 pr-1">
                   {allRoles.map(role => {

@@ -115,6 +115,8 @@ export function isWorkDay(date: Date, config: Partial<UserConfig>): boolean {
       // Segunda (1) a Sábado (6) fixa - Padrão CLT
       return dayOfWeek >= 1 && dayOfWeek <= 6;
 
+    case '12x36':
+    case '12x38': // Autocorreção para erro comum no banco de dados
     case ShiftType.TWELVE_THIRTY_SIX: {
       const diff = differenceInCalendarDays(checkDate, start);
       return diff % 2 === 0;
@@ -141,13 +143,37 @@ export function isWorkDay(date: Date, config: Partial<UserConfig>): boolean {
 }
 
 /**
- * Formats a name to Title Case: First letter uppercase, rest lowercase.
+ * Formata um nome/cargo para "Title Case", garantindo que:
+ * 1. Partículas (de, da, do, etc) fiquem minúsculas.
+ * 2. Algarismos romanos (I, II, III, etc) fiquem sempre maiúsculos.
+ * 3. Números isolados de 1 a 10 sejam convertidos para algarismos romanos.
  */
 export function formatName(name: string): string {
   if (!name) return '';
+  
   const particles = ['de', 'da', 'do', 'dos', 'das', 'e'];
+  const romanMap: Record<string, string> = {
+    '1': 'I', '2': 'II', '3': 'III', '4': 'IV', '5': 'V',
+    '6': 'VI', '7': 'VII', '8': 'VIII', '9': 'IX', '10': 'X',
+    'i': 'I', 'ii': 'II', 'iii': 'III', 'iv': 'IV', 'v': 'V',
+    'vi': 'VI', 'vii': 'VII', 'viii': 'VIII', 'ix': 'IX', 'x': 'X'
+  };
+  
   return name.trim().toLowerCase().split(/\s+/).map((word, index) => {
+    // Mantém partículas em minúsculo (exceto se for a primeira palavra)
     if (particles.includes(word) && index > 0) return word;
+    
+    // Autocorreção para escalas com erro de digitação (ex: 12x38 -> 12x36)
+    const shiftCorrections: Record<string, string> = {
+      '12x38': '12x36',
+      '12x37': '12x36'
+    };
+    if (shiftCorrections[word]) return shiftCorrections[word];
+    
+    // Converte para Romano se estiver no mapa (números ou romanos minúsculos)
+    if (romanMap[word]) return romanMap[word];
+    
+    // Capitalização padrão: Primeira letra maiúscula
     return word.charAt(0).toUpperCase() + word.slice(1);
   }).join(' ');
 }
