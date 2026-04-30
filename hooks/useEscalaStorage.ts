@@ -35,7 +35,8 @@ export const useEscalaStorage = (session: any) => {
                 if (sysError) console.error('Error fetching system user:', sysError);
                 if (sysUser) setSystemUser(sysUser as SystemUser);
 
-                const canViewAll = sysUser?.role === 'admin' || sysUser?.can_view_all;
+                const visibility = sysUser?.visibility || 'self';
+                const isAdmin = sysUser?.role === 'admin';
 
                 if (sError) console.error('Error fetching settings:', sError);
 
@@ -50,9 +51,17 @@ export const useEscalaStorage = (session: any) => {
 
                 // Fetch Profiles
                 let profilesQuery = supabase.from('profiles').select('*');
-                if (!canViewAll) {
-                    profilesQuery = profilesQuery.eq('user_id', session.user.id);
+                
+                if (!isAdmin && visibility !== 'all') {
+                    if (visibility === 'self') {
+                        // Only the profile that matches the user's email
+                        profilesQuery = profilesQuery.eq('email', session.user.email);
+                    } else if (visibility === 'created') {
+                        // Profiles they own/created
+                        profilesQuery = profilesQuery.eq('user_id', session.user.id);
+                    }
                 }
+
                 const { data: dbProfiles, error: pError } = await profilesQuery;
 
                 if (pError) throw pError;
@@ -83,9 +92,11 @@ export const useEscalaStorage = (session: any) => {
                 const sortedProfiles = mappedProfiles.sort((a, b) => a.name.localeCompare(b.name));
                 setProfiles(sortedProfiles);
 
+                const canSeeAll = isAdmin || visibility === 'all';
+
                 // Fetch Absences
                 let absencesQuery = supabase.from('absences').select('*');
-                if (!canViewAll) {
+                if (!canSeeAll) {
                     absencesQuery = absencesQuery.eq('user_id', session.user.id);
                 }
                 const { data: dbAbsences, error: aError } = await absencesQuery;
@@ -338,9 +349,9 @@ export const useEscalaStorage = (session: any) => {
         if (error) throw error;
     };
 
-    const updateSystemUserVisibility = async (userId: string, can_view_all: boolean) => {
+    const updateSystemUserVisibility = async (userId: string, visibility: 'all' | 'self' | 'created') => {
         if (!systemUser || systemUser.role !== 'admin') return;
-        const { error } = await supabase.from('system_users').update({ can_view_all }).eq('id', userId);
+        const { error } = await supabase.from('system_users').update({ visibility }).eq('id', userId);
         if (error) throw error;
     };
 

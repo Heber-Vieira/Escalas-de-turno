@@ -90,6 +90,6 @@ export interface SystemUser {
   name?: string;
   role: 'admin' | 'user';
   is_approved: boolean;
-  can_view_all?: boolean;
+  visibility: 'all' | 'self' | 'created';
   created_at: string;
 }

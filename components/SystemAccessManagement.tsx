@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, ShieldCheck, ShieldAlert, User, UserPlus, Mail, Key, Trash2, X, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Shield, ShieldCheck, ShieldAlert, User, UserPlus, Mail, Key, Trash2, X, AlertTriangle, Eye, EyeOff, Users } from 'lucide-react';
 import { SystemUser } from '../types';
 import { supabase } from '../services/supabase';
 
@@ -127,10 +127,16 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
   };
 
   const handleToggleIndividualVisibility = async (user: SystemUser) => {
-      const newVal = !user.can_view_all;
+      let nextVisibility: 'all' | 'self' | 'created';
+      const current = user.visibility || 'self';
+      
+      if (current === 'all') nextVisibility = 'self';
+      else if (current === 'self') nextVisibility = 'created';
+      else nextVisibility = 'all';
+
       try {
-          await updateSystemUserVisibility(user.id, newVal);
-          setUsers(users.map(u => u.id === user.id ? { ...u, can_view_all: newVal } : u));
+          await updateSystemUserVisibility(user.id, nextVisibility);
+          setUsers(users.map(u => u.id === user.id ? { ...u, visibility: nextVisibility } : u));
       } catch (err) {
           console.error('Erro ao atualizar visibilidade:', err);
           alert('Erro ao atualizar visibilidade do usuário.');
@@ -217,13 +223,19 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
               <button 
                   onClick={() => handleToggleIndividualVisibility(user)}
                   className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-[15px] text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 ${
-                  user.can_view_all 
+                  user.visibility === 'all' 
                       ? 'bg-blue-50 text-blue-600 border-2 border-blue-100 hover:bg-blue-100' 
+                      : user.visibility === 'created'
+                      ? 'bg-amber-50 text-amber-600 border-2 border-amber-100 hover:bg-amber-100'
                       : 'bg-gray-50 text-gray-500 border-2 border-gray-100 hover:bg-gray-100'
                   }`}
               >
-                  {user.can_view_all ? <Eye size={14} /> : <EyeOff size={14} />}
-                  {user.can_view_all ? 'Visão: Toda Equipe' : 'Visão: Apenas Si Mesmo'}
+                  {user.visibility === 'all' ? <Eye size={14} /> : user.visibility === 'created' ? <Users size={14} /> : <EyeOff size={14} />}
+                  {user.visibility === 'all' 
+                    ? 'Visão: Toda Equipe' 
+                    : user.visibility === 'created' 
+                    ? 'Visão: Si Mesmo e Criados' 
+                    : 'Visão: Apenas Si Mesmo'}
               </button>
               
               <div className="flex gap-2">
