@@ -46,7 +46,8 @@ const App: React.FC = () => {
     fetchAllSystemUsers,
     updateSystemUserAccess,
     deleteSystemUser,
-    uploadAvatar
+    uploadAvatar,
+    updateSystemUserVisibility
   } = useEscalaStorage(session);
 
   const [view, setView] = useState<'calendar' | 'history' | 'profile' | 'users' | 'team_schedule' | 'admin'>('calendar');
@@ -458,7 +459,7 @@ const App: React.FC = () => {
           </motion.div>
         )}
 
-        {view === 'team_schedule' && (
+        {view === 'team_schedule' && (systemUser?.role === 'admin' || systemUser?.can_view_all) && (
           <motion.div key="team_schedule" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <ErrorBoundary onLogout={handleLogout}>
               <TeamSchedule
@@ -499,7 +500,7 @@ const App: React.FC = () => {
           />
         )}
 
-        {view === 'users' && (
+        {view === 'users' && (systemUser?.role === 'admin' || systemUser?.can_view_all) && (
           <UsersView
             profiles={profiles}
             activeProfileId={activeProfileId}
@@ -518,11 +519,12 @@ const App: React.FC = () => {
             updateSystemUserAccess={updateSystemUserAccess}
             deleteSystemUser={deleteSystemUser}
             currentUserId={session?.user?.id}
+            updateSystemUserVisibility={updateSystemUserVisibility}
           />
         )}
       </AnimatePresence>
 
-      <Navbar view={view} setView={setView} theme={theme} systemRole={systemUser?.role} />
+      <Navbar view={view} setView={setView} theme={theme} systemRole={systemUser?.role} allowUsersViewAll={systemUser?.can_view_all} />
 
       <HelpCenter isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       <BatchAddModal

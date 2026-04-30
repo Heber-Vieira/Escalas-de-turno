@@ -35,6 +35,8 @@ export const useEscalaStorage = (session: any) => {
                 if (sysError) console.error('Error fetching system user:', sysError);
                 if (sysUser) setSystemUser(sysUser as SystemUser);
 
+                const canViewAll = sysUser?.role === 'admin' || sysUser?.can_view_all;
+
                 if (sError) console.error('Error fetching settings:', sError);
 
                 if (settings) {
@@ -47,10 +49,11 @@ export const useEscalaStorage = (session: any) => {
                 }
 
                 // Fetch Profiles
-                const { data: dbProfiles, error: pError } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('user_id', session.user.id);
+                let profilesQuery = supabase.from('profiles').select('*');
+                if (!canViewAll) {
+                    profilesQuery = profilesQuery.eq('user_id', session.user.id);
+                }
+                const { data: dbProfiles, error: pError } = await profilesQuery;
 
                 if (pError) throw pError;
 
@@ -81,10 +84,11 @@ export const useEscalaStorage = (session: any) => {
                 setProfiles(sortedProfiles);
 
                 // Fetch Absences
-                const { data: dbAbsences, error: aError } = await supabase
-                    .from('absences')
-                    .select('*')
-                    .eq('user_id', session.user.id);
+                let absencesQuery = supabase.from('absences').select('*');
+                if (!canViewAll) {
+                    absencesQuery = absencesQuery.eq('user_id', session.user.id);
+                }
+                const { data: dbAbsences, error: aError } = await absencesQuery;
 
                 if (aError) throw aError;
 
@@ -316,6 +320,12 @@ export const useEscalaStorage = (session: any) => {
         if (error) throw error;
     };
 
+    const updateSystemUserVisibility = async (userId: string, can_view_all: boolean) => {
+        if (!systemUser || systemUser.role !== 'admin') return;
+        const { error } = await supabase.from('system_users').update({ can_view_all }).eq('id', userId);
+        if (error) throw error;
+    };
+
     const uploadAvatar = async (profileId: string, file: File) => {
         if (!session?.user?.id) return null;
 
@@ -355,6 +365,7 @@ export const useEscalaStorage = (session: any) => {
         fetchAllSystemUsers,
         updateSystemUserAccess,
         deleteSystemUser,
-        uploadAvatar
+        uploadAvatar,
+        updateSystemUserVisibility
     };
 };

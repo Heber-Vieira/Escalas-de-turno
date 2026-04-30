@@ -9,13 +9,15 @@ interface SystemAccessManagementProps {
   updateSystemUserAccess: (userId: string, is_approved: boolean, role: 'admin' | 'user') => Promise<void>;
   deleteSystemUser: (userId: string) => Promise<void>;
   currentUserId?: string;
+  updateSystemUserVisibility: (userId: string, can_view_all: boolean) => Promise<void>;
 }
 
 export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({ 
     fetchAllSystemUsers, 
     updateSystemUserAccess,
     deleteSystemUser,
-    currentUserId
+    currentUserId,
+    updateSystemUserVisibility
 }) => {
   const [users, setUsers] = useState<SystemUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +29,7 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
   const [confirmDelete, setConfirmDelete] = useState<SystemUser | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [updatingGlobal, setUpdatingGlobal] = useState(false);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -102,6 +105,17 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
     }
   };
 
+  const handleToggleIndividualVisibility = async (user: SystemUser) => {
+      const newVal = !user.can_view_all;
+      try {
+          await updateSystemUserVisibility(user.id, newVal);
+          setUsers(users.map(u => u.id === user.id ? { ...u, can_view_all: newVal } : u));
+      } catch (err) {
+          console.error('Erro ao atualizar visibilidade:', err);
+          alert('Erro ao atualizar visibilidade do usuário.');
+      }
+  };
+
   if (loading) {
     return <div className="p-8 text-gray-500 font-bold uppercase tracking-widest text-center text-xs">Carregando usuários...</div>;
   }
@@ -123,6 +137,8 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
             Novo Usuário
         </button>
       </div>
+
+
 
       <div className="space-y-3">
         {users.map((user) => (
@@ -150,6 +166,18 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
               >
                   {user.role === 'admin' ? <ShieldCheck size={14} /> : <User size={14} />}
                   {user.role === 'admin' ? 'Administrador' : 'Usuário Comum'}
+              </button>
+
+              <button 
+                  onClick={() => handleToggleIndividualVisibility(user)}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-[15px] text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 ${
+                  user.can_view_all 
+                      ? 'bg-blue-50 text-blue-600 border-2 border-blue-100 hover:bg-blue-100' 
+                      : 'bg-gray-50 text-gray-500 border-2 border-gray-100 hover:bg-gray-100'
+                  }`}
+              >
+                  {user.can_view_all ? <Eye size={14} /> : <EyeOff size={14} />}
+                  {user.can_view_all ? 'Visão: Toda Equipe' : 'Visão: Apenas Si Mesmo'}
               </button>
               
               <div className="flex gap-2">

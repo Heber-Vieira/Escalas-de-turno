@@ -89,5 +89,6 @@ export interface SystemUser {
   email: string;
   role: 'admin' | 'user';
   is_approved: boolean;
+  can_view_all?: boolean;
   created_at: string;
 }

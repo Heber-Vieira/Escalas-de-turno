@@ -8,9 +8,10 @@ interface NavbarProps {
     setView: (view: any) => void;
     theme: ThemeConfig;
     systemRole?: 'admin' | 'user';
+    allowUsersViewAll?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme, systemRole }) => {
+export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme, systemRole, allowUsersViewAll }) => {
     const getActiveTabColor = (isActive: boolean) => {
         if (!isActive) return 'text-gray-400';
         return 'text-pink-600';
@@ -26,13 +27,15 @@ export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme, systemRole
                 <span className="text-[8px] uppercase font-black tracking-widest">Escala</span>
             </button>
 
-            <button
-                onClick={() => setView('team_schedule')}
-                className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'team_schedule')}`}
-            >
-                <ListTodo size={19} />
-                <span className="text-[8px] uppercase font-black tracking-widest">Geral</span>
-            </button>
+            {(systemRole === 'admin' || allowUsersViewAll) && (
+                <button
+                    onClick={() => setView('team_schedule')}
+                    className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'team_schedule')}`}
+                >
+                    <ListTodo size={19} />
+                    <span className="text-[8px] uppercase font-black tracking-widest">Geral</span>
+                </button>
+            )}
 
             {systemRole === 'admin' && (
                 <button
@@ -44,13 +47,15 @@ export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme, systemRole
                 </button>
             )}
 
-            <button
-                onClick={() => setView('users')}
-                className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'users')}`}
-            >
-                <Users size={19} />
-                <span className="text-[8px] uppercase font-black tracking-widest">Time</span>
-            </button>
+            {(systemRole === 'admin' || allowUsersViewAll) && (
+                <button
+                    onClick={() => setView('users')}
+                    className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'users')}`}
+                >
+                    <Users size={19} />
+                    <span className="text-[8px] uppercase font-black tracking-widest">Time</span>
+                </button>
+            )}
 
             {systemRole === 'admin' && (
                 <button
