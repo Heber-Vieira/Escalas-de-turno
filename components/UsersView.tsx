@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Layers, HelpCircle, Plus, Settings, Trash2, LogOut, Search, X } from 'lucide-react';
-import { UserConfig } from '../types';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Layers, HelpCircle, Plus, Settings, Trash2, LogOut, Search, X, Sun, CloudSun, Moon, ChevronDown, Check, Briefcase } from 'lucide-react';
+import { UserConfig, WorkTurn } from '../types';
 import { formatName } from '../utils/shiftCalculator';
 
 interface UsersViewProps {
@@ -29,11 +29,59 @@ export const UsersView: React.FC<UsersViewProps> = ({
     onLogout
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
+    const [isRolesMenuOpen, setIsRolesMenuOpen] = useState(false);
+    const rolesMenuRef = useRef<HTMLDivElement>(null);
 
-    const filteredProfiles = profiles.filter(p => 
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        p.role.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const allRoles = useMemo(() => {
+        const roles = new Set<string>();
+        profiles.forEach(p => {
+            if (p.role) roles.add(p.role.trim());
+            p.careerHistory?.forEach(h => {
+                if (h.role) roles.add(h.role.trim());
+            });
+        });
+        return Array.from(roles).sort();
+    }, [profiles]);
+
+    const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+    const [selectedTurns, setSelectedTurns] = useState<WorkTurn[]>(Object.values(WorkTurn));
+
+    // Inicializar selectedRoles quando os perfis carregarem
+    useEffect(() => {
+        if (selectedRoles.length === 0 && allRoles.length > 0) {
+            setSelectedRoles(allRoles);
+        }
+    }, [allRoles]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (rolesMenuRef.current && !rolesMenuRef.current.contains(event.target as Node)) {
+                setIsRolesMenuOpen(false);
+            }
+        };
+        if (isRolesMenuOpen) document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isRolesMenuOpen]);
+
+    const toggleFilter = <T,>(list: T[], item: T, setter: (val: T[]) => void) => {
+        setter(list.includes(item) ? list.filter(i => i !== item) : [...list, item]);
+    };
+
+    const getTurnStyles = (turn: WorkTurn) => {
+        switch (turn) {
+            case WorkTurn.MORNING: return { icon: <Sun size={12} />, color: 'text-orange-500', bg: 'bg-orange-50' };
+            case WorkTurn.AFTERNOON: return { icon: <CloudSun size={12} />, color: 'text-pink-500', bg: 'bg-pink-50' };
+            case WorkTurn.NIGHT: return { icon: <Moon size={12} />, color: 'text-indigo-500', bg: 'bg-indigo-50' };
+        }
+    };
+
+    const filteredProfiles = profiles.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                             p.role.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesRole = selectedRoles.includes(p.role);
+        const matchesTurn = selectedTurns.includes(p.turn);
+        return matchesSearch && matchesRole && matchesTurn;
+    });
 
     return (
         <motion.div key="users" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2 sm:space-y-3">
@@ -53,25 +101,102 @@ export const UsersView: React.FC<UsersViewProps> = ({
                 </div>
             </div>
 
-            <div className="relative group">
-                <div className={`absolute inset-y-0 left-4 flex items-center pointer-events-none transition-colors ${searchQuery ? 'text-pink-500' : 'text-gray-400'}`}>
-                    <Search size={14} />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-white/95 backdrop-blur-md border border-pink-50 rounded-[24px] p-1.5 shadow-sm">
+                {/* Busca Integrada */}
+                <div className="relative flex-1 group min-w-0">
+                    <div className={`absolute inset-y-0 left-3.5 flex items-center pointer-events-none transition-colors ${searchQuery ? 'text-pink-500' : 'text-gray-400'}`}>
+                        <Search size={14} />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Buscar..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-gray-50/50 border border-transparent rounded-full py-2 pl-10 pr-8 text-[11px] font-bold text-gray-800 placeholder:text-gray-300 outline-none focus:bg-white focus:border-pink-200 transition-all"
+                    />
+                    {searchQuery && (
+                        <button 
+                            onClick={() => setSearchQuery('')}
+                            className="absolute inset-y-0 right-3 flex items-center text-gray-300 hover:text-pink-500 transition-colors"
+                        >
+                            <X size={12} />
+                        </button>
+                    )}
                 </div>
-                <input
-                    type="text"
-                    placeholder="Buscar por nome ou função..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-white border border-pink-100 rounded-[20px] py-3 pl-11 pr-10 text-[11px] font-bold text-gray-800 placeholder:text-gray-300 outline-none focus:border-pink-300 focus:ring-4 focus:ring-pink-500/5 transition-all shadow-sm"
-                />
-                {searchQuery && (
-                    <button 
-                        onClick={() => setSearchQuery('')}
-                        className="absolute inset-y-0 right-4 flex items-center text-gray-300 hover:text-pink-500 transition-colors"
-                    >
-                        <X size={14} />
-                    </button>
-                )}
+
+                <div className="hidden sm:block w-px h-5 bg-gray-100" />
+
+                <div className="flex items-center gap-2">
+                    {/* Filtro de Turnos */}
+                    <div className="flex gap-0.5 shrink-0 bg-gray-50/50 p-0.5 rounded-full border border-gray-100">
+                        {Object.values(WorkTurn).map(turn => {
+                            const style = getTurnStyles(turn);
+                            const isActive = selectedTurns.includes(turn);
+                            return (
+                                <button
+                                    key={turn}
+                                    onClick={() => toggleFilter(selectedTurns, turn, setSelectedTurns)}
+                                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${isActive ? 'bg-white shadow-sm ring-1 ring-black/5' : 'opacity-40 hover:bg-gray-100'}`}
+                                    title={formatName(turn)}
+                                >
+                                    <span className={isActive ? style.color : 'text-gray-400'}>
+                                        {React.cloneElement(style.icon as React.ReactElement<any>, { size: 10 })}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <div className="w-px h-5 bg-gray-100 shrink-0" />
+
+                    {/* Filtro de Cargos Dropdown */}
+                    <div ref={rolesMenuRef} className="relative flex-1 sm:flex-initial flex items-center bg-gray-50/50 rounded-full pr-1 border border-gray-100 min-w-[110px] sm:min-w-[130px]">
+                        <div className="px-2 py-1.5 flex items-center gap-1 border-r border-gray-200">
+                            <Briefcase size={10} className="text-pink-500" />
+                        </div>
+                        <button
+                            onClick={() => setIsRolesMenuOpen(!isRolesMenuOpen)}
+                            className="flex-1 flex items-center justify-between gap-1 pl-2 pr-2 py-1.5 text-[8px] sm:text-[9px] font-black text-gray-600 uppercase tracking-widest hover:text-pink-500 transition-colors truncate"
+                        >
+                            <span className="truncate">{selectedRoles.length === allRoles.length ? 'Cargos' : `${selectedRoles.length}C`}</span>
+                            <ChevronDown size={8} className={`transition-transform flex-shrink-0 ${isRolesMenuOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        <AnimatePresence>
+                            {isRolesMenuOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
+                                    className="absolute top-full right-0 mt-2 p-3 w-[220px] sm:w-[240px] bg-white border border-gray-100 rounded-3xl shadow-2xl z-[100]"
+                                >
+                                    <div className="flex justify-between items-center mb-3 px-1 border-b border-gray-50 pb-2">
+                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Filtrar Cargos</span>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => setSelectedRoles(allRoles)} className="text-[8px] font-bold text-pink-500 hover:bg-pink-50 px-2 py-1 rounded-md transition-colors">Todos</button>
+                                            <button onClick={() => setSelectedRoles([])} className="text-[8px] font-bold text-gray-400 hover:bg-gray-50 px-2 py-1 rounded-md transition-colors">Nenhum</button>
+                                        </div>
+                                    </div>
+                                    <div className="max-h-[250px] overflow-y-auto no-scrollbar space-y-1 pr-1">
+                                        {allRoles.map(role => {
+                                            const isActive = selectedRoles.includes(role);
+                                            return (
+                                                <button
+                                                    key={role}
+                                                    onClick={() => toggleFilter(selectedRoles, role, setSelectedRoles)}
+                                                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all border ${isActive ? 'bg-pink-50 border-pink-100 text-pink-700' : 'bg-gray-50 border-transparent text-gray-600 hover:bg-gray-100'}`}
+                                                >
+                                                    <div className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors ${isActive ? 'bg-pink-500 border-pink-500 text-white' : 'bg-white border-gray-300'}`}>
+                                                        {isActive && <Check size={10} strokeWidth={4} />}
+                                                    </div>
+                                                    <span className="text-[10px] font-bold tracking-wide text-left flex-1 truncate">{formatName(role)}</span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </div>
             </div>
 
             <div className="space-y-1.5 sm:space-y-2">
