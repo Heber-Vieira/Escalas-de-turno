@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Layers, HelpCircle, Plus, Settings, Trash2, LogOut } from 'lucide-react';
+import { ArrowLeft, Layers, HelpCircle, Plus, Settings, Trash2, LogOut, Search, X } from 'lucide-react';
 import { UserConfig } from '../types';
 import { formatName } from '../utils/shiftCalculator';
 
@@ -28,6 +28,13 @@ export const UsersView: React.FC<UsersViewProps> = ({
     removeProfile,
     onLogout
 }) => {
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredProfiles = profiles.filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        p.role.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <motion.div key="users" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2 sm:space-y-3">
 
@@ -46,6 +53,27 @@ export const UsersView: React.FC<UsersViewProps> = ({
                 </div>
             </div>
 
+            <div className="relative group">
+                <div className={`absolute inset-y-0 left-4 flex items-center pointer-events-none transition-colors ${searchQuery ? 'text-pink-500' : 'text-gray-400'}`}>
+                    <Search size={14} />
+                </div>
+                <input
+                    type="text"
+                    placeholder="Buscar por nome ou função..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-white border border-pink-100 rounded-[20px] py-3 pl-11 pr-10 text-[11px] font-bold text-gray-800 placeholder:text-gray-300 outline-none focus:border-pink-300 focus:ring-4 focus:ring-pink-500/5 transition-all shadow-sm"
+                />
+                {searchQuery && (
+                    <button 
+                        onClick={() => setSearchQuery('')}
+                        className="absolute inset-y-0 right-4 flex items-center text-gray-300 hover:text-pink-500 transition-colors"
+                    >
+                        <X size={14} />
+                    </button>
+                )}
+            </div>
+
             <div className="space-y-1.5 sm:space-y-2">
                 <div className="pb-0">
                     <button onClick={() => setShowOnboarding(true)} className="w-full flex items-center justify-center gap-2 p-2.5 sm:p-4 border-2 border-dashed border-pink-200 rounded-[12px] sm:rounded-[20px] text-pink-500 font-black text-[8px] sm:text-xs uppercase transition-all hover:bg-pink-50 active:scale-95">
@@ -53,7 +81,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                     </button>
                 </div>
 
-                {profiles.map(p => (
+                {filteredProfiles.length > 0 ? filteredProfiles.map(p => (
                     <div key={p.id} className={`p-1.5 sm:p-2.5 flex items-center justify-between transition-all bg-white/85 border rounded-[12px] sm:rounded-[20px] shadow-sm hover:shadow-md ${p.id === activeProfileId ? 'border-pink-300 ring-2 ring-pink-500/5' : 'border-pink-100/50'}`}>
                         <button className="flex-1 flex items-center gap-1.5 sm:gap-2.5 text-left min-w-0" onClick={() => { setActiveProfileId(p.id); setView('calendar'); }}>
                             <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-pink-50 flex items-center justify-center font-bold text-pink-500 text-[10px] sm:text-sm border border-pink-200/30 uppercase shrink-0 overflow-hidden">
@@ -81,7 +109,15 @@ export const UsersView: React.FC<UsersViewProps> = ({
                             </button>
                         </div>
                     </div>
-                ))}
+                )) : (
+                    <div className="py-12 flex flex-col items-center justify-center text-center space-y-3 opacity-30 grayscale">
+                        <Search size={32} className="text-gray-400" />
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black uppercase tracking-widest">Nenhum integrante encontrado</p>
+                            <p className="text-[8px] font-bold">Tente ajustar sua busca</p>
+                        </div>
+                    </div>
+                )}
             </div>
         </motion.div>
     );
