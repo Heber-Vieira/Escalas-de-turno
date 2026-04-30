@@ -229,7 +229,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                             <button onClick={() => { setActiveProfileId(p.id); setView('profile'); }} className="p-1 sm:p-1.5 text-gray-400 hover:text-pink-500 transition-colors">
                                 <Settings className="w-[13px] h-[13px] sm:w-[16px] sm:h-[16px]" />
                             </button>
-                            <button onClick={() => removeProfile(p.id)} className="p-1 sm:p-1.5 text-red-100 hover:text-red-500 transition-colors">
+                            <button onClick={() => removeProfile(p.id)} className="p-1 sm:p-1.5 text-gray-400 hover:text-red-500 transition-colors">
                                 <Trash2 className="w-[13px] h-[13px] sm:w-[16px] sm:h-[16px]" />
                             </button>
                         </div>

@@ -243,16 +243,32 @@ export const useEscalaStorage = (session: any) => {
     const deleteProfile = async (id: string) => {
         if (!session?.user?.id) return;
 
-        const { error } = await supabase
-            .from('profiles')
-            .delete()
-            .eq('id', id)
-            .eq('user_id', session.user.id);
+        try {
+            // 1. Remover todas as ausências vinculadas no banco
+            await supabase
+                .from('absences')
+                .delete()
+                .eq('profile_id', id);
 
-        if (error) throw error;
+            // 2. Remover o perfil no banco
+            // Se for admin, remove qualquer um pelo ID. Se não, remove apenas o seu próprio.
+            let deleteQuery = supabase.from('profiles').delete().eq('id', id);
+            
+            if (systemUser?.role !== 'admin') {
+                deleteQuery = deleteQuery.eq('user_id', session.user.id);
+            }
 
-        setProfiles(prev => prev.filter(p => p.id !== id));
-        setAbsences(prev => prev.filter(a => a.profileId !== id));
+            const { error } = await deleteQuery;
+
+            if (error) throw error;
+
+            // 3. Atualizar estado local imediatamente para refletir na UI
+            setProfiles(prev => prev.filter(p => p.id !== id));
+            setAbsences(prev => prev.filter(a => a.profileId !== id));
+        } catch (err) {
+            console.error('Erro na deleção completa:', err);
+            throw err;
+        }
     };
 
     const syncAbsence = async (abs: Absence) => {

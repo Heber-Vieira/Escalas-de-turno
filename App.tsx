@@ -257,13 +257,18 @@ const App: React.FC = () => {
       async () => {
         try {
           await deleteProfile(id);
-          const remainingProfiles = profiles.filter((p: UserConfig) => p.id !== id);
+          // O setProfiles dentro do useEscalaStorage já cuida da atualização do estado, 
+          // mas vamos garantir a troca do perfil ativo se necessário antes do re-render
           if (activeProfileId === id) {
-            setActiveProfileId(remainingProfiles[0].id);
+            const nextProfile = profiles.find(p => p.id !== id);
+            if (nextProfile) {
+              setActiveProfileId(nextProfile.id);
+            }
           }
           if (view === 'profile') setView('users');
-        } catch (err) {
+        } catch (err: any) {
           console.error('Erro ao remover perfil:', err);
+          alert('Erro ao remover integrante: ' + (err.message || 'Verifique sua conexão.'));
         }
       }
     );
