@@ -422,7 +422,7 @@ const App: React.FC = () => {
           
           <div className="flex flex-col pl-3 border-l border-gray-200">
             <span className="text-[10px] font-black text-gray-900 leading-none mb-1 truncate max-w-[80px] sm:max-w-[120px]">
-              {formatName((session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário').split(' ')[0])}
+              {formatName((systemUser?.name || session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Usuário').split(' ')[0])}
             </span>
             <span className="text-[7px] font-bold text-gray-400 uppercase tracking-widest leading-none">
               {systemUser?.role === 'admin' ? 'Admin' : 'Colab'}

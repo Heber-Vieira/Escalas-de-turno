@@ -308,9 +308,11 @@ export const useEscalaStorage = (session: any) => {
         return data as SystemUser[];
     };
 
-    const updateSystemUserAccess = async (userId: string, is_approved: boolean, role: 'admin' | 'user') => {
+    const updateSystemUserAccess = async (userId: string, is_approved: boolean, role: 'admin' | 'user', name?: string) => {
         if (!systemUser || systemUser.role !== 'admin') return;
-        const { error } = await supabase.from('system_users').update({ is_approved, role }).eq('id', userId);
+        const payload: any = { is_approved, role };
+        if (name !== undefined) payload.name = name;
+        const { error } = await supabase.from('system_users').update(payload).eq('id', userId);
         if (error) throw error;
     };
 

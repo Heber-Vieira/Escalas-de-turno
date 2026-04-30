@@ -22,6 +22,7 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
   const [users, setUsers] = useState<SystemUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [addingUser, setAddingUser] = useState(false);
@@ -30,6 +31,8 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
   const [deleting, setDeleting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [updatingGlobal, setUpdatingGlobal] = useState(false);
+  const [editingNameId, setEditingNameId] = useState<string | null>(null);
+  const [tempName, setTempName] = useState('');
 
   const loadUsers = async () => {
     setLoading(true);
@@ -55,11 +58,23 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
   const handleToggleRole = async (user: SystemUser) => {
     const newRole = user.role === 'admin' ? 'user' : 'admin';
     try {
-      await updateSystemUserAccess(user.id, user.is_approved, newRole);
+      await updateSystemUserAccess(user.id, user.is_approved, newRole, user.name);
       setUsers(users.map(u => u.id === user.id ? { ...u, role: newRole } : u));
     } catch (err) {
       console.error('Erro ao atualizar função:', err);
       alert('Erro ao atualizar função do usuário.');
+    }
+  };
+
+  const handleUpdateName = async (user: SystemUser) => {
+    if (!tempName.trim()) return setEditingNameId(null);
+    try {
+      await updateSystemUserAccess(user.id, user.is_approved, user.role, tempName.trim());
+      setUsers(users.map(u => u.id === user.id ? { ...u, name: tempName.trim() } : u));
+      setEditingNameId(null);
+    } catch (err) {
+      console.error('Erro ao atualizar nome:', err);
+      alert('Erro ao atualizar nome do usuário.');
     }
   };
 
@@ -89,12 +104,18 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
       const { data, error } = await supabase.auth.signUp({
         email: newEmail,
         password: newPassword,
+        options: {
+            data: {
+                full_name: newName
+            }
+        }
       });
 
       if (error) throw error;
       
       alert('Usuário cadastrado com sucesso!');
       setShowAddModal(false);
+      setNewName('');
       setNewEmail('');
       setNewPassword('');
       loadUsers(); // Recarrega a lista para mostrar o novo usuário se o trigger funcionou
@@ -147,9 +168,34 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
               <div className="w-10 h-10 rounded-full bg-pink-50 flex items-center justify-center shrink-0 border border-pink-100">
                 <User size={18} className="text-pink-500" />
               </div>
-              <div className="min-w-0 flex-1">
-                <span className="text-sm font-black text-gray-800 truncate block">{user.email}</span>
-                <span className={`text-[9px] font-black uppercase tracking-widest mt-0.5 block ${user.is_approved ? 'text-emerald-500' : 'text-red-500'}`}>
+               <div className="min-w-0 flex-1">
+                {editingNameId === user.id ? (
+                    <div className="flex items-center gap-2 mb-1">
+                        <input
+                            autoFocus
+                            type="text"
+                            value={tempName}
+                            onChange={(e) => setTempName(e.target.value)}
+                            onBlur={() => handleUpdateName(user)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleUpdateName(user)}
+                            className="flex-1 bg-gray-50 border-2 border-pink-100 rounded-lg px-2 py-1 text-sm font-black text-gray-800 outline-none"
+                        />
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-2 group cursor-pointer" onClick={() => {
+                        setEditingNameId(user.id);
+                        setTempName(user.name || '');
+                    }}>
+                        <span className="text-sm font-black text-gray-800 truncate block group-hover:text-pink-500 transition-colors">
+                            {user.name || user.email.split('@')[0]}
+                        </span>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Shield size={10} className="text-pink-300" />
+                        </div>
+                    </div>
+                )}
+                <span className="text-[9px] font-bold text-gray-400 truncate block lowercase opacity-60">{user.email}</span>
+                <span className={`text-[9px] font-black uppercase tracking-widest mt-1 block ${user.is_approved ? 'text-emerald-500' : 'text-red-500'}`}>
                   {user.is_approved ? 'Acesso Liberado' : 'Acesso Bloqueado'}
                 </span>
               </div>
@@ -286,6 +332,21 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
                             {addError}
                         </div>
                     )}
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-4">Nome Completo</label>
+                        <div className="relative">
+                            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <input
+                                type="text"
+                                required
+                                value={newName}
+                                onChange={(e) => setNewName(e.target.value)}
+                                placeholder="Nome do usuário"
+                                className="w-full bg-gray-50 border-2 border-gray-100 rounded-[20px] py-3 pl-12 pr-4 text-gray-800 text-sm outline-none focus:border-pink-500 focus:bg-white transition-all"
+                            />
+                        </div>
+                    </div>
                     
                     <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-4">E-mail</label>

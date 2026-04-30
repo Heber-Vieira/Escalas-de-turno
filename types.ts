@@ -87,6 +87,7 @@ export interface AuditLog {
 export interface SystemUser {
   id: string;
   email: string;
+  name?: string;
   role: 'admin' | 'user';
   is_approved: boolean;
   can_view_all?: boolean;
