@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, ShieldCheck, ShieldAlert, User, UserPlus, Mail, Key, Trash2, X, AlertTriangle, Eye, EyeOff, Users } from 'lucide-react';
 import { SystemUser } from '../types';
 import { supabase } from '../services/supabase';
+import { formatName } from '../utils/shiftCalculator';
 
 interface SystemAccessManagementProps {
   fetchAllSystemUsers: () => Promise<SystemUser[]>;
@@ -193,7 +194,7 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
                         setTempName(user.name || '');
                     }}>
                         <span className="text-sm font-black text-gray-800 truncate block group-hover:text-pink-500 transition-colors">
-                            {user.name || user.email.split('@')[0]}
+                            {formatName((user.name || user.email.split('@')[0]).split(' ')[0])}
                         </span>
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                             <Shield size={10} className="text-pink-300" />

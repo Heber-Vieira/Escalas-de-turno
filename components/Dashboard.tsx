@@ -8,6 +8,7 @@ import { NATIONAL_HOLIDAYS, STATE_HOLIDAYS, THEME_CONFIGS } from '../constants';
 import { ChevronLeft, ChevronRight, Palette, Settings, Eye, EyeOff, ShieldCheck, Clock, Umbrella, Calendar as CalendarIcon, ArrowRight, X, Zap, AlertCircle, Info, CheckCircle2, AlertTriangle, Users2, Briefcase, FileWarning, Sun, Moon, CloudSun, Sparkles, LayoutGrid, Check, Users, Undo2, Ban, HelpCircle, Flame, Siren, Footprints, Coffee, RotateCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSmartAlert } from '../services/geminiService';
+import { Tooltip } from './Tooltip';
 
 const ensureArray = (arr: any) => Array.isArray(arr) ? arr : [];
 
@@ -466,16 +467,32 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </button>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
-              className={`p-2 rounded-full border transition-all ${isThemeMenuOpen ? 'bg-pink-500 border-pink-400 text-white shadow-md' : 'bg-white border-gray-100 text-gray-400'}`}
-            >
-              <Palette size={18} />
-            </button>
-            <button onClick={() => setIsTeamView(!isTeamView)} className={`p-2 rounded-full border transition-all ${isTeamView ? 'bg-indigo-600 border-indigo-500 text-white shadow-md' : 'bg-white border-gray-100 text-gray-400'}`}>
-              {isTeamView ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-            <button onClick={openSettings} className="p-2 bg-white border border-gray-100 rounded-full shadow-sm active:scale-90 transition-transform"><Settings className="text-pink-500 w-4.5 h-4.5" /></button>
+            <Tooltip text="Alterar Tema do Aplicativo" align="right">
+              <button
+                onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
+                className={`p-2 rounded-full border transition-all ${isThemeMenuOpen ? 'bg-pink-500 border-pink-400 text-white shadow-md' : 'bg-white border-gray-100 text-gray-400'}`}
+              >
+                <Palette size={18} />
+              </button>
+            </Tooltip>
+
+            <Tooltip text="Alternar entre Minha Escala e Equipe Ativa" align="right">
+              <button 
+                onClick={() => setIsTeamView(!isTeamView)} 
+                className={`p-2 rounded-full border transition-all ${isTeamView ? 'bg-indigo-600 border-indigo-500 text-white shadow-md' : 'bg-white border-gray-100 text-gray-400'}`}
+              >
+                {isTeamView ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </Tooltip>
+
+            <Tooltip text="Configurações de Perfil e Carreira" align="right">
+              <button 
+                onClick={openSettings} 
+                className="p-2 bg-white border border-gray-100 rounded-full shadow-sm active:scale-90 transition-transform"
+              >
+                <Settings className="text-pink-500 w-4.5 h-4.5" />
+              </button>
+            </Tooltip>
           </div>
         </div>
 
@@ -535,7 +552,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         <div className="grid grid-cols-7 gap-1.5 mb-2">
           {weekDays.map((d, i) => (
-            <div key={i} className="text-center text-[9px] font-black text-gray-300 uppercase tracking-tighter py-1">
+            <div key={i} className="text-center text-[9px] font-black text-gray-300 tracking-tighter py-1">
               {d}
             </div>
           ))}
@@ -665,7 +682,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 (p.name || 'Usuário').charAt(0)
                               )}
                             </div>
-                            <span className="text-[9px] font-bold text-gray-700 truncate max-w-[60px]">{(p.name || 'Usuário').split(' ')[0]}</span>
+                            <span className="text-[9px] font-bold text-gray-700 truncate max-w-[60px]">{formatName((p.name || 'Usuário').split(' ')[0])}</span>
                             <div className="flex items-center gap-0.5 ml-0.5">
                               {getTurnIcon(p.turn)}
                               {isExtra && <Zap size={7} className="text-purple-500 fill-purple-500" />}
@@ -682,7 +699,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               {teamStats.totalActive === 0 && (
                 <div className="py-8 flex flex-col items-center justify-center text-center space-y-2 opacity-20 grayscale">
                   <Users2 size={24} className="text-gray-400" />
-                  <span className="text-[8px] font-black uppercase tracking-widest">Nenhum Ativo</span>
+                  <span className="text-[8px] font-black tracking-widest">Nenhum Ativo</span>
                 </div>
               )}
             </div>

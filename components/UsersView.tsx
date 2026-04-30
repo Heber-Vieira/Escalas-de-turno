@@ -210,7 +210,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                 {filteredProfiles.length > 0 ? filteredProfiles.map(p => (
                     <div key={p.id} className={`p-1.5 sm:p-2.5 flex items-center justify-between transition-all bg-white/85 border rounded-[12px] sm:rounded-[20px] shadow-sm hover:shadow-md ${p.id === activeProfileId ? 'border-pink-300 ring-2 ring-pink-500/5' : 'border-pink-100/50'}`}>
                         <button className="flex-1 flex items-center gap-1.5 sm:gap-2.5 text-left min-w-0" onClick={() => { setActiveProfileId(p.id); setView('calendar'); }}>
-                            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-pink-50 flex items-center justify-center font-bold text-pink-500 text-[10px] sm:text-sm border border-pink-200/30 uppercase shrink-0 overflow-hidden">
+                            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-pink-50 flex items-center justify-center font-bold text-pink-500 text-[10px] sm:text-sm border border-pink-200/30 shrink-0 overflow-hidden">
                                 {p.avatarUrl ? (
                                     <img src={p.avatarUrl} alt={p.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -219,7 +219,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
                             </div>
                             <div className="min-w-0 flex-1">
                                 <div className="font-bold text-gray-800 text-[11px] sm:text-sm leading-tight truncate">
-                                    {formatName(p.name)}
+                                    {formatName(p.name.split(' ')[0])}
                                 </div>
                                 <span className="text-[6px] sm:text-[8px] text-pink-500 font-bold tracking-wider truncate block opacity-70">
                                     {formatName(p.role)}

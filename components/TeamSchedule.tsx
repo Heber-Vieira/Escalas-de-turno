@@ -544,7 +544,7 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
                         </div>
                         <div className="flex flex-wrap gap-1 flex-1">
                           {vacation.map(w => (
-                            <div key={w.id} className="px-2 py-0.5 rounded-full bg-sky-50/50 border border-sky-100 text-[8px] font-bold text-sky-400 uppercase">
+                            <div key={w.id} className="px-2 py-0.5 rounded-full bg-sky-50/50 border border-sky-100 text-[8px] font-bold text-sky-400">
                               {formatName((w.name || 'Usuário').split(' ')[0])}
                             </div>
                           ))}
