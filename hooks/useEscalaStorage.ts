@@ -54,11 +54,10 @@ export const useEscalaStorage = (session: any) => {
                 
                 if (!isAdmin && visibility !== 'all') {
                     if (visibility === 'self') {
-                        // Only the profile that matches the user's email
                         profilesQuery = profilesQuery.eq('email', session.user.email);
                     } else if (visibility === 'created') {
-                        // Profiles they own/created
-                        profilesQuery = profilesQuery.eq('user_id', session.user.id);
+                        // Ver perfis criados por ele OU o perfil dele (pelo email)
+                        profilesQuery = profilesQuery.or(`user_id.eq.${session.user.id},email.eq.${session.user.email}`);
                     }
                 }
 
@@ -93,11 +92,17 @@ export const useEscalaStorage = (session: any) => {
                 setProfiles(sortedProfiles);
 
                 const canSeeAll = isAdmin || visibility === 'all';
+                const visibleProfileIds = sortedProfiles.map(p => p.id);
 
-                // Fetch Absences
+                // Fetch Absences for visible profiles
                 let absencesQuery = supabase.from('absences').select('*');
                 if (!canSeeAll) {
-                    absencesQuery = absencesQuery.eq('user_id', session.user.id);
+                    if (visibleProfileIds.length > 0) {
+                        absencesQuery = absencesQuery.in('profile_id', visibleProfileIds);
+                    } else {
+                        // Se não vê nenhum perfil, não vê nenhuma ausência
+                        absencesQuery = absencesQuery.eq('id', '00000000-0000-0000-0000-000000000000');
+                    }
                 }
                 const { data: dbAbsences, error: aError } = await absencesQuery;
 
