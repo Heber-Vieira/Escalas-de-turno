@@ -57,6 +57,46 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [vacationStart, setVacationStart] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [selectedDuration, setSelectedDuration] = useState<number>(10);
 
+  // Pinch-to-zoom no calendário
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const [calZoom, setCalZoom] = useState(1);
+  const pinchRef = useRef<{ dist: number; zoom: number } | null>(null);
+  const lastTapRef = useRef<number>(0);
+
+  const getPinchDist = (touches: React.TouchList) => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const handleCalTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      pinchRef.current = { dist: getPinchDist(e.touches), zoom: calZoom };
+    } else if (e.touches.length === 1) {
+      // double tap para resetar zoom
+      const now = Date.now();
+      if (now - lastTapRef.current < 300) {
+        setCalZoom(1);
+      }
+      lastTapRef.current = now;
+    }
+  };
+
+  const handleCalTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && pinchRef.current) {
+      e.preventDefault();
+      const newDist = getPinchDist(e.touches);
+      const ratio = newDist / pinchRef.current.dist;
+      const next = Math.min(2.5, Math.max(0.75, pinchRef.current.zoom * ratio));
+      setCalZoom(next);
+    }
+  };
+
+  const handleCalTouchEnd = () => {
+    pinchRef.current = null;
+  };
+
   // Calcula a configuração efetiva para a data selecionada (para exibir cargo/turno correto)
   const effectiveConfig = useMemo(() => {
     const eff = getEffectiveConfig(selectedDate, config);
@@ -558,6 +598,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
           ))}
         </div>
 
+        {/* Grid dos dias — pinch-to-zoom */}
+        <div
+          ref={calendarRef}
+          onTouchStart={handleCalTouchStart}
+          onTouchMove={handleCalTouchMove}
+          onTouchEnd={handleCalTouchEnd}
+          style={{
+            transform: `scale(${calZoom})`,
+            transformOrigin: 'top center',
+            transition: pinchRef.current ? 'none' : 'transform 0.15s ease',
+            marginBottom: calZoom > 1 ? `${(calZoom - 1) * 100}%` : undefined,
+          }}
+          className="touch-none"
+        >
         <div className="grid grid-cols-7 gap-1 sm:gap-1.5 mb-6">
           {spacers.map((_, i) => (
             <div key={`spacer-${i}`} className="aspect-square" />
@@ -595,23 +649,36 @@ export const Dashboard: React.FC<DashboardProps> = ({
             );
           })}
         </div>
+        </div>
 
-        {/* Legenda: mini células que replicam o visual real do calendário */}
-        <div className="flex items-center justify-center gap-1.5 border-t border-gray-50/20 pt-4 px-2 overflow-x-auto no-scrollbar">
-          {[
-            { classes: theme.workDay, label: 'Trabalho', symbol: '✓' },
-            { classes: theme.offDay,  label: 'Folga',    symbol: '—' },
-            { classes: 'bg-sky-500 text-white',      label: 'Férias',   symbol: '⛱' },
-            { classes: 'bg-purple-600 text-white',   label: 'Extra',    symbol: '⚡' },
-            { classes: '!bg-red-50 !text-red-400 border border-red-100', label: 'Ausência', symbol: '✕' },
-          ].map(({ classes, label, symbol }) => (
-            <div key={label} className="flex items-center gap-1 shrink-0">
-              <div className={`w-6 h-5 rounded-md flex items-center justify-center text-[7px] font-black leading-none ${classes}`}>
-                {symbol}
+        {/* Zoom hint — aparece quando zoom != 1 */}
+        {calZoom !== 1 && (
+          <button
+            onClick={() => setCalZoom(1)}
+            className="flex items-center gap-1 mx-auto mb-2 px-2 py-1 bg-gray-100/80 rounded-full text-[8px] font-bold text-gray-400 uppercase tracking-widest"
+          >
+            <RotateCw size={9} /> Resetar zoom
+          </button>
+        )}
+        {/* Legenda responsiva — grid 2 linhas para mobile */}
+        <div className="border-t border-gray-50/20 pt-3 px-1">
+          <div className="grid grid-cols-3 gap-x-2 gap-y-1.5 justify-items-center">
+            {[
+              { classes: theme.workDay, label: 'Trabalho', symbol: '✓' },
+              { classes: theme.offDay,  label: 'Folga',    symbol: '—' },
+              { classes: 'bg-sky-500 text-white',    label: 'Férias',   symbol: '⛱' },
+              { classes: 'bg-purple-600 text-white', label: 'Extra',    symbol: '⚡' },
+              { classes: '!bg-red-50 !text-red-400 border border-red-100', label: 'Ausência', symbol: '✕' },
+            ].map(({ classes, label, symbol }) => (
+              <div key={label} className="flex items-center gap-1">
+                <div className={`w-5 h-4 rounded flex items-center justify-center text-[6px] font-black leading-none ${classes}`}>
+                  {symbol}
+                </div>
+                <span className="text-[6px] font-black uppercase tracking-widest text-gray-400 whitespace-nowrap">{label}</span>
               </div>
-              <span className="text-[7px] font-black uppercase tracking-widest text-gray-400">{label}</span>
-            </div>
-          ))}
+            ))}
+            {/* 5 itens em grid 3 colunas: 3+2, centralizados */}
+          </div>
         </div>
       </div>
 
