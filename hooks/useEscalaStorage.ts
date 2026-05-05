@@ -129,8 +129,18 @@ export const useEscalaStorage = (session: any) => {
 
                 setAbsences(mappedAbsences);
 
-                // Set Active Profile
-                if (settings?.last_active_profile_id && mappedProfiles.find(p => p.id === settings.last_active_profile_id)) {
+                // Set Active Profile — prioridade:
+                // 1. Perfil cujo email bate com o do usuário logado (própria escala)
+                // 2. Último perfil ativo salvo no banco ou localStorage
+                // 3. Primeiro da lista (fallback)
+                const ownProfile = mappedProfiles.find(
+                    p => p.email && p.email.toLowerCase() === session.user.email?.toLowerCase()
+                );
+
+                if (ownProfile) {
+                    // Sempre abre na própria escala ao fazer login
+                    setActiveProfileId(ownProfile.id);
+                } else if (settings?.last_active_profile_id && mappedProfiles.find(p => p.id === settings.last_active_profile_id)) {
                     setActiveProfileId(settings.last_active_profile_id);
                 } else {
                     const savedActiveId = localStorage.getItem('escala_facil_active_id');
@@ -370,6 +380,47 @@ export const useEscalaStorage = (session: any) => {
         if (error) throw error;
     };
 
+    /**
+     * Cria um perfil de escala para OUTRO usuário (usado pelo admin ao cadastrar um novo usuário).
+     * O user_id do perfil é o ID do novo usuário, não o do admin.
+     */
+    const addProfileForOtherUser = async (targetUserId: string, newConfig: UserConfig): Promise<UserConfig | null> => {
+        if (!systemUser || systemUser.role !== 'admin') return null;
+
+        const { id, ...data } = newConfig;
+        const dbRow = {
+            user_id: targetUserId,           // <-- ID do novo usuário, não do admin
+            name: data.name,
+            role: data.role,
+            shift_type: data.shiftType,
+            turn: data.turn,
+            start_date: data.startDate,
+            off_days: data.offDays,
+            vacation_dates: data.vacationDates || [],
+            overtime_dates: data.overtimeDates || [],
+            rotating_work_days: data.rotatingWorkDays || null,
+            rotating_off_days: data.rotatingOffDays || null,
+            state: data.state || '',
+            city: data.city || '',
+            theme: data.theme || ThemeStyle.MODERN,
+            email: data.email,
+            phone: data.phone || null,
+            is_active: true,
+            notes: data.notes || null,
+            career_history: data.careerHistory || []
+        };
+
+        const { data: inserted, error } = await supabase
+            .from('profiles')
+            .insert(dbRow)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        return { ...newConfig, id: inserted.id };
+    };
+
     const uploadAvatar = async (profileId: string, file: File) => {
         if (!session?.user?.id) return null;
 
@@ -410,6 +461,7 @@ export const useEscalaStorage = (session: any) => {
         updateSystemUserAccess,
         deleteSystemUser,
         uploadAvatar,
-        updateSystemUserVisibility
+        updateSystemUserVisibility,
+        addProfileForOtherUser
     };
 };

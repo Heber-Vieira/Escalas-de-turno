@@ -48,7 +48,8 @@ const App: React.FC = () => {
     updateSystemUserAccess,
     deleteSystemUser,
     uploadAvatar,
-    updateSystemUserVisibility
+    updateSystemUserVisibility,
+    addProfileForOtherUser
   } = useEscalaStorage(session);
 
   const [view, setView] = useState<'calendar' | 'history' | 'profile' | 'users' | 'team_schedule' | 'admin'>('calendar');
@@ -79,6 +80,8 @@ const App: React.FC = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      // Ao fazer login, sempre volta para a aba Escala (calendário)
+      if (session) setView('calendar');
     });
 
     return () => subscription.unsubscribe();
@@ -362,8 +365,33 @@ const App: React.FC = () => {
     return <AccessDenied onLogout={handleLogout} />;
   }
 
+  // Usuário com visibilidade 'self' sem perfil: não exibe Onboarding, cria perfil vazio automaticamente
+  // para que ele preencha depois via ProfileView. Só mostra spinner enquanto aguarda.
+  const isSelfOnly = systemUser?.visibility === 'self' && systemUser?.role !== 'admin';
+
   // Se não há perfis OU o onboarding foi solicitado, mostra o onboarding
+  // EXCEÇÃO: usuário 'self' não vê onboarding — aguarda o admin configurar seu perfil
   if ((profiles.length === 0 || showOnboarding) && view !== 'admin') {
+    if (isSelfOnly && !showOnboarding) {
+      // Perfil ainda não foi criado pelo admin — exibe tela de espera
+      return (
+        <div className="min-h-screen bg-[#fafafa] flex flex-col items-center justify-center gap-6 p-8">
+          <div className="w-16 h-16 rounded-3xl bg-pink-50 border-2 border-pink-100 flex items-center justify-center">
+            <ShieldCheck size={28} className="text-pink-400" />
+          </div>
+          <div className="text-center space-y-2">
+            <h2 className="text-lg font-black text-gray-800 uppercase tracking-tight">Aguardando Configuração</h2>
+            <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
+              Seu acesso foi liberado! O administrador ainda está configurando sua escala de trabalho. Tente novamente em breve.
+            </p>
+          </div>
+          <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-black text-red-400 uppercase tracking-widest hover:bg-red-500/20 transition-all">
+            <LogOut size={14} /> Sair
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-[#0a0a0f]">
         {systemUser?.role === 'admin' && (
@@ -535,6 +563,7 @@ const App: React.FC = () => {
             deleteSystemUser={deleteSystemUser}
             currentUserId={session?.user?.id}
             updateSystemUserVisibility={updateSystemUserVisibility}
+            addProfileForOtherUser={addProfileForOtherUser}
           />
         )}
       </AnimatePresence>
