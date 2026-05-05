@@ -596,27 +596,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
           })}
         </div>
 
-        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 border-t border-gray-50 pt-5 px-2">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
-            <span className="text-[7px] font-black uppercase tracking-widest text-gray-400">Trabalho</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-orange-300"></div>
-            <span className="text-[7px] font-black uppercase tracking-widest text-gray-400">Folga</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-sky-500"></div>
-            <span className="text-[7px] font-black uppercase tracking-widest text-gray-400">Férias</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-purple-600"></div>
-            <span className="text-[7px] font-black uppercase tracking-widest text-gray-400">Extra</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-red-400"></div>
-            <span className="text-[7px] font-black uppercase tracking-widest text-gray-400">Ausência</span>
-          </div>
+        {/* Legenda: mini células que replicam o visual real do calendário */}
+        <div className="flex flex-wrap justify-center gap-2 border-t border-gray-50/20 pt-4 px-2">
+          {[
+            { classes: theme.workDay, label: 'Trabalho', symbol: '✓' },
+            { classes: theme.offDay,  label: 'Folga',    symbol: '—' },
+            { classes: 'bg-sky-500 text-white',      label: 'Férias',   symbol: '⛱' },
+            { classes: 'bg-purple-600 text-white',   label: 'Extra',    symbol: '⚡' },
+            { classes: '!bg-red-50 !text-red-400 border border-red-100', label: 'Ausência', symbol: '✕' },
+          ].map(({ classes, label, symbol }) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <div className={`w-6 h-5 rounded-md flex items-center justify-center text-[7px] font-black leading-none ${classes}`}>
+                {symbol}
+              </div>
+              <span className="text-[7px] font-black uppercase tracking-widest text-gray-400">{label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
