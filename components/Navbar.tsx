@@ -8,10 +8,10 @@ interface NavbarProps {
     setView: (view: any) => void;
     theme: ThemeConfig;
     systemRole?: 'admin' | 'user';
-    allowUsersViewAll?: boolean;
+    systemVisibility?: 'all' | 'self' | 'created';
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme, systemRole, allowUsersViewAll }) => {
+export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme, systemRole, systemVisibility }) => {
     const getActiveTabColor = (isActive: boolean) => {
         if (!isActive) return 'text-gray-400';
         return 'text-pink-600';
@@ -27,7 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme, systemRole
                 <span className="text-[8px] uppercase font-black tracking-widest">Escala</span>
             </button>
 
-            {(systemRole === 'admin' || allowUsersViewAll) && (
+            {(systemRole === 'admin' || systemVisibility === 'all') && (
                 <button
                     onClick={() => setView('team_schedule')}
                     className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'team_schedule')}`}
@@ -47,7 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme, systemRole
                 </button>
             )}
 
-            {(systemRole === 'admin' || allowUsersViewAll) && (
+            {(systemRole === 'admin' || systemVisibility === 'all' || systemVisibility === 'created') && (
                 <button
                     onClick={() => setView('users')}
                     className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'users')}`}

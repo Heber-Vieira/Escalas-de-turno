@@ -62,10 +62,12 @@ export const useEscalaStorage = (session: any) => {
                 // IMPORTANTE: Só aplicamos filtros se NÃO for 'all'.
                 // Se for 'all', a query continua sendo .select('*') para trazer tudo.
                 if (visibility === 'self') {
+                    // Visão apenas do próprio perfil: filtra pelo email do colaborador
                     profilesQuery = profilesQuery.eq('email', session.user.email);
                 } else if (visibility === 'created') {
-                    // Ver perfis criados por ele OU o perfil dele (pelo email)
-                    profilesQuery = profilesQuery.or(`user_id.eq.${session.user.id},email.eq.${session.user.email}`);
+                    // Visão de si mesmo E de quem criou: filtra perfis onde user_id = criador (o usuário logado),
+                    // OU o perfil cujo email coincide com o do usuário logado (o próprio registro de colaborador)
+                    profilesQuery = profilesQuery.or(`user_id.eq.${session.user.id},email.ilike.${session.user.email}`);
                 }
                 // Se visibility === 'all', não entra em nenhum IF e traz tudo.
 

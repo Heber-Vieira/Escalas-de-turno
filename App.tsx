@@ -474,7 +474,7 @@ const App: React.FC = () => {
           </motion.div>
         )}
 
-        {view === 'team_schedule' && (systemUser?.role === 'admin' || systemUser?.can_view_all) && (
+        {view === 'team_schedule' && (systemUser?.role === 'admin' || systemUser?.visibility === 'all') && (
           <motion.div key="team_schedule" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <ErrorBoundary onLogout={handleLogout}>
               <TeamSchedule
@@ -515,7 +515,7 @@ const App: React.FC = () => {
           />
         )}
 
-        {view === 'users' && (systemUser?.role === 'admin' || systemUser?.can_view_all) && (
+        {view === 'users' && (systemUser?.role === 'admin' || systemUser?.visibility === 'all' || systemUser?.visibility === 'created') && (
           <UsersView
             profiles={profiles}
             activeProfileId={activeProfileId}
@@ -539,7 +539,7 @@ const App: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <Navbar view={view} setView={setView} theme={theme} systemRole={systemUser?.role} allowUsersViewAll={systemUser?.can_view_all} />
+      <Navbar view={view} setView={setView} theme={theme} systemRole={systemUser?.role} systemVisibility={systemUser?.visibility} />
 
       <HelpCenter isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       <BatchAddModal
