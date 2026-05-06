@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { supabase } from '../services/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LogIn, UserPlus, Mail, Lock, Sparkles, ArrowRight, Github, Chrome, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { LegalModal } from './LegalModal';
 
 interface AuthProps {
     onAuthSuccess: () => void;
@@ -14,6 +15,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+    const [legalType, setLegalType] = useState<'terms' | 'privacy' | null>(null);
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -125,9 +127,10 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
 
                 <p className="mt-8 text-center text-[10px] font-medium text-gray-600 uppercase tracking-widest leading-loose">
                     Ao continuar, você concorda com nossos <br />
-                    <span className="text-gray-400 cursor-pointer hover:text-pink-500 transition-colors">Termos de Serviço</span> e <span className="text-gray-400 cursor-pointer hover:text-pink-500 transition-colors">Privacidade</span>
+                    <span onClick={() => setLegalType('terms')} className="text-gray-400 cursor-pointer hover:text-pink-500 transition-colors">Termos de Serviço</span> e <span onClick={() => setLegalType('privacy')} className="text-gray-400 cursor-pointer hover:text-pink-500 transition-colors">Privacidade</span>
                 </p>
             </motion.div>
+            <LegalModal isOpen={!!legalType} type={legalType} onClose={() => setLegalType(null)} />
         </div>
     );
 };
