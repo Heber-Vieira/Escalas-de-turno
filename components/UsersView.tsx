@@ -15,6 +15,7 @@ interface UsersViewProps {
     setIsHelpOpen: (isOpen: boolean) => void;
     setShowOnboarding: (show: boolean) => void;
     removeProfile: (id: string) => void;
+    removeMultipleProfiles?: (ids: string[]) => void;
     onLogout: () => void;
     systemUser?: SystemUser | null;
     onInviteMember?: (profileId: string, email: string, password: string, memberName: string) => Promise<{ success: boolean; error?: string }>;
@@ -29,6 +30,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
     setIsHelpOpen,
     setShowOnboarding,
     removeProfile,
+    removeMultipleProfiles,
     onLogout,
     systemUser,
     onInviteMember,
@@ -52,11 +54,14 @@ export const UsersView: React.FC<UsersViewProps> = ({
 
     const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
     const [selectedTurns, setSelectedTurns] = useState<WorkTurn[]>(Object.values(WorkTurn));
+    const seenRolesRef = useRef<Set<string>>(new Set());
 
-    // Inicializar selectedRoles quando os perfis carregarem
+    // Inicializar e atualizar selectedRoles quando houver novos cargos
     useEffect(() => {
-        if (selectedRoles.length === 0 && allRoles.length > 0) {
-            setSelectedRoles(allRoles);
+        const newRoles = allRoles.filter(r => !seenRolesRef.current.has(r));
+        if (newRoles.length > 0) {
+            newRoles.forEach(r => seenRolesRef.current.add(r));
+            setSelectedRoles(prev => [...prev, ...newRoles]);
         }
     }, [allRoles]);
 
@@ -92,9 +97,15 @@ export const UsersView: React.FC<UsersViewProps> = ({
     const filteredProfiles = profiles.filter(p => {
         const normalizedSearch = normalizeString(searchQuery);
         const matchesSearch = normalizeString(p.name).includes(normalizedSearch) || 
-                             normalizeString(p.role).includes(normalizedSearch);
-        const matchesRole = selectedRoles.includes(p.role);
-        const matchesTurn = selectedTurns.includes(p.turn);
+                             normalizeString(p.role || '').includes(normalizedSearch);
+        
+        const isAllRolesSelected = selectedRoles.length === allRoles.length;
+        const matchesRole = isAllRolesSelected || selectedRoles.includes(p.role?.trim() || '');
+        
+        const isAllTurnsSelected = selectedTurns.length === Object.values(WorkTurn).length;
+        const canonicalTurn = normalizeString(p.turn);
+        const matchesTurn = isAllTurnsSelected || selectedTurns.some(t => normalizeString(t) === canonicalTurn);
+        
         return matchesSearch && matchesRole && matchesTurn;
     });
 
@@ -110,6 +121,16 @@ export const UsersView: React.FC<UsersViewProps> = ({
                     <h2 className="text-sm sm:text-lg font-black text-gray-800 uppercase tracking-tight truncate">Equipe</h2>
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
+                    {!isGuest && filteredProfiles.length > 0 && removeMultipleProfiles && (
+                        <button 
+                            onClick={() => removeMultipleProfiles(filteredProfiles.map(p => p.id))}
+                            className="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white border border-red-100 hover:border-red-500 rounded-full shadow-sm transition-all active:scale-95" 
+                            title="Excluir todos listados"
+                        >
+                            <Trash2 className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px]" />
+                            <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest hidden sm:inline">Excluir Todos</span>
+                        </button>
+                    )}
                     {!isGuest && (
                         <button onClick={() => setIsBatchModalOpen(true)} className="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 bg-gray-900 text-pink-500 rounded-full shadow-lg transition-all active:scale-95" title="Importação em Lote">
                             <Layers className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px]" />

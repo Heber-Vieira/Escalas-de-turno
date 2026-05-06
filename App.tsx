@@ -41,6 +41,7 @@ const App: React.FC = () => {
     addProfile,
     updateProfile,
     deleteProfile,
+    deleteMultipleProfiles,
     syncAbsence,
     deleteAbsence,
     systemUser,
@@ -254,16 +255,6 @@ const App: React.FC = () => {
   };
 
   const removeProfile = async (id: string) => {
-    if (profiles.length <= 1) {
-      requestConfirmation(
-        "Ação Bloqueada",
-        "O sistema precisa de pelo menos 1 perfil ativo para funcionar. Adicione outro integrante antes de remover este.",
-        () => { },
-        true,
-        "Entendi"
-      );
-      return;
-    }
     requestConfirmation(
       "Remover Integrante",
       `Tem certeza que deseja remover ${profiles.find(p => p.id === id)?.name}? Todos os registros vinculados serão perdidos.`,
@@ -276,12 +267,41 @@ const App: React.FC = () => {
             const nextProfile = profiles.find(p => p.id !== id);
             if (nextProfile) {
               setActiveProfileId(nextProfile.id);
+            } else {
+              setActiveProfileId(null);
             }
           }
           if (view === 'profile') setView('users');
         } catch (err: any) {
           console.error('Erro ao remover perfil:', err);
           alert('Erro ao remover integrante: ' + (err.message || 'Verifique sua conexão.'));
+        }
+      }
+    );
+  };
+
+  const removeMultipleProfiles = async (ids: string[]) => {
+    if (ids.length === 0) return;
+
+    requestConfirmation(
+      "Remover Integrantes",
+      `Tem certeza que deseja remover TODOS os ${ids.length} integrantes listados? Todos os registros vinculados serão perdidos e esta ação NÃO pode ser desfeita.`,
+      async () => {
+        try {
+          await deleteMultipleProfiles(ids);
+          // Atualiza perfil ativo se o atual foi removido
+          if (activeProfileId && ids.includes(activeProfileId)) {
+            const nextProfile = profiles.find(p => !ids.includes(p.id));
+            if (nextProfile) {
+              setActiveProfileId(nextProfile.id);
+            } else {
+              setActiveProfileId(null);
+            }
+          }
+          if (view === 'profile') setView('users');
+        } catch (err: any) {
+          console.error('Erro ao remover perfis:', err);
+          alert('Erro ao remover integrantes: ' + (err.message || 'Verifique sua conexão.'));
         }
       }
     );
@@ -426,7 +446,7 @@ const App: React.FC = () => {
           </button>
         </div>
         <DuplicateAlert duplicateErrorName={duplicateErrorName} setDuplicateErrorName={setDuplicateErrorName} />
-        <Onboarding onComplete={handleAddProfile} onCancel={() => setShowOnboarding(false)} isAddingExtra={profiles.length > 0} existingRoles={existingRoles} />
+        <Onboarding onComplete={handleAddProfile} onCancel={() => setShowOnboarding(false)} onLogout={handleLogout} isAddingExtra={profiles.length > 0} existingRoles={existingRoles} />
       </div>
     );
   }
@@ -564,6 +584,7 @@ const App: React.FC = () => {
             setIsHelpOpen={setIsHelpOpen}
             setShowOnboarding={setShowOnboarding}
             removeProfile={removeProfile}
+            removeMultipleProfiles={removeMultipleProfiles}
             onLogout={handleLogout}
             systemUser={systemUser}
             onInviteMember={inviteMember}

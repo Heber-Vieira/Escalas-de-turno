@@ -311,6 +311,28 @@ export const useEscalaStorage = (session: any) => {
         }
     };
 
+    const deleteMultipleProfiles = async (ids: string[]) => {
+        if (!session?.user?.id || ids.length === 0) return;
+
+        try {
+            await supabase.from('absences').delete().in('profile_id', ids);
+
+            let deleteQuery = supabase.from('profiles').delete().in('id', ids);
+            if (systemUser?.role !== 'admin') {
+                deleteQuery = deleteQuery.eq('user_id', session.user.id);
+            }
+
+            const { error } = await deleteQuery;
+            if (error) throw error;
+
+            setProfiles(prev => prev.filter(p => !ids.includes(p.id)));
+            setAbsences(prev => prev.filter(a => !ids.includes(a.profileId)));
+        } catch (err) {
+            console.error('Erro na deleção em lote:', err);
+            throw err;
+        }
+    };
+
     const syncAbsence = async (abs: Absence) => {
         if (!session?.user?.id) return;
 
@@ -572,6 +594,7 @@ export const useEscalaStorage = (session: any) => {
         addProfile,
         updateProfile,
         deleteProfile,
+        deleteMultipleProfiles,
         syncAbsence,
         deleteAbsence,
         systemUser,

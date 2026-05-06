@@ -3,16 +3,17 @@ import React, { useState, useMemo } from 'react';
 import { ShiftType, WorkTurn, UserConfig, ThemeStyle } from '../types';
 import { THEME_CONFIGS } from '../constants';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, User, Calendar, Clock, ShieldCheck, AlertCircle, Sun, CloudSun, Moon, Briefcase, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowLeft, User, Calendar, Clock, ShieldCheck, AlertCircle, Sun, CloudSun, Moon, Briefcase, Sparkles, LogOut } from 'lucide-react';
 
 interface OnboardingProps {
   onComplete: (config: UserConfig) => void;
   onCancel?: () => void;
+  onLogout?: () => void;
   isAddingExtra?: boolean;
   existingRoles?: string[];
 }
 
-export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, isAddingExtra, existingRoles = [] }) => {
+export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, onLogout, isAddingExtra, existingRoles = [] }) => {
   const [step, setStep] = useState(1);
   const [config, setConfig] = useState<Partial<UserConfig>>({
     id: Math.random().toString(36).substring(2, 9),
@@ -230,6 +231,18 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, is
 
   return (
     <div className="fixed inset-0 z-[100] bg-white flex flex-col">
+      <div className="w-full max-w-md mx-auto px-4 sm:px-0 pt-safe relative z-50">
+        {onLogout && !isAddingExtra && (
+          <div className="pt-4 sm:pt-6 flex justify-start">
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-1.5 px-4 py-2.5 sm:px-3 sm:py-2 bg-red-50 text-red-500 rounded-xl sm:rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-red-100 hover:text-red-600 transition-colors shadow-sm"
+            >
+              <LogOut size={16} className="sm:w-[14px] sm:h-[14px]" /> Sair
+            </button>
+          </div>
+        )}
+      </div>
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div className="min-h-full flex flex-col items-center justify-center p-4 sm:p-8">
           <motion.div

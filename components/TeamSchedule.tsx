@@ -85,9 +85,18 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
     });
     return Array.from(roles).sort();
   }, [allProfiles]);
-  const [selectedRoles, setSelectedRoles] = useState<string[]>(allRoles);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [selectedTurns, setSelectedTurns] = useState<WorkTurn[]>(Object.values(WorkTurn));
-  const [visibleDays, setVisibleDays] = useState<number[]>(allDaysInMonth.map(d => d.getDate()));
+  const [visibleDays, setVisibleDays] = useState<number[]>([]);
+  const seenRolesRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const newRoles = allRoles.filter(r => !seenRolesRef.current.has(r));
+    if (newRoles.length > 0) {
+      newRoles.forEach(r => seenRolesRef.current.add(r));
+      setSelectedRoles(prev => [...prev, ...newRoles]);
+    }
+  }, [allRoles]);
 
   useEffect(() => {
     setVisibleDays(allDaysInMonth.map(d => d.getDate()));
@@ -181,18 +190,27 @@ export const TeamSchedule: React.FC<TeamScheduleProps> = ({
     });
 
     const workers = workersWithConfig.filter(p => {
+      const isAllRolesSelected = selectedRoles.length === allRoles.length;
+      const matchesRole = isAllRolesSelected || selectedRoles.some(r => getCanonicalRole(r) === getCanonicalRole(p.effectiveRole));
+
+      const isAllTurnsSelected = selectedTurns.length === Object.values(WorkTurn).length;
+      const matchesTurn = isAllTurnsSelected || selectedTurns.some(t => getCanonicalRole(t) === getCanonicalRole(p.effectiveTurn));
+
       return (isWorkDay(day, p) || (p.overtimeDates?.includes(dateStr))) &&
         !absences.some(a => a.date === dateStr && a.profileId === p.id) &&
         !(p.vacationDates?.includes(dateStr)) &&
-        selectedRoles.some(r => getCanonicalRole(r) === getCanonicalRole(p.effectiveRole)) &&
-        selectedTurns.some(t => getCanonicalRole(t) === getCanonicalRole(p.effectiveTurn));
+        matchesRole && matchesTurn;
     });
 
-    const onVacation = workersWithConfig.filter(p =>
-      p.vacationDates?.includes(dateStr) &&
-      selectedRoles.some(r => getCanonicalRole(r) === getCanonicalRole(p.effectiveRole)) &&
-      selectedTurns.some(t => getCanonicalRole(t) === getCanonicalRole(p.effectiveTurn))
-    );
+    const onVacation = workersWithConfig.filter(p => {
+      const isAllRolesSelected = selectedRoles.length === allRoles.length;
+      const matchesRole = isAllRolesSelected || selectedRoles.some(r => getCanonicalRole(r) === getCanonicalRole(p.effectiveRole));
+
+      const isAllTurnsSelected = selectedTurns.length === Object.values(WorkTurn).length;
+      const matchesTurn = isAllTurnsSelected || selectedTurns.some(t => getCanonicalRole(t) === getCanonicalRole(p.effectiveTurn));
+
+      return p.vacationDates?.includes(dateStr) && matchesRole && matchesTurn;
+    });
 
     return {
       [WorkTurn.MORNING]: workers.filter(w => getCanonicalRole(w.effectiveTurn) === getCanonicalRole(WorkTurn.MORNING)),
