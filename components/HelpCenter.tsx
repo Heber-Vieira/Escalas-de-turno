@@ -79,6 +79,197 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
       )
     },
     {
+      id: 'access_control',
+      icon: <ShieldCheck className="text-emerald-500" />,
+      category: 'advanced',
+      title: 'Gestão de Acessos e Visibilidade',
+      description: 'Aprove novos usuários, defina privilégios de Admin e controle o que cada membro pode ver.',
+      tags: ['admin', 'acesso', 'aprovacao', 'visibilidade', 'permissoes'],
+      content: (
+        <div className="space-y-6">
+          <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-3xl space-y-3">
+            <div className="flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase tracking-widest">
+              <ShieldCheck size={14} />
+              Exclusivo para Administradores
+            </div>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              A segurança dos dados é prioridade. O sistema opera com um modelo de <strong>Aprovação Prévia</strong> e <strong>Controle de Visibilidade Granular</strong>.
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="p-4 bg-white border border-gray-100 rounded-[28px] shadow-sm">
+              <h5 className="font-black text-xs text-gray-800 mb-2">1. Painel de Aprovação (Acesso ao Sistema)</h5>
+              <p className="text-[11px] text-gray-500 leading-relaxed mb-3">
+                Novos usuários que tentam acessar o sistema entram em estado pendente. Vá na aba <strong>Acessos</strong> para aprovar ou rejeitar contas.
+              </p>
+              <div className="flex gap-2">
+                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-[9px] font-bold border border-green-200">Aprovar</span>
+                <span className="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-[9px] font-bold border border-red-200">Rejeitar</span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-white border border-gray-100 rounded-[28px] shadow-sm">
+              <h5 className="font-black text-xs text-gray-800 mb-2">2. Níveis de Visibilidade</h5>
+              <p className="text-[11px] text-gray-500 leading-relaxed">
+                No perfil do usuário, defina o Nível de Acesso em Sistema:
+              </p>
+              <ul className="mt-2 space-y-2">
+                <li className="flex gap-2 items-center text-[10px] text-gray-600"><div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div><strong>Tudo:</strong> Vê todos os registros da equipe.</li>
+                <li className="flex gap-2 items-center text-[10px] text-gray-600"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div><strong>Criados:</strong> Vê apenas os dados que ele mesmo criou.</li>
+                <li className="flex gap-2 items-center text-[10px] text-gray-600"><div className="w-1.5 h-1.5 rounded-full bg-pink-500"></div><strong>Próprios:</strong> Vê estritamente seus próprios dados.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'excel_import',
+      icon: <LayoutGrid className="text-blue-500" />,
+      category: 'features',
+      title: 'Importação Rápida via Excel',
+      description: 'Economize tempo importando planilhas inteiras de escalas com validação inteligente.',
+      tags: ['excel', 'importar', 'planilha', 'lote', 'csv', 'cadastro'],
+      content: (
+        <div className="space-y-6">
+          <div className="relative p-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[32px] text-white overflow-hidden shadow-xl">
+            <div className="absolute top-0 right-0 p-4 opacity-10"><LayoutGrid size={80} /></div>
+            <h4 className="text-lg font-black mb-2">Importação em Lote</h4>
+            <p className="text-xs opacity-90 leading-relaxed">Não perca tempo cadastrando um a um. Suba um arquivo Excel e o sistema fará o resto de forma inteligente.</p>
+          </div>
+          
+          <div className="space-y-4">
+            {[
+              { step: '01', title: 'Baixe o Modelo Padrão', desc: 'No modal de "Adicionar em Lote", clique para baixar o modelo Excel. Ele contém as colunas exatas necessárias.' },
+              { step: '02', title: 'Preencha os Dados', desc: 'Siga a formatação de datas e nomes exigida. O sistema corrige automaticamente pequenos erros de formatação.' },
+              { step: '03', title: 'Upload e Revisão', desc: 'Arraste o arquivo preenchido para o sistema. Você verá uma prévia antes de confirmar a importação.' }
+            ].map((item, i) => (
+              <div key={i} className="flex gap-4 p-4 bg-white border border-gray-100 rounded-3xl items-start shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-xs font-black text-blue-500 shrink-0 border border-blue-50">
+                  {item.step}
+                </div>
+                <div>
+                  <h5 className="font-black text-gray-800 text-sm">{item.title}</h5>
+                  <p className="text-[11px] text-gray-500 leading-tight">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'guest_invites',
+      icon: <Send className="text-purple-500" />,
+      category: 'features',
+      title: 'Convites para Membros e Equipe',
+      description: 'Como integrar novos colegas enviando convites seguros por e-mail.',
+      tags: ['convite', 'equipe', 'email', 'membro', 'cadastro'],
+      content: (
+        <div className="space-y-5">
+          <p className="text-sm text-gray-600 px-1">Expandir sua equipe é simples e não exige que o novo membro passe por aprovações manuais, pois o convite já serve como autorização.</p>
+          
+          <div className="grid grid-cols-1 gap-3">
+            <div className="p-4 bg-white border border-gray-100 rounded-[28px] flex flex-col sm:flex-row sm:items-center gap-4 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-purple-500" />
+              <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-500 shrink-0"><Send size={20} /></div>
+              <div>
+                <h5 className="font-black text-xs text-gray-800 mb-1">Como enviar o convite?</h5>
+                <p className="text-[10px] text-gray-500 leading-relaxed">
+                  Na aba <strong>Time</strong>, clique no botão <strong>Adicionar Novo</strong> e selecione a opção <strong>Convidar Usuário</strong>. Insira o Nome e o E-mail oficial do membro. O sistema enviará um link de acesso diretamente para ele.
+                </p>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-white border border-gray-100 rounded-[28px] flex flex-col sm:flex-row sm:items-center gap-4 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
+              <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 shrink-0"><AlertCircle size={20} /></div>
+              <div>
+                <h5 className="font-black text-xs text-gray-800 mb-1">E se o usuário já existir?</h5>
+                <p className="text-[10px] text-gray-500 leading-relaxed">
+                  Se o e-mail já estiver cadastrado no sistema, a interface emitirá um alerta de duplicidade, evitando a criação de perfis redundantes e mantendo a base de dados limpa.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'task_evidence',
+      icon: <CheckCircle2 className="text-orange-500" />,
+      category: 'features',
+      title: 'Tarefas e Upload de Evidências',
+      description: 'Finalize tarefas com segurança anexando fotos e comprovantes, com suporte a reabertura.',
+      tags: ['tarefa', 'evidencia', 'anexo', 'concluir', 'reabrir'],
+      content: (
+        <div className="space-y-4">
+          <div className="flex items-start gap-4 p-5 bg-orange-50 border border-orange-100 rounded-3xl">
+            <CheckCircle2 className="text-orange-500 shrink-0 mt-1" />
+            <div className="space-y-2">
+              <h5 className="font-black text-orange-900 text-xs">Conclusão com Evidência Obrigatória</h5>
+              <p className="text-[10px] text-orange-700 leading-relaxed">
+                Tarefas críticas agora podem exigir o upload de uma evidência (foto do local, print de sistema, documento PDF) no momento da conclusão. Sem o arquivo anexado, a tarefa não será dada como finalizada.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-5 bg-white border border-gray-100 rounded-3xl space-y-3 shadow-sm">
+            <h5 className="font-black text-xs text-gray-800 flex items-center gap-2"><History size={14} className="text-gray-400" /> Como Reabrir uma Tarefa?</h5>
+            <p className="text-[11px] text-gray-500 leading-relaxed">
+              Cometeu um erro ou marcou indevidamente? Em tarefas finalizadas ou marcadas como "Não Realizada", você encontrará o botão <strong>Reabrir</strong>. 
+              <br/><br/>
+              Ao confirmar a reabertura, o sistema apagará automaticamente a evidência anterior dos servidores, garantindo segurança e economia de espaço, e retornará a tarefa para o status pendente original.
+            </p>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'system_logs',
+      icon: <Siren className="text-rose-500" />,
+      category: 'advanced',
+      title: 'Painel de Logs e Auditoria',
+      description: 'Rastreabilidade total: veja quem criou, editou ou excluiu registros no sistema.',
+      tags: ['logs', 'auditoria', 'rastreamento', 'admin', 'historico'],
+      content: (
+        <div className="space-y-5">
+          <div className="p-5 bg-rose-50 border border-rose-100 rounded-[32px] space-y-3">
+            <div className="flex items-center gap-2 text-rose-600 font-black text-[10px] uppercase tracking-widest">
+              <Siren size={14} />
+              Exclusivo para Administradores
+            </div>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              A aba <strong>Logs</strong> funciona como uma caixa-preta do sistema. O acesso a essa área é rigidamente restrito a Administradores aprovados.
+            </p>
+          </div>
+          
+          <div className="bg-gray-900 text-white p-5 rounded-[28px] space-y-3 relative overflow-hidden shadow-xl shadow-gray-900/20">
+            <div className="absolute top-0 right-0 p-4 opacity-5"><Zap size={100} /></div>
+            <h5 className="text-xs font-black text-rose-400 tracking-wider uppercase mb-3">Principais Registros Mapeados</h5>
+            <ul className="space-y-3 relative z-10">
+              <li className="flex gap-3 items-center text-[10px] text-gray-300">
+                <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Deleção e Edição Crítica de Turnos
+              </li>
+              <li className="flex gap-3 items-center text-[10px] text-gray-300">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Resoluções Automáticas via IA
+              </li>
+              <li className="flex gap-3 items-center text-[10px] text-gray-300">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Mudanças de Nível de Visibilidade/Acesso
+              </li>
+              <li className="flex gap-3 items-center text-[10px] text-gray-300">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-500" /> Disparo de Convites e Aprovações
+              </li>
+            </ul>
+            <p className="text-[9px] text-gray-500 mt-4 pt-3 border-t border-gray-800">
+              Nota: Por segurança, a trilha de logs não pode ser alterada ou apagada por nenhum usuário na interface.
+            </p>
+          </div>
+        </div>
+      )
+    },
+    {
       id: 'ai_assistant',
       icon: <Bot className="text-amber-500" />,
       category: 'ai',
