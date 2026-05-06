@@ -1,5 +1,6 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { UserConfig, Absence, ThemeStyle, SystemUser } from '../types';
 import { supabase } from '../services/supabase';
 
@@ -65,9 +66,11 @@ export const useEscalaStorage = (session: any) => {
                     // Visão apenas do próprio perfil: filtra pelo email do colaborador
                     profilesQuery = profilesQuery.eq('email', session.user.email);
                 } else if (visibility === 'created') {
-                    // Visão de si mesmo E de quem criou: filtra perfis onde user_id = criador (o usuário logado),
-                    // OU o perfil cujo email coincide com o do usuário logado (o próprio registro de colaborador)
-                    profilesQuery = profilesQuery.or(`user_id.eq.${session.user.id},email.ilike.${session.user.email}`);
+                    // Visão de si mesmo E dos que criou.
+                    // Se este usuário foi convidado por outro (tem created_by), ele herda a visibilidade
+                    // do criador original — ou seja, vê todos os perfis criados pelo seu criador.
+                    const creatorId = sysUser?.created_by ?? session.user.id;
+                    profilesQuery = profilesQuery.or(`user_id.eq.${creatorId},email.ilike.${session.user.email}`);
                 }
                 // Se visibility === 'all', não entra em nenhum IF e traz tudo.
 
@@ -95,6 +98,7 @@ export const useEscalaStorage = (session: any) => {
                     phone: p.phone,
                     isActive: p.is_active,
                     notes: p.notes,
+                    initialPassword: p.initial_password,
                     careerHistory: p.career_history || []
                 }));
 
@@ -381,6 +385,120 @@ export const useEscalaStorage = (session: any) => {
     };
 
     /**
+     * Convida um integrante da equipe para acessar o sistema.
+     * Pode ser chamado por usuários com visibility='created' (não admins).
+     * Cria a conta Auth, registra em system_users (com created_by = currentUser)
+     * e vincula o perfil existente ao novo usuário.
+     */
+    const inviteMember = async (
+        profileId: string,
+        email: string,
+        password: string,
+        memberName: string
+    ): Promise<{ success: boolean; error?: string }> => {
+        if (!session?.user?.id) return { success: false, error: 'Sessão inválida.' };
+        if (!systemUser) return { success: false, error: 'Usuário do sistema não encontrado.' };
+
+        try {
+            // 1. Verificar se já existe um system_user com esse email
+            const { data: existingSys } = await supabase
+                .from('system_users')
+                .select('id, email')
+                .ilike('email', email.trim())
+                .maybeSingle();
+
+            if (existingSys) {
+                return { success: false, error: 'Este e-mail já possui acesso ativo no sistema.' };
+            }
+
+            let newUserId: string | null = null;
+
+            // Criar um cliente temporário para não afetar a sessão principal do usuário atual
+            const tempSupabase = createClient(
+                import.meta.env.VITE_SUPABASE_URL,
+                import.meta.env.VITE_SUPABASE_ANON_KEY,
+                {
+                    auth: {
+                        persistSession: false,
+                        autoRefreshToken: false,
+                        detectSessionInUrl: false,
+                    }
+                }
+            );
+
+            // 2. Tentar criar conta no Auth usando o cliente temporário
+            const { data: authData, error: authError } = await tempSupabase.auth.signUp({
+                email: email.trim(),
+                password,
+                options: { data: { full_name: memberName } }
+            });
+
+            if (authError) {
+                const msg = authError.message?.toLowerCase() || '';
+                const isAlreadyRegistered =
+                    msg.includes('already registered') ||
+                    msg.includes('already been registered') ||
+                    msg.includes('user already exists') ||
+                    authError.code === 'user_already_exists';
+
+                if (isAlreadyRegistered) {
+                    // Conta Auth existe mas sem system_users — tenta login para obter o ID
+                    const { data: signInData, error: signInError } = await tempSupabase.auth.signInWithPassword({
+                        email: email.trim(),
+                        password,
+                    });
+
+                    if (signInError || !signInData.user) {
+                        return { success: false, error: 'E-mail já cadastrado na autenticação com senha diferente.' };
+                    }
+                    newUserId = signInData.user.id;
+                } else {
+                    throw authError;
+                }
+            } else {
+                newUserId = authData.user?.id ?? null;
+            }
+
+            if (!newUserId) {
+                return { success: false, error: 'Não foi possível obter o ID do novo usuário.' };
+            }
+
+            // O ID do criador: se este usuário também foi convidado por alguém,
+            // propaga o created_by original (herança de um único nível)
+            const inheritedCreatedBy = systemUser.created_by ?? session.user.id;
+
+            // 3. Inserir em system_users
+            const { error: sysError } = await supabase.from('system_users').upsert({
+                id: newUserId,
+                email: email.trim().toLowerCase(),
+                name: memberName,
+                role: 'user',
+                is_approved: true,
+                visibility: 'created',
+                created_by: inheritedCreatedBy,
+            }, { onConflict: 'id' });
+            if (sysError) throw sysError;
+
+            // 4. Vincular o perfil existente ao novo usuário (apenas pelo e-mail)
+            // Mantemos o user_id original (do criador) para não perder a visibilidade hierárquica
+            const { error: profError } = await supabase
+                .from('profiles')
+                .update({ email: email.trim().toLowerCase(), initial_password: password })
+                .eq('id', profileId);
+            if (profError) throw profError;
+
+            // Atualizar estado local
+            setProfiles(prev => prev.map(p => 
+                p.id === profileId ? { ...p, email: email.trim().toLowerCase(), initialPassword: password } : p
+            ));
+
+            return { success: true };
+        } catch (err: any) {
+            return { success: false, error: err.message || 'Erro ao convidar integrante.' };
+        }
+    };
+
+    /**
      * Cria um perfil de escala para OUTRO usuário (usado pelo admin ao cadastrar um novo usuário).
      * O user_id do perfil é o ID do novo usuário, não o do admin.
      */
@@ -462,6 +580,7 @@ export const useEscalaStorage = (session: any) => {
         deleteSystemUser,
         uploadAvatar,
         updateSystemUserVisibility,
-        addProfileForOtherUser
+        addProfileForOtherUser,
+        inviteMember
     };
 };

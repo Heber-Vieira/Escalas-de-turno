@@ -49,10 +49,20 @@ const App: React.FC = () => {
     deleteSystemUser,
     uploadAvatar,
     updateSystemUserVisibility,
-    addProfileForOtherUser
+    addProfileForOtherUser,
+    inviteMember
   } = useEscalaStorage(session);
 
+  const isGuest = !!systemUser?.created_by && systemUser?.role !== 'admin';
+
   const [view, setView] = useState<'calendar' | 'history' | 'profile' | 'users' | 'team_schedule' | 'admin'>('calendar');
+
+  // Segurança: Redirecionar convidados de visões restritas
+  useEffect(() => {
+    if (isGuest && (view === 'profile' || view === 'admin')) {
+      setView('calendar');
+    }
+  }, [isGuest, view]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -495,14 +505,15 @@ const App: React.FC = () => {
                 onUpdateConfig={handleUpdateActiveProfile}
                 onUpdateTheme={updateTheme}
                 globalTheme={globalTheme}
-                openSettings={() => setView('users')}
+                openSettings={() => !isGuest && setView('users')}
                 onConfirm={requestConfirmation}
+                isReadOnly={isGuest}
               />
             </ErrorBoundary>
           </motion.div>
         )}
 
-        {view === 'team_schedule' && (systemUser?.role === 'admin' || systemUser?.visibility === 'all') && (
+        {view === 'team_schedule' && (systemUser?.role === 'admin' || systemUser?.visibility === 'all' || systemUser?.visibility === 'created') && (
           <motion.div key="team_schedule" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <ErrorBoundary onLogout={handleLogout}>
               <TeamSchedule
@@ -529,7 +540,7 @@ const App: React.FC = () => {
           />
         )}
 
-        {view === 'profile' && activeProfile && (
+        {view === 'profile' && activeProfile && !isGuest && (
           <ProfileView
             activeProfile={activeProfile}
             theme={theme}
@@ -554,6 +565,8 @@ const App: React.FC = () => {
             setShowOnboarding={setShowOnboarding}
             removeProfile={removeProfile}
             onLogout={handleLogout}
+            systemUser={systemUser}
+            onInviteMember={inviteMember}
           />
         )}
         {view === 'admin' && systemUser?.role === 'admin' && (

@@ -23,6 +23,7 @@ interface DashboardProps {
   globalTheme: ThemeStyle;
   openSettings: () => void;
   onConfirm: (title: string, message: string, onConfirmAction: () => void) => void;
+  isReadOnly?: boolean;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -35,7 +36,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onUpdateTheme,
   globalTheme,
   openSettings,
-  onConfirm
+  onConfirm,
+  isReadOnly = false
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -192,6 +194,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   }, [selectedDate, allProfiles, absences]);
 
   const toggleVacation = (date: Date) => {
+    if (isReadOnly) return;
     const dateStr = format(date, 'yyyy-MM-dd');
     const currentVacations = ensureArray(config.vacationDates);
 
@@ -227,6 +230,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const toggleOvertime = (date: Date) => {
+    if (isReadOnly) return;
     const dateStr = format(date, 'yyyy-MM-dd');
     const currentOvertime = ensureArray(config.overtimeDates);
     let newOvertime;
@@ -311,7 +315,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   }, [vacationOverlap, absenceOverlap, vacationStart]);
 
   const handleConfirmVacationPeriod = () => {
-    if (!vacationStart || hasPersonalConflict) return;
+    if (isReadOnly || !vacationStart || hasPersonalConflict) return;
     const start = parseISO(vacationStart);
     if (!isValid(start)) return;
 
@@ -332,6 +336,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const openVacationModal = () => {
+    if (isReadOnly) return;
     let suggestStart = selectedDate;
     if (!isWorkDay(suggestStart, config)) {
       for (let i = 1; i <= 7; i++) {
@@ -414,6 +419,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const handleThemeChange = (styleName: ThemeStyle) => {
+    if (isReadOnly) return;
     onUpdateTheme(styleName);
     setIsThemeMenuOpen(false);
   };
@@ -452,7 +458,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               )}
             </div>
             <div>
-              <h2 className="text-lg font-black text-gray-800 leading-tight">{(config.name || 'Usuário').split(' ')[0]}</h2>
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-lg font-black text-gray-800 leading-tight">{(config.name || 'Usuário').split(' ')[0]}</h2>
+                {isReadOnly && <span className="px-1.5 py-0.5 bg-blue-50 text-blue-500 text-[6px] font-black uppercase tracking-widest rounded-md border border-blue-100">GUEST</span>}
+              </div>
               <div className="flex flex-col">
                 {effectiveConfig.role && (
                   <span className="text-[9px] font-black text-gray-500 leading-tight tracking-wider mb-0.5 opacity-80">{formatName(effectiveConfig.role)}</span>
@@ -467,14 +476,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </button>
 
           <div className="flex items-center gap-2">
-            <Tooltip text="Alterar Tema do Aplicativo" align="right">
-              <button
-                onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
-                className={`p-2 rounded-full border transition-all ${isThemeMenuOpen ? 'bg-pink-500 border-pink-400 text-white shadow-md' : 'bg-white border-gray-100 text-gray-400'}`}
-              >
-                <Palette size={18} />
-              </button>
-            </Tooltip>
+            {!isReadOnly && (
+              <Tooltip text="Alterar Tema do Aplicativo" align="right">
+                <button
+                  onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
+                  className={`p-2 rounded-full border transition-all ${isThemeMenuOpen ? 'bg-pink-500 border-pink-400 text-white shadow-md' : 'bg-white border-gray-100 text-gray-400'}`}
+                >
+                  <Palette size={18} />
+                </button>
+              </Tooltip>
+            )}
 
             <Tooltip text="Alternar entre Minha Escala e Equipe Ativa" align="right">
               <button 
@@ -485,14 +496,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </button>
             </Tooltip>
 
-            <Tooltip text="Configurações de Perfil e Carreira" align="right">
-              <button 
-                onClick={openSettings} 
-                className="p-2 bg-white border border-gray-100 rounded-full shadow-sm active:scale-90 transition-transform"
-              >
-                <Settings className="text-pink-500 w-4.5 h-4.5" />
-              </button>
-            </Tooltip>
+            {!isReadOnly && (
+              <Tooltip text="Configurações de Perfil e Carreira" align="right">
+                <button 
+                  onClick={openSettings} 
+                  className="p-2 bg-white border border-gray-100 rounded-full shadow-sm active:scale-90 transition-transform"
+                >
+                  <Settings className="text-pink-500 w-4.5 h-4.5" />
+                </button>
+              </Tooltip>
+            )}
           </div>
         </div>
 
@@ -720,33 +733,48 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
               </div>
             )}
-            <div className="flex gap-2">
-              {getAbsenceForDate(selectedDate) ? (
-                <button onClick={() => onRemoveAbsence(getAbsenceForDate(selectedDate)!.id)} className="flex-1 py-3.5 bg-red-50 text-red-500 rounded-2xl text-[9px] font-black tracking-widest border border-red-100 active:scale-95 transition-all">Remover Ausência</button>
-              ) : (
-                <>
-                  {(isWorkDay(selectedDate, config) || isDayOvertime(selectedDate)) && !isDayVacation(selectedDate) && (
-                    <button onClick={() => onAddAbsence({ date: format(selectedDate, 'yyyy-MM-dd') })} className="flex-1 py-3.5 bg-gray-900 text-white rounded-2xl text-[9px] font-black tracking-widest active:scale-95 transition-all">Lançar Ausência</button>
+            {!isReadOnly && (
+              <>
+                <div className="flex gap-2">
+                  {getAbsenceForDate(selectedDate) ? (
+                    <button onClick={() => onRemoveAbsence(getAbsenceForDate(selectedDate)!.id)} className="flex-1 py-3.5 bg-red-50 text-red-500 rounded-2xl text-[9px] font-black tracking-widest border border-red-100 active:scale-95 transition-all">Remover Ausência</button>
+                  ) : (
+                    <>
+                      {(isWorkDay(selectedDate, config) || isDayOvertime(selectedDate)) && !isDayVacation(selectedDate) && (
+                        <button onClick={() => onAddAbsence({ date: format(selectedDate, 'yyyy-MM-dd') })} className="flex-1 py-3.5 bg-gray-900 text-white rounded-2xl text-[9px] font-black tracking-widest active:scale-95 transition-all">Lançar Ausência</button>
+                      )}
+                      <button
+                        onClick={() => isDayVacation(selectedDate) ? toggleVacation(selectedDate) : openVacationModal()}
+                        className={`flex-1 py-3.5 rounded-2xl text-[9px] font-black tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 ${isDayVacation(selectedDate) ? 'bg-sky-50 text-sky-600 border border-sky-100' : 'bg-sky-500 text-white shadow-md'}`}
+                      >
+                        <Umbrella size={14} />
+                        {isDayVacation(selectedDate) ? 'Remover Férias' : 'Planejar Férias'}
+                      </button>
+                    </>
                   )}
-                  <button
-                    onClick={() => isDayVacation(selectedDate) ? toggleVacation(selectedDate) : openVacationModal()}
-                    className={`flex-1 py-3.5 rounded-2xl text-[9px] font-black tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 ${isDayVacation(selectedDate) ? 'bg-sky-50 text-sky-600 border border-sky-100' : 'bg-sky-500 text-white shadow-md'}`}
-                  >
-                    <Umbrella size={14} />
-                    {isDayVacation(selectedDate) ? 'Remover Férias' : 'Planejar Férias'}
-                  </button>
-                </>
-              )}
-            </div>
+                </div>
 
-            {!isWorkDay(selectedDate, config) && !isDayVacation(selectedDate) && !getAbsenceForDate(selectedDate) && (
-              <button
-                onClick={() => toggleOvertime(selectedDate)}
-                className={`w-full py-3 rounded-2xl text-[9px] font-black tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 ${isDayOvertime(selectedDate) ? 'bg-purple-50 text-purple-600 border border-purple-200' : 'bg-purple-600 text-white shadow-lg'}`}
-              >
-                <Zap size={14} />
-                {isDayOvertime(selectedDate) ? 'Remover Hora Extra' : 'Lançar Hora Extra'}
-              </button>
+                {!isWorkDay(selectedDate, config) && !isDayVacation(selectedDate) && !getAbsenceForDate(selectedDate) && (
+                  <button
+                    onClick={() => toggleOvertime(selectedDate)}
+                    className={`w-full py-3 rounded-2xl text-[9px] font-black tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 ${isDayOvertime(selectedDate) ? 'bg-purple-50 text-purple-600 border border-purple-200' : 'bg-purple-600 text-white shadow-lg'}`}
+                  >
+                    <Zap size={14} />
+                    {isDayOvertime(selectedDate) ? 'Remover Hora Extra' : 'Lançar Hora Extra'}
+                  </button>
+                )}
+              </>
+            )}
+            {isReadOnly && (
+              <div className="flex flex-col gap-2 p-4 bg-gray-50 border border-gray-100 rounded-2xl">
+                <div className="flex items-center gap-2 text-gray-400">
+                  <Eye size={14} />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Modo Visualização</span>
+                </div>
+                <p className="text-[9px] text-gray-400 font-medium leading-relaxed">
+                  Como convidado, você tem acesso somente à visualização das escalas. Para alterações, contate o administrador da sua equipe.
+                </p>
+              </div>
             )}
           </div>
         )}

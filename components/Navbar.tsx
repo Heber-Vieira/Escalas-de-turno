@@ -27,7 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({ view, setView, theme, systemRole
                 <span className="text-[8px] uppercase font-black tracking-widest">Escala</span>
             </button>
 
-            {(systemRole === 'admin' || systemVisibility === 'all') && (
+            {(systemRole === 'admin' || systemVisibility === 'all' || systemVisibility === 'created') && (
                 <button
                     onClick={() => setView('team_schedule')}
                     className={`flex flex-col items-center gap-1.5 transition-all active:scale-90 ${getActiveTabColor(view === 'team_schedule')}`}

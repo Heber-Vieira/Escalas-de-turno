@@ -39,6 +39,7 @@ export interface UserConfig {
   theme: ThemeStyle;
   avatarUrl?: string;
   email?: string;
+  initialPassword?: string;
   phone?: string;
   isActive?: boolean;
   notes?: string;
@@ -92,4 +93,5 @@ export interface SystemUser {
   is_approved: boolean;
   visibility: 'all' | 'self' | 'created';
   created_at: string;
+  created_by?: string; // ID do usuário que convidou este membro para o sistema
 }

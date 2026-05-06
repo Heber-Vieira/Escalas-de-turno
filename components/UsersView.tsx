@@ -1,9 +1,10 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Layers, HelpCircle, Plus, Settings, Trash2, LogOut, Search, X, Sun, CloudSun, Moon, ChevronDown, Check, Briefcase } from 'lucide-react';
-import { UserConfig, WorkTurn } from '../types';
+import { ArrowLeft, Layers, HelpCircle, Plus, Settings, Trash2, LogOut, Search, X, Sun, CloudSun, Moon, ChevronDown, Check, Briefcase, UserPlus, Key } from 'lucide-react';
+import { UserConfig, WorkTurn, SystemUser } from '../types';
 import { formatName, normalizeString } from '../utils/shiftCalculator';
+import { InviteMemberModal } from './InviteMemberModal';
 
 interface UsersViewProps {
     profiles: UserConfig[];
@@ -15,6 +16,8 @@ interface UsersViewProps {
     setShowOnboarding: (show: boolean) => void;
     removeProfile: (id: string) => void;
     onLogout: () => void;
+    systemUser?: SystemUser | null;
+    onInviteMember?: (profileId: string, email: string, password: string, memberName: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const UsersView: React.FC<UsersViewProps> = ({
@@ -26,11 +29,15 @@ export const UsersView: React.FC<UsersViewProps> = ({
     setIsHelpOpen,
     setShowOnboarding,
     removeProfile,
-    onLogout
+    onLogout,
+    systemUser,
+    onInviteMember,
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isRolesMenuOpen, setIsRolesMenuOpen] = useState(false);
     const rolesMenuRef = useRef<HTMLDivElement>(null);
+    const [inviteTarget, setInviteTarget] = useState<UserConfig | null>(null);
+    const [viewCredentialsTarget, setViewCredentialsTarget] = useState<UserConfig | null>(null);
 
     const allRoles = useMemo(() => {
         const roles = new Set<string>();
@@ -75,6 +82,13 @@ export const UsersView: React.FC<UsersViewProps> = ({
         }
     };
 
+    // Convidado: usuário com created_by preenchido (foi convidado por outro usuário, não pelo admin)
+    // Convidados têm acesso somente visualização — não podem editar, deletar ou adicionar
+    const isGuest = !!systemUser?.created_by && systemUser?.role !== 'admin';
+
+    // Usuário com visibilidade 'created', não admin e NÃO convidado pode convidar membros
+    const canInvite = !isGuest && systemUser?.visibility === 'created' && systemUser?.role !== 'admin' && !!onInviteMember;
+
     const filteredProfiles = profiles.filter(p => {
         const normalizedSearch = normalizeString(searchQuery);
         const matchesSearch = normalizeString(p.name).includes(normalizedSearch) || 
@@ -85,6 +99,7 @@ export const UsersView: React.FC<UsersViewProps> = ({
     });
 
     return (
+        <>
         <motion.div key="users" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2 sm:space-y-3">
 
             <div className="flex items-center justify-between">
@@ -95,10 +110,17 @@ export const UsersView: React.FC<UsersViewProps> = ({
                     <h2 className="text-sm sm:text-lg font-black text-gray-800 uppercase tracking-tight truncate">Equipe</h2>
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                    <button onClick={() => setIsBatchModalOpen(true)} className="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 bg-gray-900 text-pink-500 rounded-full shadow-lg transition-all active:scale-95" title="Importação em Lote">
-                        <Layers className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px]" />
-                        <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-white">Lote</span>
-                    </button>
+                    {!isGuest && (
+                        <button onClick={() => setIsBatchModalOpen(true)} className="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 bg-gray-900 text-pink-500 rounded-full shadow-lg transition-all active:scale-95" title="Importação em Lote">
+                            <Layers className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px]" />
+                            <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-white">Lote</span>
+                        </button>
+                    )}
+                    {isGuest && (
+                        <div className="flex items-center gap-1 px-2 py-1 sm:px-3 sm:py-1.5 bg-blue-50 border border-blue-100 rounded-full" title="Acesso somente visualização">
+                            <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-widest text-blue-400">Visualização</span>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -201,11 +223,13 @@ export const UsersView: React.FC<UsersViewProps> = ({
             </div>
 
             <div className="space-y-1.5 sm:space-y-2">
-                <div className="pb-0">
-                    <button onClick={() => setShowOnboarding(true)} className="w-full flex items-center justify-center gap-2 p-2.5 sm:p-4 border-2 border-dashed border-pink-200 rounded-[12px] sm:rounded-[20px] text-pink-500 font-black text-[8px] sm:text-xs uppercase transition-all hover:bg-pink-50 active:scale-95">
-                        <Plus className="w-[12px] h-[12px] sm:w-[16px] sm:h-[16px]" /> Novo Integrante
-                    </button>
-                </div>
+                {!isGuest && (
+                    <div className="pb-0">
+                        <button onClick={() => setShowOnboarding(true)} className="w-full flex items-center justify-center gap-2 p-2.5 sm:p-4 border-2 border-dashed border-pink-200 rounded-[12px] sm:rounded-[20px] text-pink-500 font-black text-[8px] sm:text-xs uppercase transition-all hover:bg-pink-50 active:scale-95">
+                            <Plus className="w-[12px] h-[12px] sm:w-[16px] sm:h-[16px]" /> Novo Integrante
+                        </button>
+                    </div>
+                )}
 
                 {filteredProfiles.length > 0 ? filteredProfiles.map(p => (
                     <div key={p.id} className={`p-1.5 sm:p-2.5 flex items-center justify-between transition-all bg-white/85 border rounded-[12px] sm:rounded-[20px] shadow-sm hover:shadow-md ${p.id === activeProfileId ? 'border-pink-300 ring-2 ring-pink-500/5' : 'border-pink-100/50'}`}>
@@ -227,12 +251,34 @@ export const UsersView: React.FC<UsersViewProps> = ({
                             </div>
                         </button>
                         <div className="flex items-center gap-0">
-                            <button onClick={() => { setActiveProfileId(p.id); setView('profile'); }} className="p-1 sm:p-1.5 text-gray-400 hover:text-pink-500 transition-colors">
-                                <Settings className="w-[13px] h-[13px] sm:w-[16px] sm:h-[16px]" />
-                            </button>
-                            <button onClick={() => removeProfile(p.id)} className="p-1 sm:p-1.5 text-gray-400 hover:text-red-500 transition-colors">
-                                <Trash2 className="w-[13px] h-[13px] sm:w-[16px] sm:h-[16px]" />
-                            </button>
+                            {canInvite && !p.email && (
+                                <button
+                                    onClick={() => setInviteTarget(p)}
+                                    title="Convidar para o sistema"
+                                    className="p-1 sm:p-1.5 text-gray-300 hover:text-purple-500 transition-colors"
+                                >
+                                    <UserPlus className="w-[13px] h-[13px] sm:w-[15px] sm:h-[15px]" />
+                                </button>
+                            )}
+                            {canInvite && p.email && (
+                                <button
+                                    onClick={() => setViewCredentialsTarget(p)}
+                                    title="Ver dados de acesso"
+                                    className="p-1 sm:p-1.5 text-emerald-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-full transition-colors flex items-center justify-center"
+                                >
+                                    <span className="text-[10px] font-black uppercase tracking-widest">✓</span>
+                                </button>
+                            )}
+                            {!isGuest && (
+                                <button onClick={() => { setActiveProfileId(p.id); setView('profile'); }} className="p-1 sm:p-1.5 text-gray-400 hover:text-pink-500 transition-colors">
+                                    <Settings className="w-[13px] h-[13px] sm:w-[16px] sm:h-[16px]" />
+                                </button>
+                            )}
+                            {!isGuest && (
+                                <button onClick={() => removeProfile(p.id)} className="p-1 sm:p-1.5 text-gray-400 hover:text-red-500 transition-colors">
+                                    <Trash2 className="w-[13px] h-[13px] sm:w-[16px] sm:h-[16px]" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 )) : (
@@ -246,5 +292,69 @@ export const UsersView: React.FC<UsersViewProps> = ({
                 )}
             </div>
         </motion.div>
-    );
+
+        {/* Modal de Convite */}
+        {inviteTarget && onInviteMember && (
+            <InviteMemberModal
+                profile={inviteTarget}
+                isOpen={!!inviteTarget}
+                onClose={() => setInviteTarget(null)}
+                onInvite={onInviteMember}
+            />
+        )}
+
+        {/* Modal de Ver Credenciais */}
+        <AnimatePresence>
+            {viewCredentialsTarget && (
+                <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        className="w-full max-w-sm bg-white rounded-[28px] overflow-hidden shadow-2xl"
+                    >
+                        <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                                    <Key size={16} />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-gray-900">Dados de Acesso</h3>
+                                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">
+                                        {formatName(viewCredentialsTarget.name.split(' ')[0])}
+                                    </p>
+                                </div>
+                            </div>
+                            <button onClick={() => setViewCredentialsTarget(null)} className="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+                                <X size={16} />
+                            </button>
+                        </div>
+                        <div className="p-5 space-y-4">
+                            <div className="space-y-1">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">E-mail</label>
+                                <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 text-sm font-bold text-gray-800 break-all select-all">
+                                    {viewCredentialsTarget.email}
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Senha de Acesso</label>
+                                <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 text-sm font-bold text-gray-800 break-all select-all">
+                                    {viewCredentialsTarget.initialPassword || <span className="text-gray-400 font-medium italic">Não registrada neste dispositivo</span>}
+                                </div>
+                            </div>
+                            
+                            <div className="pt-2">
+                                <button
+                                    onClick={() => setViewCredentialsTarget(null)}
+                                    className="w-full py-3 bg-gray-900 hover:bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-md"
+                                >
+                                    Fechar
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
+    </>);
 };
