@@ -91,8 +91,8 @@ export const UsersView: React.FC<UsersViewProps> = ({
     // Convidados têm acesso somente visualização — não podem editar, deletar ou adicionar
     const isGuest = !!systemUser?.created_by && systemUser?.role !== 'admin';
 
-    // Usuário com visibilidade 'created', não admin e NÃO convidado pode convidar membros
-    const canInvite = !isGuest && systemUser?.visibility === 'created' && systemUser?.role !== 'admin' && !!onInviteMember;
+    // Usuários com privilégios adequados e que não são convidados podem convidar membros
+    const canInvite = !isGuest && (systemUser?.role === 'admin' || systemUser?.visibility === 'created' || systemUser?.visibility === 'all') && !!onInviteMember;
 
     const filteredProfiles = profiles.filter(p => {
         const normalizedSearch = normalizeString(searchQuery);
