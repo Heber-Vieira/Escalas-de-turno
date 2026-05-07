@@ -118,7 +118,12 @@ export const UsersView: React.FC<UsersViewProps> = ({
                     <button onClick={() => setView('calendar')} className="p-1.5 sm:p-2 bg-white shadow-sm border border-gray-100 rounded-full text-gray-500 transition-all active:scale-90 flex-shrink-0">
                         <ArrowLeft className="w-[14px] h-[14px] sm:w-[16px] sm:h-[16px]" />
                     </button>
-                    <h2 className="text-sm sm:text-lg font-black text-gray-800 uppercase tracking-tight truncate">Equipe</h2>
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-sm sm:text-lg font-black text-gray-800 uppercase tracking-tight truncate">Equipe</h2>
+                        <span className="bg-pink-50 border border-pink-100 text-pink-500 text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full shadow-sm" title="Total de integrantes exibidos">
+                            {filteredProfiles.length}
+                        </span>
+                    </div>
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
                     {!isGuest && filteredProfiles.length > 0 && removeMultipleProfiles && (
