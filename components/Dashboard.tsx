@@ -146,7 +146,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const teamStats = useMemo(() => {
-    // 1. Calcular configs efetivas para TODOS os perfis na data selecionada
     const validTurnValues = Object.values(WorkTurn) as string[];
     const effectiveProfiles = allProfiles.map(p => {
       const eff = getEffectiveConfig(selectedDate, p);
@@ -159,7 +158,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
       };
     });
 
-    const working = getWhoWorksOn(selectedDate, effectiveProfiles);
+    const scheduled = effectiveProfiles.filter((p: UserConfig) => (isWorkDay(selectedDate, p) || isDayOvertime(selectedDate, p)) && !isDayVacation(selectedDate, p));
+    const working = scheduled.filter((p: UserConfig) => !isDayAbsence(selectedDate, p.id));
 
     const byTurn: Record<WorkTurn, { active: number, total: number }> = {
       [WorkTurn.MORNING]: { active: 0, total: 0 },
@@ -169,25 +169,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     const byRole: Record<string, { active: number, total: number, workers: UserConfig[] }> = {};
 
-    effectiveProfiles.forEach((p: UserConfig) => {
-      // turn e role já foram validados ao construir effectiveProfiles acima
+    scheduled.forEach((p: UserConfig) => {
       const turn = p.turn as WorkTurn;
-      const role = (p.role && p.role.trim()) ? p.role.trim() : 'Sem Função';
+      const role = p.role!;
 
       byTurn[turn].total++;
       if (!byRole[role]) byRole[role] = { active: 0, total: 0, workers: [] };
       byRole[role].total++;
 
-      const isActive = working.find((w: UserConfig) => w.id === p.id);
+      const isActive = working.some((w: UserConfig) => w.id === p.id);
       if (isActive) {
         byTurn[turn].active++;
         byRole[role].active++;
-        byRole[role].workers.push(isActive);
+        byRole[role].workers.push(p);
       }
     });
 
     const totalActive = working.length;
-    const totalTeam = effectiveProfiles.length;
+    const totalTeam = scheduled.length;
     const globalPercent = totalTeam > 0 ? Math.round((totalActive / totalTeam) * 100) : 0;
 
     return { byTurn, byRole, globalPercent, totalActive, totalTeam };
@@ -357,7 +356,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return ensureArray(absences).find((a: Absence) => a.date === dateStr && a.profileId === config.id);
   };
 
-  const workDaysInMonth = days.filter(d => isWorkDay(d, config) || isDayOvertime(d)).length;
+  const workDaysInMonth = days.filter(d => (isWorkDay(d, config) || isDayOvertime(d, config)) && !isDayVacation(d, config)).length;
   const monthAbsencesCount = ensureArray(absences).filter((a: Absence) => {
     const d = parseISO(a.date);
     if (!isValid(d)) return false;
