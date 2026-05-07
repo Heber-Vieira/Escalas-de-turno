@@ -94,4 +94,5 @@ export interface SystemUser {
   visibility: 'all' | 'self' | 'created';
   created_at: string;
   created_by?: string; // ID do usuário que convidou este membro para o sistema
+  blocked_users?: string[]; // Array de IDs de SystemUsers que este usuário está bloqueado de ver
 }

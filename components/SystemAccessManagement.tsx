@@ -12,6 +12,7 @@ interface SystemAccessManagementProps {
   deleteSystemUser: (userId: string) => Promise<void>;
   currentUserId?: string;
   updateSystemUserVisibility: (userId: string, visibility: 'all' | 'self' | 'created') => Promise<void>;
+  updateSystemUserBlockedList: (userId: string, blockedUsers: string[]) => Promise<void>;
   addProfileForOtherUser: (targetUserId: string, config: UserConfig) => Promise<UserConfig | null>;
 }
 
@@ -39,6 +40,7 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
     deleteSystemUser,
     currentUserId,
     updateSystemUserVisibility,
+    updateSystemUserBlockedList,
     addProfileForOtherUser,
 }) => {
   const [users, setUsers] = useState<SystemUser[]>([]);
@@ -51,6 +53,11 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [editingNameId, setEditingNameId] = useState<string | null>(null);
   const [tempName, setTempName] = useState('');
+
+  // Blocking state
+  const [managingBlocksFor, setManagingBlocksFor] = useState<SystemUser | null>(null);
+  const [blockedSelection, setBlockedSelection] = useState<string[]>([]);
+  const [savingBlocks, setSavingBlocks] = useState(false);
 
   // Form fields
   const [newName, setNewName] = useState('');
@@ -251,6 +258,20 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
     } catch { alert('Erro ao atualizar visibilidade.'); }
   };
 
+  const handleSaveBlocks = async () => {
+    if (!managingBlocksFor) return;
+    setSavingBlocks(true);
+    try {
+      await updateSystemUserBlockedList(managingBlocksFor.id, blockedSelection);
+      setUsers(users.map(u => u.id === managingBlocksFor.id ? { ...u, blocked_users: blockedSelection } : u));
+      setManagingBlocksFor(null);
+    } catch (err) {
+      alert('Erro ao salvar configurações de bloqueio.');
+    } finally {
+      setSavingBlocks(false);
+    }
+  };
+
   if (loading) return <div className="p-8 text-gray-500 font-bold uppercase tracking-widest text-center text-xs">Carregando usuários...</div>;
 
   return (
@@ -304,6 +325,16 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
                 {user.visibility === 'all' ? <Eye size={14} /> : user.visibility === 'created' ? <Users size={14} /> : <EyeOff size={14} />}
                 {user.visibility === 'all' ? 'Visão: Toda Equipe' : user.visibility === 'created' ? 'Visão: Si Mesmo e Criados' : 'Visão: Apenas Si Mesmo'}
               </button>
+
+              {user.visibility === 'all' && (
+                <button onClick={() => { setManagingBlocksFor(user); setBlockedSelection(user.blocked_users || []); }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-[15px] text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 bg-white text-gray-400 border-2 border-gray-100 hover:bg-gray-50 hover:text-gray-600">
+                  <ShieldAlert size={12} /> Ocultar Usuários
+                  {user.blocked_users && user.blocked_users.length > 0 && (
+                    <span className="bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md text-[8px]">{user.blocked_users.length}</span>
+                  )}
+                </button>
+              )}
 
               <div className="flex gap-2">
                 <button onClick={() => handleToggleStatus(user)}
@@ -484,6 +515,57 @@ export const SystemAccessManagement: React.FC<SystemAccessManagementProps> = ({
                 </button>
               </div>
             </form>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Modal Gerenciamento de Bloqueios */}
+      {managingBlocksFor && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-md bg-white border-2 border-blue-100 rounded-[30px] overflow-hidden shadow-2xl flex flex-col max-h-[80vh]">
+            <div className="p-5 border-b-2 border-blue-50 flex justify-between items-center bg-gradient-to-r from-blue-50 to-white shrink-0">
+              <div>
+                <h3 className="text-base font-black text-gray-800 uppercase tracking-tight">Ocultar Usuários</h3>
+                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">Para: {managingBlocksFor.name || managingBlocksFor.email}</p>
+              </div>
+              <button onClick={() => setManagingBlocksFor(null)} className="text-gray-400 hover:text-blue-500 transition-colors p-1">
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto flex-1 space-y-2">
+              <p className="text-[10px] font-bold text-gray-500 leading-relaxed mb-4">
+                Selecione os administradores ou usuários cujos integrantes <strong className="text-gray-800">não devem aparecer</strong> para este usuário, mesmo ele tendo "Visão: Toda Equipe".
+              </p>
+              
+              {users.filter(u => u.id !== managingBlocksFor.id).map(u => (
+                <label key={u.id} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${blockedSelection.includes(u.id) ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100 hover:border-gray-200'}`}>
+                  <input type="checkbox" className="hidden" checked={blockedSelection.includes(u.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) setBlockedSelection(prev => [...prev, u.id]);
+                      else setBlockedSelection(prev => prev.filter(id => id !== u.id));
+                    }} />
+                  <div className={`w-5 h-5 rounded flex items-center justify-center border-2 ${blockedSelection.includes(u.id) ? 'bg-red-500 border-red-500 text-white' : 'bg-white border-gray-200'}`}>
+                    {blockedSelection.includes(u.id) && <X size={14} />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-black text-gray-800">{u.name || u.email.split('@')[0]}</p>
+                    <p className="text-[9px] font-bold text-gray-400 uppercase">{u.role === 'admin' ? 'Admin' : 'Usuário'}</p>
+                  </div>
+                </label>
+              ))}
+              {users.filter(u => u.id !== managingBlocksFor.id).length === 0 && (
+                <p className="text-xs text-gray-400 font-bold text-center py-4">Nenhum outro usuário no sistema.</p>
+              )}
+            </div>
+            
+            <div className="p-5 border-t-2 border-gray-50 shrink-0">
+              <button onClick={handleSaveBlocks} disabled={savingBlocks}
+                className="w-full bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white py-3.5 rounded-[15px] font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-md">
+                {savingBlocks ? 'Salvando...' : 'Salvar Restrições'}
+              </button>
+            </div>
           </motion.div>
         </div>
       )}

@@ -50,6 +50,7 @@ const App: React.FC = () => {
     deleteSystemUser,
     uploadAvatar,
     updateSystemUserVisibility,
+    updateSystemUserBlockedList,
     addProfileForOtherUser,
     inviteMember
   } = useEscalaStorage(session);
@@ -597,6 +598,7 @@ const App: React.FC = () => {
             deleteSystemUser={deleteSystemUser}
             currentUserId={session?.user?.id}
             updateSystemUserVisibility={updateSystemUserVisibility}
+            updateSystemUserBlockedList={updateSystemUserBlockedList}
             addProfileForOtherUser={addProfileForOtherUser}
           />
         )}

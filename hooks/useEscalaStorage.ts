@@ -60,8 +60,7 @@ export const useEscalaStorage = (session: any) => {
                 // Fetch Profiles
                 let profilesQuery = supabase.from('profiles').select('*');
                 
-                // IMPORTANTE: Só aplicamos filtros se NÃO for 'all'.
-                // Se for 'all', a query continua sendo .select('*') para trazer tudo.
+                // IMPORTANTE: Só aplicamos filtros se NÃO for 'all' e sem bloqueios.
                 if (visibility === 'self') {
                     // Visão apenas do próprio perfil: filtra pelo email do colaborador
                     profilesQuery = profilesQuery.eq('email', session.user.email);
@@ -71,8 +70,28 @@ export const useEscalaStorage = (session: any) => {
                     // do criador original — ou seja, vê todos os perfis criados pelo seu criador.
                     const creatorId = sysUser?.created_by ?? session.user.id;
                     profilesQuery = profilesQuery.or(`user_id.eq.${creatorId},email.ilike.${session.user.email}`);
+                } else if (visibility === 'all') {
+                    // Visão total, MAS com suporte a ocultar usuários específicos
+                    const blockedUsers = sysUser?.blocked_users || [];
+                    if (blockedUsers.length > 0) {
+                        // Descobrir quais outros system_users foram criados pelos usuários bloqueados
+                        const { data: createdByBlocked } = await supabase
+                            .from('system_users')
+                            .select('id')
+                            .in('created_by', blockedUsers);
+                            
+                        const blockedSet = new Set(blockedUsers);
+                        if (createdByBlocked) {
+                            createdByBlocked.forEach(u => blockedSet.add(u.id));
+                        }
+                        
+                        const blockedIds = Array.from(blockedSet);
+                        const idsStr = `(${blockedIds.join(',')})`;
+                        
+                        // Excluir os perfis cujo user_id pertença aos usuários bloqueados (ou criados por eles)
+                        profilesQuery = profilesQuery.not('user_id', 'in', idsStr);
+                    }
                 }
-                // Se visibility === 'all', não entra em nenhum IF e traz tudo.
 
                 const { data: dbProfiles, error: pError } = await profilesQuery;
 
@@ -406,6 +425,12 @@ export const useEscalaStorage = (session: any) => {
         if (error) throw error;
     };
 
+    const updateSystemUserBlockedList = async (userId: string, blockedUsers: string[]) => {
+        if (!systemUser || systemUser.role !== 'admin') return;
+        const { error } = await supabase.from('system_users').update({ blocked_users: blockedUsers }).eq('id', userId);
+        if (error) throw error;
+    };
+
     /**
      * Convida um integrante da equipe para acessar o sistema.
      * Pode ser chamado por usuários com visibility='created' (não admins).
@@ -603,6 +628,7 @@ export const useEscalaStorage = (session: any) => {
         deleteSystemUser,
         uploadAvatar,
         updateSystemUserVisibility,
+        updateSystemUserBlockedList,
         addProfileForOtherUser,
         inviteMember
     };
