@@ -47,22 +47,23 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
       id: 'onboarding_start',
       icon: <Rocket className="text-pink-500" />,
       category: 'onboarding',
-      title: 'Primeiros Passos',
-      description: 'Aprenda a configurar sua primeira escala em 2 minutos.',
-      tags: ['inicio', 'configuracao', 'perfil'],
+      title: 'Primeiros Passos e Login',
+      description: 'Aprenda a configurar sua primeira escala, criar sua conta e acessar o sistema.',
+      tags: ['inicio', 'configuracao', 'perfil', 'login', 'cadastro'],
       content: (
         <div className="space-y-6">
           <div className="relative p-6 bg-gradient-to-br from-pink-500 to-rose-600 rounded-[32px] text-white overflow-hidden shadow-xl">
             <div className="absolute top-0 right-0 p-4 opacity-10"><Rocket size={80} /></div>
             <h4 className="text-lg font-black mb-2">Guia de Início Rápido</h4>
-            <p className="text-xs opacity-90 leading-relaxed">Bem-vindo ao futuro da gestão de escalas. Siga este fluxo para começar:</p>
+            <p className="text-xs opacity-90 leading-relaxed">Bem-vindo ao futuro da gestão de escalas. Siga este fluxo para começar sua jornada no sistema.</p>
           </div>
           
           <div className="space-y-4">
             {[
-              { step: '01', title: 'Aba Time', desc: 'Adicione seus colegas clicando no botão central.' },
-              { step: '02', title: 'Configure Regimes', desc: 'Defina se é 5x2, 12x36 ou Revezamento.' },
-              { step: '03', title: 'Data de Início', desc: 'Crucial para escalas cíclicas. Define o dia zero.' }
+              { step: '01', title: 'Criação de Conta e Termos', desc: 'Ao fazer o primeiro acesso, leia e concorde com nossos Termos de Serviço e Política de Privacidade para garantir sua segurança e compliance com a LGPD.' },
+              { step: '02', title: 'Aba Time', desc: 'Adicione seus colegas clicando no botão central para iniciar a formação da sua equipe.' },
+              { step: '03', title: 'Configure Regimes', desc: 'Defina se é 5x2, 12x36 ou Revezamento no perfil de cada funcionário.' },
+              { step: '04', title: 'Data de Início', desc: 'Crucial para escalas cíclicas. Define o "dia zero" para as projeções futuras.' }
             ].map((item, i) => (
               <div key={i} className="flex gap-4 p-4 bg-white border border-gray-100 rounded-3xl items-start shadow-sm hover:shadow-md transition-shadow">
                 <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-xs font-black text-pink-500 shrink-0 border border-pink-50">
@@ -82,9 +83,9 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
       id: 'access_control',
       icon: <ShieldCheck className="text-emerald-500" />,
       category: 'advanced',
-      title: 'Gestão de Acessos e Visibilidade',
-      description: 'Aprove novos usuários, defina privilégios de Admin e controle o que cada membro pode ver.',
-      tags: ['admin', 'acesso', 'aprovacao', 'visibilidade', 'permissoes'],
+      title: 'Gestão de Acessos e Visibilidade Granular',
+      description: 'Aprove usuários, defina níveis de visibilidade e oculte perfis através da função de Bloqueio.',
+      tags: ['admin', 'acesso', 'aprovacao', 'visibilidade', 'permissoes', 'bloqueio', 'ocultar'],
       content: (
         <div className="space-y-6">
           <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-3xl space-y-3">
@@ -93,68 +94,76 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
               Exclusivo para Administradores
             </div>
             <p className="text-xs text-gray-600 leading-relaxed">
-              A segurança dos dados é prioridade. O sistema opera com um modelo de <strong>Aprovação Prévia</strong> e <strong>Controle de Visibilidade Granular</strong>.
+              O sistema opera com um modelo robusto de <strong>Aprovação Prévia</strong> e <strong>Controle Granular</strong>. Você define exatamente o que cada pessoa pode acessar.
             </p>
           </div>
           
           <div className="space-y-4">
             <div className="p-4 bg-white border border-gray-100 rounded-[28px] shadow-sm">
-              <h5 className="font-black text-xs text-gray-800 mb-2">1. Painel de Aprovação (Acesso ao Sistema)</h5>
+              <h5 className="font-black text-xs text-gray-800 mb-2">1. Painel de Aprovação de Acesso</h5>
               <p className="text-[11px] text-gray-500 leading-relaxed mb-3">
-                Novos usuários que tentam acessar o sistema entram em estado pendente. Vá na aba <strong>Acessos</strong> para aprovar ou rejeitar contas.
+                Na tela <strong>Gerenciar Acessos</strong>, novos usuários entram em estado pendente. Somente após a sua Aprovação eles poderão visualizar os dados.
               </p>
-              <div className="flex gap-2">
-                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-[9px] font-bold border border-green-200">Aprovar</span>
-                <span className="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-[9px] font-bold border border-red-200">Rejeitar</span>
-              </div>
             </div>
 
             <div className="p-4 bg-white border border-gray-100 rounded-[28px] shadow-sm">
               <h5 className="font-black text-xs text-gray-800 mb-2">2. Níveis de Visibilidade</h5>
-              <p className="text-[11px] text-gray-500 leading-relaxed">
-                No perfil do usuário, defina o Nível de Acesso em Sistema:
-              </p>
-              <ul className="mt-2 space-y-2">
-                <li className="flex gap-2 items-center text-[10px] text-gray-600"><div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div><strong>Tudo:</strong> Vê todos os registros da equipe.</li>
-                <li className="flex gap-2 items-center text-[10px] text-gray-600"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div><strong>Criados:</strong> Vê apenas os dados que ele mesmo criou.</li>
-                <li className="flex gap-2 items-center text-[10px] text-gray-600"><div className="w-1.5 h-1.5 rounded-full bg-pink-500"></div><strong>Próprios:</strong> Vê estritamente seus próprios dados.</li>
+              <p className="text-[11px] text-gray-500 leading-relaxed mb-2">Configure o alcance de cada usuário:</p>
+              <ul className="space-y-2">
+                <li className="flex gap-2 items-center text-[10px] text-gray-600"><div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div><strong>Tudo:</strong> Acesso total a todos os registros.</li>
+                <li className="flex gap-2 items-center text-[10px] text-gray-600"><div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div><strong>Criados:</strong> Enxerga apenas membros que ele mesmo criou/convidou.</li>
+                <li className="flex gap-2 items-center text-[10px] text-gray-600"><div className="w-1.5 h-1.5 rounded-full bg-pink-500"></div><strong>Próprios:</strong> Vê estritamente a si próprio.</li>
               </ul>
+            </div>
+
+            <div className="p-4 bg-red-50 border border-red-100 rounded-[28px] shadow-sm">
+              <h5 className="font-black text-xs text-red-900 mb-2">3. Novo: Bloqueio de Usuários (Invisibilidade)</h5>
+              <p className="text-[11px] text-red-800 leading-relaxed">
+                Exclusivo para Admins na área de Gerenciar Acessos. Ao bloquear um usuário, <strong>ele ficará invisível para a equipe</strong>. O sistema também aplicará ocultação "em cascata", escondendo automaticamente todos os membros que foram criados por este usuário bloqueado.
+                <br/><br/>
+                <em>Exemplo Prático: Um coordenador terceirizado é desligado. Ao bloqueá-lo, todos os funcionários da empresa dele também são ocultados do painel principal, limpando a visualização para os demais.</em>
+              </p>
             </div>
           </div>
         </div>
       )
     },
     {
-      id: 'excel_import',
+      id: 'bulk_actions',
       icon: <LayoutGrid className="text-blue-500" />,
       category: 'features',
-      title: 'Importação Rápida via Excel',
-      description: 'Economize tempo importando planilhas inteiras de escalas com validação inteligente.',
-      tags: ['excel', 'importar', 'planilha', 'lote', 'csv', 'cadastro'],
+      title: 'Ações em Lote: Importar e Excluir',
+      description: 'Importe via Excel ou exclua vários usuários de uma vez (Delete All).',
+      tags: ['excel', 'importar', 'excluir', 'lote', 'deletar', 'massa'],
       content: (
         <div className="space-y-6">
           <div className="relative p-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[32px] text-white overflow-hidden shadow-xl">
             <div className="absolute top-0 right-0 p-4 opacity-10"><LayoutGrid size={80} /></div>
-            <h4 className="text-lg font-black mb-2">Importação em Lote</h4>
-            <p className="text-xs opacity-90 leading-relaxed">Não perca tempo cadastrando um a um. Suba um arquivo Excel e o sistema fará o resto de forma inteligente.</p>
+            <h4 className="text-lg font-black mb-2">Ferramentas de Massa</h4>
+            <p className="text-xs opacity-90 leading-relaxed">Ganhe produtividade ao manipular múltiplos registros simultaneamente, tanto para criação quanto para limpeza da base.</p>
           </div>
           
           <div className="space-y-4">
-            {[
-              { step: '01', title: 'Baixe o Modelo Padrão', desc: 'No modal de "Adicionar em Lote", clique para baixar o modelo Excel. Ele contém as colunas exatas necessárias.' },
-              { step: '02', title: 'Preencha os Dados', desc: 'Siga a formatação de datas e nomes exigida. O sistema corrige automaticamente pequenos erros de formatação.' },
-              { step: '03', title: 'Upload e Revisão', desc: 'Arraste o arquivo preenchido para o sistema. Você verá uma prévia antes de confirmar a importação.' }
-            ].map((item, i) => (
-              <div key={i} className="flex gap-4 p-4 bg-white border border-gray-100 rounded-3xl items-start shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-xs font-black text-blue-500 shrink-0 border border-blue-50">
-                  {item.step}
-                </div>
-                <div>
-                  <h5 className="font-black text-gray-800 text-sm">{item.title}</h5>
-                  <p className="text-[11px] text-gray-500 leading-tight">{item.desc}</p>
-                </div>
-              </div>
-            ))}
+            <div className="p-5 bg-white border border-gray-100 rounded-3xl shadow-sm">
+              <h5 className="font-black text-sm text-blue-600 flex items-center gap-2 mb-2">
+                <Printer size={16} /> Importação via Excel
+              </h5>
+              <p className="text-[11px] text-gray-500 leading-relaxed">
+                Faça o download da planilha modelo no botão "Adicionar em Lote". Preencha com sua equipe e importe. O sistema faz a validação e corrige pequenos erros de texto automaticamente.
+              </p>
+            </div>
+
+            <div className="p-5 bg-white border border-gray-100 rounded-3xl shadow-sm border-l-4 border-l-rose-500">
+              <h5 className="font-black text-sm text-gray-800 flex items-center gap-2 mb-2">
+                <X size={16} className="text-rose-500" /> Deleção em Lote (Excluir Selecionados)
+              </h5>
+              <p className="text-[11px] text-gray-500 leading-relaxed">
+                Na listagem da equipe, selecione múltiplos membros pelas caixas de seleção. Um botão de "Excluir Selecionados" aparecerá.
+                Por segurança, o sistema exigirá confirmação e não permitirá a exclusão do próprio usuário logado caso seja Admin.
+                <br/><br/>
+                <em>Exemplo: Fim de contrato com uma equipe temporária. Selecione todos e remova em 1 clique. A interface indicará o número exato de afetados e garantirá o recálculo do dashboard.</em>
+              </p>
+            </div>
           </div>
         </div>
       )
@@ -163,12 +172,12 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
       id: 'guest_invites',
       icon: <Send className="text-purple-500" />,
       category: 'features',
-      title: 'Convites para Membros e Equipe',
-      description: 'Como integrar novos colegas enviando convites seguros por e-mail.',
+      title: 'Convites por E-mail',
+      description: 'Como integrar novos colegas enviando convites seguros.',
       tags: ['convite', 'equipe', 'email', 'membro', 'cadastro'],
       content: (
         <div className="space-y-5">
-          <p className="text-sm text-gray-600 px-1">Expandir sua equipe é simples e não exige que o novo membro passe por aprovações manuais, pois o convite já serve como autorização.</p>
+          <p className="text-sm text-gray-600 px-1">Membros convidados não precisam passar pela "aprovação" manual do Admin, garantindo agilidade no acesso.</p>
           
           <div className="grid grid-cols-1 gap-3">
             <div className="p-4 bg-white border border-gray-100 rounded-[28px] flex flex-col sm:flex-row sm:items-center gap-4 relative overflow-hidden">
@@ -177,7 +186,7 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
               <div>
                 <h5 className="font-black text-xs text-gray-800 mb-1">Como enviar o convite?</h5>
                 <p className="text-[10px] text-gray-500 leading-relaxed">
-                  Na aba <strong>Time</strong>, clique no botão <strong>Adicionar Novo</strong> e selecione a opção <strong>Convidar Usuário</strong>. Insira o Nome e o E-mail oficial do membro. O sistema enviará um link de acesso diretamente para ele.
+                  Na aba <strong>Time</strong>, use a opção <strong>Convidar Usuário</strong>. Insira Nome e E-mail. O link de primeiro acesso chega direto na caixa de entrada do colega.
                 </p>
               </div>
             </div>
@@ -186,9 +195,9 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
               <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 shrink-0"><AlertCircle size={20} /></div>
               <div>
-                <h5 className="font-black text-xs text-gray-800 mb-1">E se o usuário já existir?</h5>
+                <h5 className="font-black text-xs text-gray-800 mb-1">Validação de E-mail Único</h5>
                 <p className="text-[10px] text-gray-500 leading-relaxed">
-                  Se o e-mail já estiver cadastrado no sistema, a interface emitirá um alerta de duplicidade, evitando a criação de perfis redundantes e mantendo a base de dados limpa.
+                  O sistema agora bloqueia convites para e-mails que já existem na base (seja em sua equipe ou na de outro gestor), emitindo um alerta claro para prevenir cadastros duplicados e perda de dados.
                 </p>
               </div>
             </div>
@@ -200,8 +209,8 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
       id: 'task_evidence',
       icon: <CheckCircle2 className="text-orange-500" />,
       category: 'features',
-      title: 'Tarefas e Upload de Evidências',
-      description: 'Finalize tarefas com segurança anexando fotos e comprovantes, com suporte a reabertura.',
+      title: 'Tarefas, Evidências e Histórico',
+      description: 'Conclua tarefas com comprovantes anexos ou reabra pendências.',
       tags: ['tarefa', 'evidencia', 'anexo', 'concluir', 'reabrir'],
       content: (
         <div className="space-y-4">
@@ -210,7 +219,7 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
             <div className="space-y-2">
               <h5 className="font-black text-orange-900 text-xs">Conclusão com Evidência Obrigatória</h5>
               <p className="text-[10px] text-orange-700 leading-relaxed">
-                Tarefas críticas agora podem exigir o upload de uma evidência (foto do local, print de sistema, documento PDF) no momento da conclusão. Sem o arquivo anexado, a tarefa não será dada como finalizada.
+                Nas tarefas, é possível exigir o upload de uma foto ou PDF (ex: atestado, comprovante de turno) na hora de marcar como feita. A tarefa não é finalizada sem o arquivo anexado.
               </p>
             </div>
           </div>
@@ -218,9 +227,7 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
           <div className="p-5 bg-white border border-gray-100 rounded-3xl space-y-3 shadow-sm">
             <h5 className="font-black text-xs text-gray-800 flex items-center gap-2"><History size={14} className="text-gray-400" /> Como Reabrir uma Tarefa?</h5>
             <p className="text-[11px] text-gray-500 leading-relaxed">
-              Cometeu um erro ou marcou indevidamente? Em tarefas finalizadas ou marcadas como "Não Realizada", você encontrará o botão <strong>Reabrir</strong>. 
-              <br/><br/>
-              Ao confirmar a reabertura, o sistema apagará automaticamente a evidência anterior dos servidores, garantindo segurança e economia de espaço, e retornará a tarefa para o status pendente original.
+              Errou o status da tarefa? Encontre o botão <strong>Reabrir</strong> no histórico. O sistema apagará a evidência salva nos servidores (economizando espaço e garantindo segurança) e devolverá a tarefa para a lista de "A Fazer".
             </p>
           </div>
         </div>
@@ -230,41 +237,76 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
       id: 'system_logs',
       icon: <Siren className="text-rose-500" />,
       category: 'advanced',
-      title: 'Painel de Logs e Auditoria',
-      description: 'Rastreabilidade total: veja quem criou, editou ou excluiu registros no sistema.',
+      title: 'Auditoria e Aba Logs',
+      description: 'Rastreabilidade total das ações feitas no sistema.',
       tags: ['logs', 'auditoria', 'rastreamento', 'admin', 'historico'],
       content: (
         <div className="space-y-5">
           <div className="p-5 bg-rose-50 border border-rose-100 rounded-[32px] space-y-3">
             <div className="flex items-center gap-2 text-rose-600 font-black text-[10px] uppercase tracking-widest">
               <Siren size={14} />
-              Exclusivo para Administradores
+              Segurança e Conformidade (Apenas Admins)
             </div>
             <p className="text-xs text-gray-600 leading-relaxed">
-              A aba <strong>Logs</strong> funciona como uma caixa-preta do sistema. O acesso a essa área é rigidamente restrito a Administradores aprovados.
+              A aba <strong>Logs</strong> funciona como uma caixa-preta. Nela, toda ação destrutiva, criação ou edição sensível é registrada. Apenas Administradores podem acessar essa aba para fim de investigação, garantindo sigilo.
             </p>
           </div>
           
           <div className="bg-gray-900 text-white p-5 rounded-[28px] space-y-3 relative overflow-hidden shadow-xl shadow-gray-900/20">
             <div className="absolute top-0 right-0 p-4 opacity-5"><Zap size={100} /></div>
-            <h5 className="text-xs font-black text-rose-400 tracking-wider uppercase mb-3">Principais Registros Mapeados</h5>
+            <h5 className="text-xs font-black text-rose-400 tracking-wider uppercase mb-3">Registros Armazenados</h5>
             <ul className="space-y-3 relative z-10">
               <li className="flex gap-3 items-center text-[10px] text-gray-300">
-                <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Deleção e Edição Crítica de Turnos
+                <div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Exclusões em Lote ou Unitárias
               </li>
               <li className="flex gap-3 items-center text-[10px] text-gray-300">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Resoluções Automáticas via IA
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Bloqueios e Aceites de Novos Usuários
               </li>
               <li className="flex gap-3 items-center text-[10px] text-gray-300">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Mudanças de Nível de Visibilidade/Acesso
-              </li>
-              <li className="flex gap-3 items-center text-[10px] text-gray-300">
-                <div className="w-1.5 h-1.5 rounded-full bg-purple-500" /> Disparo de Convites e Aprovações
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Alterações de Nível de Visibilidade
               </li>
             </ul>
             <p className="text-[9px] text-gray-500 mt-4 pt-3 border-t border-gray-800">
-              Nota: Por segurança, a trilha de logs não pode ser alterada ou apagada por nenhum usuário na interface.
+              A trilha de logs é imutável: nenhum usuário pode apagar seu próprio rastro do sistema.
             </p>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'ui_filters_printing',
+      icon: <Filter className="text-sky-500" />,
+      category: 'features',
+      title: 'Filtros Dinâmicos e Impressão',
+      description: 'Como filtrar a escala e gerar murais em PDF adaptativos.',
+      tags: ['filtro', 'busca', 'impressao', 'pdf', 'mural', 'exportar'],
+      content: (
+        <div className="space-y-4">
+          <div className="p-4 bg-sky-50 border border-sky-100 rounded-3xl mb-4">
+            <h5 className="text-sm font-black text-sky-900 mb-2 flex items-center gap-2"><Filter size={16} /> Filtros Compactos no Calendário</h5>
+            <p className="text-[11px] text-sky-800 leading-relaxed">
+              O módulo principal de visualização da escala agora conta com um toolbar simplificado. Você pode pesquisar rapidamente pelo Nome ou pelo Cargo do funcionário. O sistema reage em tempo real encurtando a visualização.
+            </p>
+          </div>
+
+          <p className="text-sm text-gray-600 px-1">Ao preparar a impressão, configure o mural ideal:</p>
+          <div className="bg-gray-50 rounded-[32px] p-6 border border-gray-100 grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-sky-500" /><span className="text-[10px] font-bold">Zoom Inteligente</span></div>
+              <p className="text-[9px] text-gray-400">Ajuste para caber em 1 ou 2 páginas A4.</p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-[10px] font-bold">Modo Compacto</span></div>
+              <p className="text-[9px] text-gray-400">Reduz tamanhos para listas de equipes enormes.</p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-gray-900" /><span className="text-[10px] font-bold">P&B Profissional</span></div>
+              <p className="text-[9px] text-gray-400">Alto contraste para impressora econômica a laser.</p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-pink-500" /><span className="text-[10px] font-bold">Modo Privacidade</span></div>
+              <p className="text-[9px] text-gray-400">Oculta foto e detalhe extra, mantendo foco no dia a dia.</p>
+            </div>
           </div>
         </div>
       )
@@ -274,17 +316,17 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
       icon: <Bot className="text-amber-500" />,
       category: 'ai',
       title: 'IA e Alertas Inteligentes',
-      description: 'Como o Gemini prevê conflitos e otimiza sua jornada.',
+      description: 'Como o algoritmo prevê conflitos e otimiza sua jornada.',
       tags: ['ia', 'gemini', 'conflitos', 'avisos'],
       content: (
         <div className="space-y-5">
           <div className="p-5 bg-amber-50 border border-amber-100 rounded-[32px] space-y-3">
             <div className="flex items-center gap-2 text-amber-600 font-black text-[10px] uppercase tracking-widest">
               <Sparkles size={14} />
-              Motor de Previsão
+              Motor Analítico
             </div>
             <p className="text-xs text-gray-600 leading-relaxed">
-              Nosso sistema utiliza o <strong>Google Gemini Pro</strong> para analisar padrões de escala. Se você marcar férias e não houver cobertura para sua função, um alerta pulsante aparecerá no Dashboard.
+              O sistema analisa padrões contínuos para exibir alertas. Se houver falha de cobertura num plantão, um alerta pulsante aparecerá no Dashboard.
             </p>
           </div>
           
@@ -293,46 +335,8 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
               <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500"><Siren size={20} /></div>
               <div>
                 <h5 className="font-black text-xs text-gray-800">Alertas de Fadiga</h5>
-                <p className="text-[10px] text-gray-400">Identifica quando alguém trabalha mais de 6 dias sem folga.</p>
+                <p className="text-[10px] text-gray-400">Avisa quando membros trabalham muitos dias sem folga compensatória.</p>
               </div>
-            </div>
-            <div className="p-4 bg-white border border-gray-100 rounded-[28px] flex items-center gap-4">
-              <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500"><Flame size={20} /></div>
-              <div>
-                <h5 className="font-black text-xs text-gray-800">Mensagens Motivacionais</h5>
-                <p className="text-[10px] text-gray-400">Frases dinâmicas geradas por IA no topo da tela inicial.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )
-    },
-    {
-      id: 'printing_mastery',
-      icon: <Printer className="text-sky-500" />,
-      category: 'features',
-      title: 'Domínio de Impressão',
-      description: 'Gere murais perfeitos em A4 com zoom e cores customizadas.',
-      tags: ['impressao', 'pdf', 'mural', 'exportar'],
-      content: (
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600 px-1">Configure o mural ideal para seu departamento:</p>
-          <div className="bg-gray-50 rounded-[32px] p-6 border border-gray-100 grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-sky-500" /><span className="text-[10px] font-bold">Zoom Inteligente</span></div>
-              <p className="text-[9px] text-gray-400">Ajuste para caber em 1 ou 2 páginas A4 automaticamente.</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-[10px] font-bold">Modo Compacto</span></div>
-              <p className="text-[9px] text-gray-400">Reduz o tamanho dos avatares para caber mais dias na tela.</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-gray-900" /><span className="text-[10px] font-bold">P&B Profissional</span></div>
-              <p className="text-[9px] text-gray-400">Economize toner com o modo de alto contraste.</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-pink-500" /><span className="text-[10px] font-bold">Privacidade</span></div>
-              <p className="text-[9px] text-gray-400">Opção para ocultar os cargos e focar apenas nos nomes.</p>
             </div>
           </div>
         </div>
@@ -343,16 +347,18 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
       icon: <History className="text-indigo-500" />,
       category: 'advanced',
       title: 'Ciclo de Vida e Carreira',
-      description: 'Como gerenciar promoções e mudanças retroativas.',
-      tags: ['historico', 'promocao', 'cargo', 'mudanca'],
+      description: 'Como gerenciar promoções e mudanças retroativas de regime.',
+      tags: ['historico', 'promocao', 'cargo', 'mudanca', 'retroativo'],
       content: (
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">O sistema é temporal. Se um funcionário foi promovido ontem, você pode registrar isso sem perder a escala passada:</p>
+          <p className="text-sm text-gray-600">Mude a escala do meio do caminho sem quebrar o passado:</p>
           <div className="flex items-start gap-4 p-5 bg-indigo-50 border border-indigo-100 rounded-3xl">
             <Lightbulb className="text-indigo-500 shrink-0 mt-1" />
             <div className="space-y-2">
-              <h5 className="font-black text-indigo-900 text-xs">Ponto de Transição</h5>
-              <p className="text-[10px] text-indigo-700 leading-relaxed">Ao adicionar uma mudança de cargo no histórico, o sistema recalcula a escala a partir daquela data exata, mantendo a integridade dos dias anteriores.</p>
+              <h5 className="font-black text-indigo-900 text-xs">Adição no Histórico</h5>
+              <p className="text-[10px] text-indigo-700 leading-relaxed">
+                Quando um colaborador muda de um regime 5x2 para 12x36, vá no perfil dele e adicione um novo registro no Histórico. A partir da <strong>data selecionada</strong>, a projeção do calendário passa a ser 12x36, mas tudo para trás daquela data permanecerá gravado na regra antiga 5x2.
+              </p>
             </div>
           </div>
         </div>
@@ -362,18 +368,22 @@ export const HelpCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
       id: 'profile_management',
       icon: <Fingerprint className="text-pink-500" />,
       category: 'features',
-      title: 'Identidade e Perfil',
-      description: 'Personalize seu avatar e gerencie suas informações pessoais.',
-      tags: ['perfil', 'foto', 'avatar', 'nome'],
+      title: 'Perfil e Componentes de Ajuda',
+      description: 'Personalize seu avatar e utilize tooltips.',
+      tags: ['perfil', 'foto', 'avatar', 'nome', 'dicas'],
       content: (
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">Agora você pode dar um rosto à sua escala:</p>
           <div className="p-5 bg-pink-50 border border-pink-100 rounded-3xl space-y-3">
             <div className="flex gap-4 items-center">
               <div className="w-12 h-12 rounded-full bg-pink-200 border-2 border-white shadow-sm flex items-center justify-center text-pink-600"><Users size={20} /></div>
-              <p className="text-[10px] font-bold text-pink-700 uppercase tracking-widest leading-tight">Upload de Foto Disponível na Aba Perfil</p>
+              <p className="text-[10px] font-bold text-pink-700 uppercase tracking-widest leading-tight">Identidade Visual</p>
             </div>
-            <p className="text-[11px] text-gray-500 leading-relaxed">Clique no círculo do seu avatar para subir uma imagem do seu dispositivo. As fotos aparecem no calendário geral para facilitar a identificação visual rápida da equipe.</p>
+            <p className="text-[11px] text-gray-500 leading-relaxed">No seu perfil, envie sua foto (upload de avatar). Ela se propaga imediatamente pela escala de todos. Use o botão de Logout disponível para fechar sua sessão com segurança.</p>
+          </div>
+          
+          <div className="p-4 border border-gray-100 rounded-2xl flex items-center gap-3 bg-white">
+             <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"><Info size={16} /></div>
+             <p className="text-[10px] text-gray-500">Ao longo de toda a plataforma, passe o mouse (ou toque) em ícones como este para exibir caixas informativas explicativas criadas para seu apoio.</p>
           </div>
         </div>
       )
