@@ -50,7 +50,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
             transition={{ duration: 0.15, ease: "easeOut" }}
             className={getPositionClasses()}
           >
-            <div className="bg-gray-900/90 backdrop-blur-md text-white text-[8px] sm:text-[9px] font-black uppercase tracking-[0.1em] px-3 py-1.5 rounded-xl sm:rounded-full shadow-xl border border-white/10 max-w-[150px] sm:max-w-none text-center break-words leading-tight">
+            <div className="bg-gray-900/95 backdrop-blur-xl text-white text-[10px] sm:text-xs font-semibold px-3 py-2 rounded-lg shadow-xl border border-white/10 w-max max-w-[220px] text-center leading-snug hidden sm:block">
               {text}
             </div>
           </motion.div>

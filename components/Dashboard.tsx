@@ -486,14 +486,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </Tooltip>
             )}
 
-            <Tooltip text="Alternar entre Minha Escala e Equipe Ativa" align="right">
-              <button 
-                onClick={() => setIsTeamView(!isTeamView)} 
-                className={`p-2 rounded-full border transition-all ${isTeamView ? 'bg-indigo-600 border-indigo-500 text-white shadow-md' : 'bg-white border-gray-100 text-gray-400'}`}
+            <div className="flex bg-gray-50 border border-gray-100 rounded-full p-0.5 sm:p-1 shadow-inner">
+              <button
+                onClick={() => setIsTeamView(false)}
+                className={`flex items-center justify-center px-2.5 sm:px-3 py-1.5 rounded-full transition-all active:scale-95 ${!isTeamView ? 'bg-white text-pink-500 shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100/50'}`}
+                title="Minha Escala"
               >
-                {isTeamView ? <EyeOff size={18} /> : <Eye size={18} />}
+                <Eye size={14} className="sm:mr-1.5" />
+                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest hidden sm:inline-block">Pessoal</span>
               </button>
-            </Tooltip>
+              <button
+                onClick={() => setIsTeamView(true)}
+                className={`flex items-center justify-center px-2.5 sm:px-3 py-1.5 rounded-full transition-all active:scale-95 ${isTeamView ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-black/5' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100/50'}`}
+                title="Equipe Ativa"
+              >
+                <Users size={14} className="sm:mr-1.5" />
+                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest hidden sm:inline-block">Equipe</span>
+              </button>
+            </div>
 
             {!isReadOnly && (
               <Tooltip text="Configurações de Perfil e Carreira" align="right">
