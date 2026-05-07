@@ -602,17 +602,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <button
                 key={day.toISOString()}
                 onClick={() => setSelectedDate(day)}
-                className={`aspect-square flex items-center justify-center rounded-lg sm:rounded-xl text-[10px] sm:text-[11px] transition-all relative 
+                className={`aspect-square flex items-center justify-center rounded-lg sm:rounded-xl text-[10px] sm:text-[11px] transition-all relative overflow-hidden
                   ${isSel ? 'bg-pink-500 text-white font-black scale-110 shadow-lg z-10' :
+                    absence ? 'bg-red-500 text-white font-black shadow-md shadow-red-500/30' :
                     vacation ? 'bg-sky-500 text-white shadow-sm' :
                       overtime ? 'bg-purple-600 text-white shadow-md' :
                         isBeforeStart ? 'bg-transparent text-gray-300' :
                           isWork ? theme.workDay : theme.offDay} 
-                  ${absence ? '!bg-red-50 !text-red-400 border border-red-100' : ''} 
                   ${isT && !isSel ? 'ring-2 ring-pink-300' : ''}`}
               >
-                {day.getDate()}
-                {overtime && !isSel && <div className="absolute top-1 right-1 w-1 sm:w-1.5 h-1 sm:h-1.5 bg-purple-200 rounded-full" />}
+                {absence && (
+                  <div className={`absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgba(255,255,255,0.5)_4px,rgba(255,255,255,0.5)_8px)] ${isSel ? 'opacity-30' : ''}`} />
+                )}
+                <span className="relative z-10">{day.getDate()}</span>
+                {overtime && !isSel && <div className="absolute top-1 right-1 w-1 sm:w-1.5 h-1 sm:h-1.5 bg-purple-200 rounded-full z-10" />}
               </button>
             );
           })}
@@ -625,7 +628,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             { classes: theme.offDay,                                       label: 'Folga',    symbol: '—' },
             { classes: 'bg-sky-500 text-white',                            label: 'Férias',   symbol: '⛱' },
             { classes: 'bg-purple-600 text-white',                         label: 'Extra',    symbol: '⚡' },
-            { classes: '!bg-red-50 !text-red-400 border border-red-100',   label: 'Ausência', symbol: '✕' },
+            { classes: 'bg-red-500 text-white relative overflow-hidden',   label: 'Ausência', symbol: <><div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,rgba(255,255,255,0.5)_2px,rgba(255,255,255,0.5)_4px)]" /><span className="relative z-10">✕</span></> },
           ].map(({ classes, label, symbol }) => (
             <div key={label} className="flex flex-col items-center gap-1 min-w-0">
               <div className={`w-6 h-5 rounded-md flex items-center justify-center text-[8px] font-black leading-none shrink-0 ${classes}`}>
